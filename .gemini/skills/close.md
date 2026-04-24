@@ -1,0 +1,36 @@
+# /close (Encerramento e Empacotamento de Sessão)
+
+## Objetivo
+Sintetizar as descobertas da janela de estudos, atualizar o cache de contexto contínuo e preparar o ambiente estrutural para a próxima sessão, garantindo que o conhecimento acumulado e as decisões metodológicas não se percam.
+
+## Gatilho
+Acionado quando o usuário disser `gemini "Execute a skill /close"` ou `gemini "Encerre a sessão"` ou `/close`
+
+**Log:** Ao acrescentar a entrada final de encerramento (e eventuais retificações) em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional).
+
+## Fluxo de Execução (Workflow)
+
+### Etapa 1: Consolidação ancorada em arquivos (obrigatório)
+O histórico do chat pode estar incompleto ou ter sido reiniciado. **Não confie na memória da conversa como fonte primária.**
+
+1. Leia **na íntegra** o arquivo `.state/log.md` antes de redigir qualquer síntese.
+2. Delimite o intervalo desta sessão no log: utilize **todas as entradas posteriores** à última linha de cabeçalho que registre um encerramento anterior (por exemplo um título `##` contendo `/close` ou a expressão usada na convenção deste repositório para fim de sessão). Se não existir encerramento anterior, considere o arquivo completo.
+3. Leia também `.state/hot.md` para alinhar com o cache já gravado antes deste `/close`.
+4. Liste mentalmente as operações desta sessão **somente** com base nesse intervalo do log (ingestões, `/ingest-paper`, `/ingest-paper-intro`, `/ingest-article`, `/recall`, `/trace`, `/ghost`, `/visual`, `/lint`, etc.). **É proibido inventar** operações, caminhos de arquivos ou resultados que não apareçam escritos no log.
+5. Decisões metodológicas para o `hot.md` devem estar **suportadas** pelo log nesse intervalo ou por instruções **explícitas e inequívocas** do usuário neste mesmo chat. Se o chat mencionar trabalho relevante que **não** conste no log, não trate isso como fato consolidado: descreva a lacuna de forma neutra numa frase no **Fechamento** do `hot.md` e registre-a na entrada final do log (Etapa 3).
+
+### Etapa 2: Atualização do Cache de Sessão (Aplicação Rigorosa de Estilo)
+Sobrescreva o conteúdo atual do arquivo `.state/hot.md` com um novo panorama da pesquisa. A redação deste documento DEVE obedecer integralmente às **Regras Globais de Estilo**:
+- É terminantemente proibido o uso de listas ou marcadores (bullet points).
+- O texto completo não deve ultrapassar 500 palavras e deve ser estruturado em três blocos contínuos lógicos:
+  - **Introdução** (apresentando o foco atual de pesquisa estabelecido nesta sessão),
+  - **Contexto** (descrevendo as decisões metodológicas tomadas e as variáveis validadas) e
+  - **Fechamento** (apontando claramente as questões em aberto e a primeira tarefa recomendada para a próxima sessão de estudo ou pesquisa, sem assumir horário ou calendário fixos).
+- Aplique **negrito** exclusivamente para destacar constructos teóricos, variáveis estatísticas, nomes de algoritmos e métricas financeiras.
+- Não utilize travessões. Empregue vírgulas e períodos curtos e diretos para garantir a fluidez da leitura.
+- Não utilize emojis.
+- O tom deve permanecer estritamente analítico e compatível com a gestão de projetos de Data Science e pesquisa acadêmica avançada.
+
+### Etapa 3: Auditoria Final e Log
+1. Releia o intervalo da sessão em `.state/log.md` (conforme Etapa 1). Se faltar registro de alguma operação que o próprio log ou o chat demonstrem claramente que ocorreu, **acrescente entradas retroativas resumidas** antes do encerramento, com data e descrição mínima, em vez de omitir o fato.
+2. Acrescente no **final** do arquivo uma entrada de encerramento com cabeçalho `##` em linha própria, contendo a data, a menção explícita a `/close` e um resumo: operações cobertas pelo log nesta sessão, arquivos tocados ou criados (apenas os que constem no log ou que tenha acabado de corrigir no passo anterior) e, se aplicável, lacunas entre chat e log.
