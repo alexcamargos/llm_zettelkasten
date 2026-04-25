@@ -30,14 +30,15 @@ Quando criar literatura e permanentes, **integre em rede**: além do índice, at
 Se o usuário aprovar a criação das notas preliminares, gere os arquivos aplicando todas as Regras de Estilo e Qualidade de Escrita estipuladas no arquivo principal.
 
 **Regras estritas para a geração do texto das notas:**
-- É terminantemente proibido o uso de listas ou marcadores (bullet points).
-- O texto de cada nota deve ser contínuo e estruturado logicamente em três etapas: **Introdução** (apresentação clara da ideia), **Contexto** (provas ou desenvolvimento do autor) e **Fechamento** (resumo sintético da aplicação).
+- É terminantemente proibido o uso de listas ou marcadores (bullet points) no corpo das notas.
+- Toda nota deve iniciar com um título Markdown (`# Título da nota`) imediatamente após o frontmatter YAML.
+- O texto de cada nota deve ser contínuo e estruturado logicamente em três etapas, Introdução, Contexto e Fechamento, porém sem inserir rótulos literais como `Introdução.` `Contexto.` `Fechamento.` antes dos parágrafos.
 - Utilize **negrito** exclusivamente para destacar as palavras-chave e conceitos centrais, facilitando a recuperação da informação.
 - Não utilize travessões. Empregue vírgulas ou construa períodos curtos e diretos para explicações.
 - Não utilize emojis.
 
 1. **Nota de Literatura:** Crie o arquivo em `zettelkasten/literature/` com frontmatter do `GEMINI.md`, `confidence` adequado, `source_file` sob `raw/papers/`, referência ABNT e resumo da introdução.
-2. **Notas Permanentes:** Crie notas atômicas em `zettelkasten/permanent/` apenas para os conceitos validados. Para cada permanente **nova**, aplique a **ligação mínima ao grafo** do `GEMINI.md` (dois wikilinks no corpo quando existirem candidatos); caso impossível, registre no log.
+2. **Notas Permanentes:** Crie notas atômicas em `zettelkasten/permanent/` apenas para os conceitos validados. Para cada permanente **nova**, pesquise notas relacionadas por tema e conecte o corpo com wikilinks relevantes. Aplique a **ligação mínima ao grafo** do `GEMINI.md` (dois wikilinks no corpo quando existirem candidatos); caso impossível, registre no log.
 
 ### Etapa 4: Catalogação
 1. Acesse `zettelkasten/index.md` e adicione os links semânticos (textuais) das novas notas em suas respectivas seções.

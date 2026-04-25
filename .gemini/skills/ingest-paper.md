@@ -28,10 +28,10 @@ Numa única execução bem-sucedida, **planeje tocar vários arquivos** quando a
 3. Aguarde a resposta e a aprovação do usuário antes de prosseguir para a Etapa 3.
 
 ### Etapa 3: Geração das Notas e Evolução da Base
-A partir da resposta do usuário, crie os arquivos aplicando rigorosamente as **Regras Globais de Estilo** (sem uso de listas/bullet points, adotando a estrutura de Introdução, Contexto e Fechamento, e utilizando negrito para palavras-chave).
+A partir da resposta do usuário, crie os arquivos aplicando rigorosamente as **Regras Globais de Estilo** (sem uso de listas/bullet points, com título obrigatório no corpo da nota e progressão lógica de Introdução, Contexto e Fechamento em parágrafos, sem rótulos literais desses blocos).
 
-1. **Nota de Literatura:** Crie o arquivo em `zettelkasten/literature/` com o frontmatter do `GEMINI.md`, incluindo `confidence` (`high`, `medium` ou `low`) conforme a qualidade dos metadados e da leitura.
-2. **Notas Permanentes:** Crie notas atômicas em `zettelkasten/permanent/` apenas para os conceitos selecionados pelo usuário. Em cada permanente **nova**, se existirem **duas ou mais** notas existentes claramente relacionadas, o corpo deve conter **pelo menos dois** wikilinks `[[...]]` a elas, além de `sources:`. Se não houver candidatos no cofre, registre no `.state/log.md` que a ligação mínima ao grafo ficou adiada.
+1. **Nota de Literatura:** Crie o arquivo em `zettelkasten/literature/` com o frontmatter do `GEMINI.md`, incluindo `confidence` (`high`, `medium` ou `low`) conforme a qualidade dos metadados e da leitura. No corpo, inclua `# Título da nota` logo após o YAML e redija em prosa contínua.
+2. **Notas Permanentes:** Crie notas atômicas em `zettelkasten/permanent/` apenas para os conceitos selecionados pelo usuário. Cada nota deve começar com `# Título da nota` após o YAML. Antes de finalizar o corpo, pesquise no cofre por notas relacionadas por tema, variável, método ou causalidade e conecte com `[[wikilinks]]`. Em cada permanente **nova**, se existirem **duas ou mais** notas claramente relacionadas, o corpo deve conter **pelo menos dois** wikilinks `[[...]]` além de `sources:`. Se não houver candidatos, registre no `.state/log.md` que a ligação mínima ao grafo ficou adiada.
 3. **Revisão Teórica:** Busque notas permanentes antigas que tratem dos mesmos conceitos e atualize-as, cruzando os dados da nova fonte. Sinalize divergências acadêmicas caso existam.
 
 ### Etapa 4: Catalogação e Encerramento
