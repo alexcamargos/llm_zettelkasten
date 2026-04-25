@@ -93,4 +93,16 @@ deprecated: false
 
 Use **`confidence`** opcional quando a nota depender fortemente de uma única fonte ou de síntese incerta. Use **`deprecated: true`** e campos associados quando a nota for substituída ou invalidada, sem apagar o arquivo.
 
+### Arquivos Estruturais e de Sistema
+Utilizado para artefatos gerados automatizadamente pelas *skills* de manutenção do cofre, tais como a síntese viva `zettelkasten/overview.md`.
+
+```yaml
+---
+type: overview
+id: overview
+---
+```
+
+Use os campos padrão sem necessidade de chaves complementares (`tags`, `confidence`, etc) a não ser que a *skill* exija (ex: `updated: AAAA-MM-DD`). Evite poluí-los para não misturá-los com as notas orgânicas.
+
 **Atenção**: Este arquivo é a diretriz mestre de operação. Qualquer comando recebido deve ser filtrado e executado sob as regras de estilo, segurança e roteamento definidas neste documento. Os comandos de ingestão de papers foram renomeados para **`/ingest-paper`** e **`/ingest-paper-intro`** (antes `/ingest` e `/ingest-intro`) para alinhar com **`/ingest-article`**.
