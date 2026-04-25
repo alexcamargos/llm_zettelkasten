@@ -1,7 +1,7 @@
 # Zettelkasten Modular via Gemini CLI
 
 ## Visão Geral do Sistema
-Este repositório estabelece a arquitetura oficial para o ecossistema de gestão de conhecimento pessoal e pesquisa acadêmica operado via interface de linha de comando. O projeto foi desenhado especificamente para suportar o rigor metodológico exigido em modelagem preditiva de risco e análise de indicadores financeiros.
+Este repositório estabelece a arquitetura oficial para o ecossistema de gestão de conhecimento pessoal e pesquisa acadêmica operado via interface de linha de comando. Adotando o paradigma de **Notas Atômicas em Arquitetura Dissertativa**, o projeto foi desenhado especificamente para suportar o rigor metodológico exigido em modelagem preditiva de risco e análise de indicadores financeiros.
 
 A arquitetura divide as responsabilidades de processamento de dados entre um arquivo mestre de configuração e múltiplas habilidades modulares. Cada habilidade executa uma função isolada e altamente especializada dentro do ambiente de terminal. O sistema orquestra desde a extração rigorosa de referências no padrão ABNT a partir de literatura acadêmica densa até a redação de rascunhos consolidados. O diretório raiz atua como o motor principal de indexação, enquanto a pasta de fontes abriga os documentos originais e a base de conhecimento armazena as conexões lógicas em desenvolvimento.
 
