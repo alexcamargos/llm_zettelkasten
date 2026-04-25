@@ -18,7 +18,7 @@ Acionado quando o usuário disser `gemini "Execute a skill /ghost para escrever 
 É terminantemente proibido iniciar a redação do texto antes de concluir esta etapa. Apresente ao usuário um plano de voo contendo:
 1. **Notas Selecionadas:** A lista das notas que serão utilizadas como base (com seus respectivos links).
 2. **Proposta de Tese:** Qual será o argumento central ou a conclusão lógica deste rascunho.
-3. **Esqueleto do Texto:** Um resumo de uma linha do que será abordado na Introdução, no Contexto e no Fechamento.
+3. **Esqueleto do Texto:** Um resumo de uma linha do que será abordado no primeiro (apresentação), no segundo (desenvolvimento) e no terceiro parágrafo (conclusão).
 4. **Interação Exigida:** Pergunte explicitamente ao usuário:
    a) "Devemos incluir ou excluir alguma nota específica desta seleção?"
    b) "A proposta de tese está alinhada com seu objetivo ou devemos focar em outro ângulo analítico?"
@@ -28,7 +28,7 @@ Acionado quando o usuário disser `gemini "Execute a skill /ghost para escrever 
 ### Etapa 3: Execução da Escrita (Aplicação Rigorosa de Estilo)
 Somente após a aprovação do plano pelo usuário, inicie a redação. O texto gerado DEVE obedecer de forma inegociável às **Regras Globais de Estilo**:
 - É terminantemente proibido o uso de listas ou marcadores (bullet points).
-- Estruture a redação em blocos contínuos e articulados, refletindo claramente as seções de **Introdução** (apresentação do problema ou conceito acadêmico), **Contexto** (desenvolvimento das provas, cruzamento de dados, citação de autores e metodologias) e **Fechamento** (conclusão lógica e impacto do conceito no modelo estudado).
+- Estruture a redação em parágrafos contínuos e articulados, sendo terminantemente proibido gravar os rótulos literais "Introdução", "Contexto" ou "Fechamento" no corpo do texto: o primeiro apresentando o problema ou conceito acadêmico; o segundo desenvolvendo as provas, cruzando dados, citando autores e metodologias; e o terceiro focando na conclusão lógica e impacto do conceito no modelo estudado.
 - Aplique a **Técnica Feynman** adaptada para um público de nível executivo e pós-graduação. Simplifique a complexidade matemática ou estatística preservando o rigor técnico.
 - Aplique **negrito** exclusivamente para destacar constructos teóricos, variáveis de modelo e termos técnicos centrais.
 - Não utilize travessões. A fluidez explicativa deve ser construída com vírgulas e períodos diretos.

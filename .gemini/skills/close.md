@@ -22,10 +22,10 @@ O histórico do chat pode estar incompleto ou ter sido reiniciado. **Não confie
 ### Etapa 2: Atualização do Cache de Sessão (Aplicação Rigorosa de Estilo)
 Sobrescreva o conteúdo atual do arquivo `.state/hot.md` com um novo panorama da pesquisa. A redação deste documento DEVE obedecer integralmente às **Regras Globais de Estilo**:
 - É terminantemente proibido o uso de listas ou marcadores (bullet points).
-- O texto completo não deve ultrapassar 500 palavras e deve ser estruturado em três blocos contínuos lógicos:
-  - **Introdução** (apresentando o foco atual de pesquisa estabelecido nesta sessão),
-  - **Contexto** (descrevendo as decisões metodológicas tomadas e as variáveis validadas) e
-  - **Fechamento** (apontando claramente as questões em aberto e a primeira tarefa recomendada para a próxima sessão de estudo ou pesquisa, sem assumir horário ou calendário fixos).
+- O texto completo não deve ultrapassar 500 palavras e deve ser estruturado em três parágrafos contínuos, sendo terminantemente proibido gravar os rótulos literais "Introdução", "Contexto" ou "Fechamento" no corpo do texto:
+  - O **primeiro parágrafo** deve apresentar o foco atual de pesquisa estabelecido nesta sessão;
+  - O **segundo parágrafo** deve descrever as decisões metodológicas tomadas e as variáveis validadas;
+  - O **terceiro parágrafo** (conclusão) deve apontar claramente as questões em aberto e a primeira tarefa recomendada para a próxima sessão de estudo ou pesquisa, sem assumir horário ou calendário fixos.
 - Aplique **negrito** exclusivamente para destacar constructos teóricos, variáveis estatísticas, nomes de algoritmos e métricas financeiras.
 - Não utilize travessões. Empregue vírgulas e períodos curtos e diretos para garantir a fluidez da leitura.
 - Não utilize emojis.

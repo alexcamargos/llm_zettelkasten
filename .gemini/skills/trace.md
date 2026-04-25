@@ -18,10 +18,10 @@ Acionado quando o usuário disser `gemini "Execute a skill /trace sobre [conceit
 ### Etapa 2: Elaboração do Dossiê Evolutivo (Aplicação Rigorosa de Estilo)
 Gere um dossiê analítico consolidando os achados. A redação deste documento DEVE obedecer integralmente às **Regras Globais de Estilo**:
 - É terminantemente proibido o uso de listas ou marcadores (bullet points).
-- Estruture a redação em blocos contínuos divididos nas seguintes seções:
-  - **Introdução** (apresentação do conceito rastreado e o período temporal analisado),
-  - **Contexto** (narrativa cronológica detalhando como o conceito foi tratado pelos primeiros autores, como sofreu mutações e quais divergências surgiram com novas literaturas) e
-  - **Fechamento** (síntese do estado da arte atual ou do consenso de mercado sobre o tema).
+- Estruture a redação em parágrafos contínuos, sendo terminantemente proibido gravar os rótulos literais "Introdução", "Contexto" ou "Fechamento" no corpo do texto:
+  - O **primeiro parágrafo** deve apresentar o conceito rastreado e o período temporal analisado;
+  - O **segundo parágrafo** deve trazer a narrativa cronológica detalhando como o conceito foi tratado pelos primeiros autores, como sofreu mutações e quais divergências surgiram com novas literaturas;
+  - O **terceiro parágrafo** (conclusão) deve sintetizar o estado da arte atual ou o consenso de mercado sobre o tema.
 - Aplique a Técnica Feynman com foco em clareza lógica para executivos seniores; traduza o peso matemático ou estatístico da evolução do conceito sem perder a profundidade analítica.
 - Aplique **negrito** exclusivamente para destacar constructos teóricos, variáveis, métricas, autores e anos-chave.
 - Não utilize travessões. A fluidez da explicação deve ser garantida pelo uso de vírgulas e períodos curtos e diretos.

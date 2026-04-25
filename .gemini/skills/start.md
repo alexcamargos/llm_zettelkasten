@@ -18,10 +18,10 @@ Acionado quando o usuário disser `gemini "Execute a skill /start"` ou `gemini "
 ### Etapa 2: Elaboração do Briefing de Abertura (Aplicação Rigorosa de Estilo)
 Gere um resumo de situação para o usuário. A redação deste texto DEVE obedecer integralmente às **Regras Globais de Estilo**:
 - É terminantemente proibido o uso de listas ou marcadores (bullet points).
-- Estruture o briefing em texto contínuo limitado a no máximo três parágrafos, seguindo a lógica:
-  - **Introdução** (resumo do estado atual da pesquisa e onde paramos),
-  - **Contexto** (recapitulação das decisões críticas tomadas e das questões que ficaram pendentes para esta sessão) e
-  - **Fechamento** (sugestão direta do próximo passo lógico ou fonte a ser ingestada).
+- Estruture o briefing em texto contínuo limitado a no máximo três parágrafos, sendo terminantemente proibido gravar os rótulos literais "Introdução", "Contexto" ou "Fechamento" no corpo do texto:
+  - O **primeiro parágrafo** deve apresentar o resumo do estado atual da pesquisa e onde paramos;
+  - O **segundo parágrafo** deve recapitular as decisões críticas tomadas e as questões que ficaram pendentes para esta sessão;
+  - O **terceiro parágrafo** (conclusão) deve sugerir diretamente o próximo passo lógico ou fonte a ser ingestada.
 - Aplique o tom analítico adequado para um profissional sênior e estudante de MBA, utilizando a lógica evolutiva de conhecimento.
 - Utilize **negrito** exclusivamente para destacar o foco de estudo, conceitos centrais ou nomes de arquivos cruciais para a sessão atual.
 - Não utilize travessões; garanta a fluidez da explicação através de vírgulas e períodos curtos.

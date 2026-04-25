@@ -30,10 +30,10 @@ De acordo com a solicitação, execute estritamente uma das rotinas abaixo:
 ### Etapa 3: Síntese Explicativa (Aplicação Rigorosa de Estilo)
 Todo ativo gerado DEVE ser acompanhado de um texto explicativo na nota correspondente. A redação DEVE obedecer integralmente às **Regras Globais de Estilo**:
 - É terminantemente proibido o uso de listas ou marcadores (bullet points).
-- Estruture a explicação em texto contínuo dividida nas seguintes etapas lógicas:
-  - **Introdução** (o que o gráfico ou imagem representa e o problema que ilustra),
-  - **Contexto** (como as variáveis operam dentro da estrutura demonstrada) e
-  - **Fechamento** (a conclusão ou o impacto no modelo analisado).
+- Estruture a explicação em três parágrafos contínuos, sendo terminantemente proibido gravar os rótulos literais "Introdução", "Contexto" ou "Fechamento" no corpo do texto:
+  - O **primeiro parágrafo** deve apresentar o que o gráfico ou imagem representa e o problema que ilustra;
+  - O **segundo parágrafo** deve mostrar como as variáveis operam dentro da estrutura demonstrada;
+  - O **terceiro parágrafo** (conclusão) deve trazer o impacto no modelo analisado.
 - Aplique **negrito** exclusivamente para destacar variáveis de modelo, métricas financeiras ou conceitos-chave.
 - Construa a fluidez da explicação por meio de vírgulas e períodos curtos. Não utilize travessões.
 - Não utilize emojis.

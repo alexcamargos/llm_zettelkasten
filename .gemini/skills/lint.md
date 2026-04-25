@@ -25,16 +25,16 @@ Acionado quando o usuário disser `gemini "Execute a skill /lint no diretório z
 
 ### Etapa 3: Regeneração do `overview.md`
 1. Leia `zettelkasten/index.md` e amostre o mínimo necessário de notas representativas para não contradizer o cofre.
-2. **Sobrescreva** `zettelkasten/overview.md` com três blocos contínuos **Introdução**, **Contexto** e **Fechamento**, em PT-BR, sem bullet points no corpo, refletindo: domínios cobertos, volume aproximado, riscos (fontes web de **confidence** baixa, lacunas de ligação), e próximos passos de exploração em prosa.
+2. **Sobrescreva** `zettelkasten/overview.md` com três parágrafos contínuos, em PT-BR, sem bullet points no corpo e sendo terminantemente proibido gravar os rótulos literais "Introdução", "Contexto" ou "Fechamento", refletindo: domínios cobertos, volume aproximado, riscos (fontes web de **confidence** baixa, lacunas de ligação), e próximos passos de exploração em prosa.
 3. Preserve no frontmatter do `overview.md` o par `type: overview` e o campo `id: overview`; pode atualizar um campo `updated` com a data ISO de hoje se julgar útil.
 
 ### Etapa 4: Elaboração do Relatório de Manutenção (Aplicação Rigorosa de Estilo)
 Gere um relatório de diagnóstico e salve como `zettelkasten/syntheses/relatorio-manutencao-[data].md`. A redação deste documento DEVE obedecer integralmente às **Regras Globais de Estilo**:
 - É terminantemente proibido o uso de listas ou marcadores (bullet points).
-- Estruture o relatório em texto contínuo dividido nas seguintes seções lógicas:
-  - **Introdução** (apresentação do estado geral da base e volume de anotações integradas),
-  - **Contexto** (descrição detalhada das contradições teóricas encontradas, notas órfãs identificadas, padrões emergentes, sugestões de ligação mínima ao grafo e notas deprecadas relevantes) e
-  - **Fechamento** (resumo das ações sugeridas e definição de no mínimo três lacunas de pesquisa a serem exploradas nas próximas sessões).
+- Estruture o relatório em três parágrafos contínuos, sendo terminantemente proibido gravar os rótulos literais "Introdução", "Contexto" ou "Fechamento" no corpo do texto:
+  - O **primeiro parágrafo** deve apresentar o estado geral da base e o volume de anotações integradas;
+  - O **segundo parágrafo** deve descrever detalhadamente as contradições teóricas encontradas, notas órfãs identificadas, padrões emergentes, sugestões de ligação mínima ao grafo e notas deprecadas relevantes;
+  - O **terceiro parágrafo** (conclusão) deve resumir as ações sugeridas e definir no mínimo três lacunas de pesquisa a serem exploradas nas próximas sessões.
 - Aplique **negrito** exclusivamente para destacar as palavras-chave, variáveis, anomalias encontradas e conceitos centrais.
 - Não utilize travessões; garanta a fluidez da leitura por meio de vírgulas e períodos curtos e diretos.
 - Não utilize emojis.
