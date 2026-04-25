@@ -17,7 +17,8 @@
 
 ## 3. Regras de Estilo e Qualidade de Escrita (Writing Rules)
 * **Audiência e Tom:** Aplique a _Técnica Feynman_ para desconstruir a complexidade, ajustando o tom para um estudante de MBA de alto nível com vasta experiência corporativa e em análise de dados. Evite explicações simplistas e mantenha a sofisticação intelectual e o rigor técnico.
-* **Estrutura Cornell Adaptada:** Não utilize marcadores (bullet points) para textos explicativos ou notas geradas. Estruture o texto em blocos contínuos contendo: **Introdução** (apresentação da ideia), **Contexto** (desenvolvimento e provas) e **Fechamento** (resumo sintético).
+* **Título obrigatório no corpo:** Toda nota nova em `zettelkasten/literature/` e `zettelkasten/permanent/` deve começar com um título em Markdown (`# Título da nota`) imediatamente após o frontmatter YAML. O título deve ser descritivo, específico e alinhado ao conceito central da nota.
+* **Estrutura em prosa, sem rótulos:** Não utilize marcadores (bullet points) no corpo das notas. A redação deve seguir a progressão lógica de **Introdução**, **Contexto** e **Fechamento** em parágrafos contínuos, porém sem escrever rótulos literais como `Introdução.`, `Contexto.` ou `Fechamento.` no texto.
 * **Destaque de Informação:** Utilize **negrito** exclusivamente para destacar conceitos-chave, variáveis estatísticas e termos técnicos cruciais, facilitando a recuperação rápida da informação.
 * **Restrições de Pontuação e Visual:** É proibido o uso de travessões para intercalar explicações; utilize vírgulas ou períodos curtos e diretos. É terminantemente proibido o uso de emojis ou qualquer elemento visual informal em qualquer arquivo.
 
