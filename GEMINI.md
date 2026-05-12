@@ -1,5 +1,23 @@
 # Gemini Zettelkasten: Master Schema
 
+## Instrumentação obrigatória: `document_id` (SHA-256)
+
+O nome da pasta `.pageindex/<document_id>/` e o campo **`document_id`** em **`manifest.json`** devem ser **idênticos** ao hash **SHA-256** do arquivo binário **completo** (64 caracteres hexadecimais **em minúsculas**). Qualquer agente que precise desse identificador **deve obtê-lo só por execução determinística**, nunca por estimativa ou leitura parcial do PDF no contexto.
+
+**Ferramenta normativa neste projeto (Windows):** **PowerShell**, cmdlet **`Get-FileHash`**. Executar na **raiz do repositório** (substituir o nome do ficheiro):
+
+`(Get-FileHash -Algorithm SHA256 -LiteralPath 'raw/papers/nome-do-arquivo.pdf').Hash.ToLower()`
+
+Substituir `nome-do-arquivo.pdf` pelo PDF real. Utilizar sempre **`-LiteralPath`** para caminhos com espaços ou caracteres especiais.
+
+**Alternativa aceita** se `python` estiver no PATH (portável, já devolve minúsculas):
+
+`python -c "import hashlib, pathlib; p=pathlib.Path(r'raw/papers/nome-do-arquivo.pdf'); print(hashlib.sha256(p.read_bytes()).hexdigest())"`
+
+**Em Linux ou macOS**, equivalente: `sha256sum` sobre o binário e normalização da saída para **minúsculas**.
+
+**Não usar** como referência canônica: **`certutil`** (formato de saída diferente e mais sujeito a erro de cópia).
+
 ## 1. Diretrizes Centrais
 * **Restrição de Idioma:** Todas as saídas, notas, apresentações e conteúdos gerados na pasta `zettelkasten/` devem ser escritos exclusivamente em Português do Brasil (PT-BR).
 * **Papel do Agente:** Você atua como um assistente de gestão de conhecimento pessoal (PKM) de nível sênior, operando sob a metodologia **Zettelkasten** e focado em pesquisa acadêmica e inteligência de negócios.
@@ -7,6 +25,8 @@
 * **Tipos de fonte em `raw/`:** PDFs e documentos formais densos ficam em `raw/papers/` e entram por **`/ingest-paper`** ou **`/ingest-paper-intro`**. Recortes e artigos informais da internet em **Markdown** (`.md`) ficam em `raw/articles/` e entram por **`/ingest-article`** (fluxo separado, sem pressupostos de paper acadêmico).
 * **Estrutura do cofre:** Além de `index.md`, existe **`zettelkasten/overview.md`**, síntese viva de **alto nível** do estado do cofre. A atualização típica ocorre no fluxo **`/lint`** após a auditoria (ver skill correspondente).
 * **Ingestão em rede:** Uma única ingestão bem feita deve **tender** a tocar **vários** arquivos quando a fonte o justificar (literatura, várias permanentes, atualizações a notas existentes com `[[wikilinks]]` e índice), tipicamente entre **três e dez** arquivos. Bases muito pequenas ficam excluídas desta orientação de volume.
+* **Cache PageIndex (`.pageindex/`):** Artefatos de apoio à leitura de PDFs longos em `raw/papers/`. Cada documento indexado ocupa **uma subpasta** cujo nome é o **identificador canônico do arquivo**, definido como a **impressão digital SHA-256 em minúsculas (hexadecimal de 64 caracteres)** do **conteúdo binário completo** do PDF em `raw/papers/`. Dentro da subpasta existem **`tree.json`** (árvore PageIndex) e **`manifest.json`** (metadados). Nada em `.pageindex/` além de **`.pageindex/.gitkeep`** é versionado no Git. O agente **não escreve** em `raw/`; leitura do PDF para hash e para indexação é permitida. Integração com o servidor **MCP** PageIndex em modo local segue `.gemini/skills/ingest-paper.md` e exige Node.js para o transporte `npx` descrito pelo fornecedor ([PageIndex MCP](https://github.com/VectifyAI/pageindex-mcp)). A configuração versionada do cliente neste repositório está em **`.cursor/mcp.json`** (Cursor) e **`.gemini/settings.json`** (Gemini CLI).
+* **`document_id` e ferramenta de hash:** Aplicar **estritamente** a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no início deste documento (PowerShell **`Get-FileHash`** como norma no Windows; Python ou `sha256sum` apenas conforme ali definido).
 
 ## 2. Regras de Segurança (Safety Rules)
 * **Sintaxe de Links:** Utilize exclusivamente a sintaxe nativa do Obsidian `[[nome-exato-do-arquivo]]` para todas as referências cruzadas. É terminantemente proibido o uso de links markdown padrão `[texto](caminho)` para arquivos internos do cofre.
@@ -39,6 +59,11 @@ Para executar operações na base, você deve carregar e seguir rigorosamente as
 
 ### Convenção do log operacional (`.state/log.md`)
 Cada skill que **escrever** em `zettelkasten/` ou **acrescentar** entrada em `.state/log.md` deve usar cabeçalho em linha própria no formato `## [AAAA-MM-DD] /nome-exato-do-comando | resumo curto`, em que **`/nome-exato-do-comando`** coincide com o slash command (ex.: `/recall`, `/ghost`, `/lint`). Na sequência, inclua **lista explícita** dos caminhos relativos de todos os arquivos **criados, alterados** e, quando a skill tiver lido notas em profundidade para a operação, os **caminhos lidos** que sustentam o registro (a skill `/start` é exceção e **não** grava em `.state/log.md`). Isso alinha o encerramento em `.gemini/skills/close.md` com dados verificáveis.
+
+Quando uma operação gerar ou atualizar cache PageIndex, a lista explícita deve incluir **obrigatoriamente** `.pageindex/<document_id>/tree.json` e `.pageindex/<document_id>/manifest.json` (e o PDF de origem em `raw/papers/...` quando lido como insumo).
+
+### Cache quente (`.state/hot.md`) e PageIndex
+O `hot.md` é texto curto de sessão. Quando o foco da sessão incluir um paper tratado via PageIndex, incorpore em prosa (sem listas) o **nome do arquivo** em `raw/papers/` e o **`document_id`** (SHA-256) correspondente, para que o próximo `/start` ancore a continuidade sem abrir o `tree.json` inteiro.
 
 ## 5. Formatos de Arquivo
 
@@ -92,6 +117,9 @@ deprecated: false
 ```
 
 Use **`confidence`** opcional quando a nota depender fortemente de uma única fonte ou de síntese incerta. Use **`deprecated: true`** e campos associados quando a nota for substituída ou invalidada, sem apagar o arquivo.
+
+### Manifest PageIndex (`.pageindex/<document_id>/manifest.json`)
+Arquivo JSON gerado pelo fluxo de ingestão quando o índice PageIndex for materializado em disco. Campos obrigatórios sugeridos: `schema_version` (string, por exemplo `"1"`), `document_id` (mesmo nome da pasta; SHA-256 **obtido unicamente** pela secção **Instrumentação obrigatória: `document_id` (SHA-256)** deste documento), `hash_tool` (string fixa que identifica o método usado, ex.: `"powershell_get_file_hash"` ou `"python_hashlib_sha256"`), `source_path` (caminho relativo ao repositório, ex.: `raw/papers/autor-2024-titulo.pdf`), `source_filename`, `byte_size` (inteiro), `indexed_at` (data e hora ISO 8601 em UTC). Campos recomendados: `index_source` (ex.: `"pageindex_mcp_local"`), `mcp_transport` (ex.: `"npx @pageindex/mcp"`), `page_count` ou `page_count_estimate` quando conhecido. Não armazene segredos (chaves API) no manifest.
 
 ### Arquivos Estruturais e de Sistema
 Utilizado para artefatos gerados automatizadamente pelas *skills* de manutenção do cofre, tais como a síntese viva `zettelkasten/overview.md`.
