@@ -10,11 +10,26 @@ Acionado quando o usuário disser `gemini "Execute a skill /ingest-paper no arqu
 
 ## Fluxo de Execução (Workflow)
 
+### PageIndex (MCP local) e cache em `.pageindex/`
+Use este ramo quando o documento for **grande** (muitas páginas ou uso intensivo de contexto), quando o usuário pedir explicitamente PageIndex, ou quando a leitura integral do PDF na Etapa 1 for impraticável no ambiente.
+
+**Pré-requisito humano:** o cliente (Gemini CLI, Cursor ou outro compatível com MCP) deve ter o servidor PageIndex em modo **local** conforme o fornecedor: comando `npx`, argumentos `-y` e `@pageindex/mcp` (Node.js ≥ 18). Referência: repositório [VectifyAI/pageindex-mcp](https://github.com/VectifyAI/pageindex-mcp).
+
+**Identificador único (`document_id`):** calcule a impressão digital **SHA-256** do arquivo binário completo em `raw/papers/`, representada como **64 caracteres hexadecimais em minúsculas**. Essa string é o nome da subpasta. Siga **somente** a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no topo do `GEMINI.md` (ferramenta normativa: PowerShell **`Get-FileHash`** no Windows); não derive o hash por leitura parcial do PDF no modelo nem por APIs não determinísticas. No **`manifest.json`**, preencha **`hash_tool`** conforme o método usado (ex.: `powershell_get_file_hash` ou `python_hashlib_sha256`). Se já existir `.pageindex/<document_id>/tree.json` com `manifest.json` cujo `source_path` e `byte_size` coincidam com o PDF atual, **reutilize** o cache, salvo instrução do usuário em contrário.
+
+**Persistência no repositório:** após obter a árvore PageIndex (via ferramentas expostas pelo MCP), grave **exatamente** estes arquivos (crie a pasta se necessário):
+1. `.pageindex/<document_id>/tree.json` — saída estrutural PageIndex (JSON).
+2. `.pageindex/<document_id>/manifest.json` — metadados conforme o `GEMINI.md` (seção Manifest PageIndex), incluindo `indexed_at` em UTC, `index_source: "pageindex_mcp_local"` e `mcp_transport` descrevendo o `npx` utilizado.
+
+**Leitura na Etapa 1:** em vez de depender só da leitura integral do PDF no contexto, utilize o `tree.json` (e ferramentas MCP adicionais, se disponíveis) para mapear seções, pedir confirmação de cobertura metodológica quando fizer sentido, e ancorar citações. O PDF em `raw/papers/` permanece a fonte de verdade para trechos citados.
+
+**Log e cache quente:** ao criar ou atualizar o cache, a entrada em `.state/log.md` deve listar **obrigatoriamente** o PDF, `tree.json` e `manifest.json`. Ao atualizar `.state/hot.md` na Etapa 4, mencione em prosa o nome do PDF e o `document_id` quando esta ingestão tiver usado PageIndex, conforme o `GEMINI.md`.
+
 ### Meta de amplitude (ingestão em rede)
 Numa única execução bem-sucedida, **planeje tocar vários arquivos** quando a fonte o justificar: literatura nova, notas permanentes novas ou atualizadas, `index.md`, cruzamentos com `[[wikilinks]]`. **Não** edite `zettelkasten/overview.md` nesta skill; a regeneração fica a cargo do **`/lint`**. A meta orientadora é **entre três e dez** arquivos; bases muito pequenas ficam isentas de volume mínimo, mas não de **intenção** de integrar a rede.
 
 ### Etapa 1: Leitura e Mapeamento Preliminar
-1. Acesse e leia integralmente o documento especificado em `raw/papers/` (formato suportado pelo ambiente, em geral PDF).
+1. Acesse o documento em `raw/papers/`. Se o fluxo **PageIndex (MCP local)** se aplicar, siga a subseção acima antes de sintetizar; caso contrário, leia integralmente o documento (formato suportado pelo ambiente, em geral PDF).
 2. Identifique os metadados acadêmicos (autores, título, ano, publicação) e construa a referência bibliográfica rigorosa no padrão **ABNT**.
 3. Formule um resumo geral do documento capturando o problema de pesquisa, a metodologia aplicada e os resultados alcançados.
 4. Isole os conceitos-chave, variáveis estatísticas ou constructos teóricos abordados no texto.
