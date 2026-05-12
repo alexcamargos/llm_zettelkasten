@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "pageindex": {
+      "command": "npx",
+      "args": ["-y", "@pageindex/mcp"],
+      "timeout": 600000
+    }
+  }
+}
