@@ -14,6 +14,7 @@ Acionado quando o usuário disser `gemini "Execute a skill /start"` ou `gemini "
 1. Acesse e leia o arquivo `.state/hot.md` para absorver o foco atual, as questões em aberto e as decisões mais recentes da última sessão.
 2. Leia as últimas 5 entradas do arquivo `.state/log.md` para compreender o volume e o tipo de operações realizadas recentemente.
 3. Leia `zettelkasten/overview.md` quando existir, para alinhar o briefing com a síntese viva do cofre (última regeneração típica via `/lint`).
+4. Se as últimas entradas de `.state/log.md` mencionarem caminhos sob `.pageindex/`, incorpore no briefing (em prosa, sem listas) que há **índice PageIndex** associado aos PDFs indicados, sem carregar o `tree.json` completo na resposta.
 
 ### Etapa 2: Elaboração do Briefing de Abertura (Aplicação Rigorosa de Estilo)
 Gere um resumo de situação para o usuário. A redação deste texto DEVE obedecer integralmente às **Regras Globais de Estilo**:
