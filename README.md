@@ -15,7 +15,13 @@ Para garantir o funcionamento perfeito do agente local acionado pelo terminal, o
 llm_zettelkasten/
 ├── README.md
 ├── GEMINI.md
+├── .gitignore
+├── .pageindex/
+│   └── .gitkeep
+├── .cursor/
+│   └── mcp.json
 ├── .gemini/
+│   ├── settings.json
 │   └── skills/
 │       ├── start.md
 │       ├── ingest-paper.md
@@ -46,7 +52,7 @@ llm_zettelkasten/
     └── syntheses/
 ```
 
-Pastas sem notas ainda usam um arquivo **`.gitkeep`** (vazio) para o Git versionar o diretório; pode remover o `.gitkeep` quando existirem outros arquivos estáveis na mesma pasta.
+Pastas sem notas ainda usam um arquivo **`.gitkeep`** (vazio) para o Git versionar o diretório; pode remover o `.gitkeep` quando existirem outros arquivos estáveis na mesma pasta. A pasta **`.pageindex/`** segue o mesmo padrão: só o **`.gitkeep`** entra no Git; `tree.json` e `manifest.json` gerados por ingestão com PageIndex ficam ignorados pelo `.gitignore` na raiz.
 
 ## Instruções de Configuração e Integração
 
@@ -58,6 +64,14 @@ O usuário deve clonar o repositório para o disco local utilizando um cliente d
 
 ### Gemini CLI
 Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `GEMINI.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
+
+### MCP PageIndex (Cursor e Gemini CLI)
+O repositório inclui configuração do servidor **PageIndex** em modo local via **`npx -y @pageindex/mcp`** ([repositório oficial](https://github.com/VectifyAI/pageindex-mcp)). É necessário **Node.js 18 ou superior** e o comando `npx` disponível no PATH.
+
+- **Cursor:** `.cursor/mcp.json` registra o servidor `pageindex`. Após alterações, reinicie o Cursor para recarregar os servidores MCP.
+- **Gemini CLI:** `.gemini/settings.json` declara o mesmo servidor em `mcpServers`, com `timeout` alargado para indexação de PDFs longos. Detalhes do protocolo estão na [documentação de MCP do Gemini CLI](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html).
+
+Para usar o endpoint HTTP com chave de API em vez do `npx` local, substitua a entrada por `httpUrl` e `headers` conforme [PageIndex MCP for Developers](https://docs.pageindex.ai/mcp); evite commitar segredos no repositório.
 
 ### Prontidão Operacional
 Com o CLI na raiz e o `GEMINI.md` presente, o ambiente está pronto para `/start` e demais comandos descritos no schema.
