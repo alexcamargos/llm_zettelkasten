@@ -1,0 +1,3 @@
+# Cache PageIndex: artefatos gerados localmente (árvore e manifest) não entram no Git.
+.pageindex/*
+!.pageindex/.gitkeep
