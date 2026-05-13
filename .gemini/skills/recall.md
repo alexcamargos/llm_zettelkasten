@@ -14,8 +14,9 @@ Acionado quando o usuário disser `gemini "Execute a skill /recall sobre [tópic
 1. Acesse e leia o arquivo `zettelkasten/index.md` para mapear todas as Notas Permanentes e Notas de Literatura que possuam relação semântica com o tópico solicitado.
 2. Leia `zettelkasten/overview.md` para alinhar o dossiê com a síntese viva do cofre quando existir conteúdo útil.
 3. Acesse e leia integralmente os arquivos identificados para absorver o contexto exato e as conexões armazenadas na base.
-4. Quando notas de literatura relevantes referenciarem `raw/papers/` e existir cache PageIndex, localize `.pageindex/<document_id>/manifest.json` cujo `source_path` coincida com o PDF (o `document_id` é o SHA-256 do binário conforme a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no `GEMINI.md`) e, se fizer sentido para o tópico, leia trechos pontuais de `.pageindex/<document_id>/tree.json` em vez de assumir leitura integral do PDF.
-5. Avalie explicitamente se o tópico solicitado já está coberto por pelo menos uma Nota Permanente adequada. Se existir apenas cobertura indireta, trate como lacuna parcial.
+4. Quando notas de literatura relevantes referenciarem `raw/papers/` e existir cache PageIndex, localize `.pageindex/<document_id>/manifest.json` cujo `source_path` coincida com o PDF (o `document_id` é o SHA-256 do binário conforme a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no `GEMINI.md`). Use `.pageindex/<document_id>/tree.json` apenas para localizar seções relevantes, confirmar a cobertura temática do paper e orientar um retorno seletivo à fonte primária. O cache PageIndex não deve ser tratado como base primária de afirmações conceituais, teóricas ou metodológicas no dossiê do `/recall`.
+5. Quando a síntese depender de um detalhe não preservado com segurança nas notas do cofre, utilize o PageIndex para apontar a região relevante do paper e então confira a nota de literatura correspondente ou o PDF original antes de consolidar a afirmação.
+6. Avalie explicitamente se o tópico solicitado já está coberto por pelo menos uma Nota Permanente adequada. Se existir apenas cobertura indireta, trate como lacuna parcial.
 
 ### Etapa 2: Síntese e Exposição (Aplicação Rigorosa de Estilo)
 Apresente ao usuário um dossiê preliminar com os achados. A geração deste texto DEVE respeitar integralmente as Regras Globais de Estilo:
