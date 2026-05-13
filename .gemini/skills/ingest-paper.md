@@ -11,7 +11,7 @@ Acionado quando o usuário disser `gemini "Execute a skill /ingest-paper no arqu
 ## Fluxo de Execução (Workflow)
 
 ### PageIndex (MCP local) e cache em `.pageindex/`
-Use este ramo quando o documento for **grande** (muitas páginas ou uso intensivo de contexto), quando o usuário pedir explicitamente PageIndex, ou quando a leitura integral do PDF na Etapa 1 for impraticável no ambiente.
+Use este ramo conforme os seguintes critérios de tamanho e complexidade do PDF. Para documentos com **até 10 páginas**, adote leitura linear como padrão, salvo quando o PDF tiver OCR ruim, navegação difícil ou quando o usuário pedir explicitamente o uso de PageIndex. Para documentos entre **11 e 20 páginas**, trate o caso como zona cinzenta e use PageIndex quando houver densidade metodológica elevada, muitas tabelas, apêndices relevantes, OCR fraco ou necessidade provável de múltiplos retornos ao texto para confirmar método, variáveis ou resultados. Para documentos com **mais de 20 páginas**, use PageIndex por padrão. Em qualquer faixa, prefira este ramo quando a leitura integral do PDF na Etapa 1 for impraticável no ambiente.
 
 **Pré-requisito humano:** o cliente (Gemini CLI, Cursor ou outro compatível com MCP) deve ter o servidor PageIndex em modo **local** conforme o fornecedor: comando `npx`, argumentos `-y` e `@pageindex/mcp` (Node.js ≥ 18). Referência: repositório [VectifyAI/pageindex-mcp](https://github.com/VectifyAI/pageindex-mcp).
 
