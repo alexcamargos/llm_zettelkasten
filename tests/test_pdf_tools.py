@@ -4,7 +4,13 @@ import json
 from pathlib import Path
 
 import pytest
-from tools_pdf import list_pageindex_manifests, read_pageindex_cache, sha256_file
+from tools_pdf import (
+    list_pageindex_manifests,
+    read_pageindex_cache,
+    read_pageindex_page,
+    resolve_pdf_cache,
+    sha256_file,
+)
 
 
 def test_sha256_file(tmp_path: Path) -> None:
@@ -51,6 +57,58 @@ def test_list_and_read_pageindex_cache(tmp_path: Path) -> None:
     assert cache["found"] is True
     assert cache["matches"][0]["page"] == 1
     assert "credito" in cache["matches"][0]["excerpt"]
+
+
+def test_resolve_pdf_cache_by_source_path(tmp_path: Path) -> None:
+    vault = tmp_path / "vault"
+    raw_papers = vault / "raw" / "papers"
+    pageindex_root = vault / ".pageindex"
+    raw_papers.mkdir(parents=True)
+    pageindex_root.mkdir()
+    pdf_path = raw_papers / "teste.pdf"
+    pdf_path.write_bytes(b"abc")
+    document_id = sha256_file(pdf_path)
+    document_root = pageindex_root / document_id
+    document_root.mkdir()
+    (document_root / "manifest.json").write_text(
+        json.dumps({"source_path": "raw/papers/teste.pdf"}),
+        encoding="utf-8",
+    )
+
+    resolved = resolve_pdf_cache(vault, raw_papers, pageindex_root, "raw/papers/teste.pdf")
+
+    assert resolved["document_id"] == document_id
+    assert resolved["cache_found"] is True
+    assert resolved["manifest"]["source_path"] == "raw/papers/teste.pdf"
+
+
+def test_read_pageindex_page_returns_page_text(tmp_path: Path) -> None:
+    document_id = "b" * 64
+    document_root = tmp_path / document_id
+    document_root.mkdir()
+    (document_root / "manifest.json").write_text(
+        json.dumps({"document_id": document_id, "source_path": "raw/papers/teste.pdf"}),
+        encoding="utf-8",
+    )
+    (document_root / "tree.json").write_text(
+        json.dumps(
+            {
+                "nodes": [
+                    {"page": 1, "text": "conteudo da primeira pagina"},
+                    {"page": 2, "heading": "Segunda pagina", "content": "conteudo relevante"},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    page = read_pageindex_page(tmp_path, document_id, 2)
+
+    assert page["found"] is True
+    assert page["page"] == 2
+    assert page["node_count"] == 1
+    assert "Segunda pagina" in page["text"]
+    assert "conteudo relevante" in page["text"]
 
 
 def test_read_pageindex_cache_rejects_invalid_document_id(tmp_path: Path) -> None:
