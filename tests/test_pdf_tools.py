@@ -1,3 +1,8 @@
+"""Unit tests for the PageIndex layout cache and PDF indexing utilities.
+
+Tests SHA-256 fingerprinting, cache resolution, manifest loading, and cache persistence.
+"""
+
 from __future__ import annotations
 
 import json
@@ -15,16 +20,31 @@ from tools_pdf import (
 
 
 def test_sha256_file(tmp_path: Path) -> None:
+    """Test that sha256_file computes the correct SHA-256 hash for a given file.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     file_path = tmp_path / "paper.pdf"
     file_path.write_bytes(b"abc")
 
     assert sha256_file(file_path) == (
-        "ba7816bf8f01cfea414140de5dae2223"
-        "b00361a396177a9cb410ff61f20015ad"
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
     )
 
 
 def test_list_and_read_pageindex_cache(tmp_path: Path) -> None:
+    """Test retrieving list of manifests and querying page index cache contents.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     document_id = "a" * 64
     document_root = tmp_path / document_id
     document_root.mkdir()
@@ -43,7 +63,11 @@ def test_list_and_read_pageindex_cache(tmp_path: Path) -> None:
         json.dumps(
             {
                 "children": [
-                    {"page": 1, "title": "Modelo PEARLS", "text": "credito e liquidez"},
+                    {
+                        "page": 1,
+                        "title": "Modelo PEARLS",
+                        "text": "credito e liquidez",
+                    },
                     {"page": 2, "title": "Outro tema", "text": "governanca"},
                 ]
             }
@@ -61,6 +85,14 @@ def test_list_and_read_pageindex_cache(tmp_path: Path) -> None:
 
 
 def test_resolve_pdf_cache_by_source_path(tmp_path: Path) -> None:
+    """Test resolving a PDF document ID and manifest by its source path.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     vault = tmp_path / "vault"
     raw_papers = vault / "raw" / "papers"
     pageindex_root = vault / ".pageindex"
@@ -84,6 +116,14 @@ def test_resolve_pdf_cache_by_source_path(tmp_path: Path) -> None:
 
 
 def test_read_pageindex_page_returns_page_text(tmp_path: Path) -> None:
+    """Test extracting layout text of a specific page from PageIndex cache tree.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     document_id = "b" * 64
     document_root = tmp_path / document_id
     document_root.mkdir()
@@ -96,7 +136,11 @@ def test_read_pageindex_page_returns_page_text(tmp_path: Path) -> None:
             {
                 "nodes": [
                     {"page": 1, "text": "conteudo da primeira pagina"},
-                    {"page": 2, "heading": "Segunda pagina", "content": "conteudo relevante"},
+                    {
+                        "page": 2,
+                        "heading": "Segunda pagina",
+                        "content": "conteudo relevante",
+                    },
                 ]
             }
         ),
@@ -112,7 +156,17 @@ def test_read_pageindex_page_returns_page_text(tmp_path: Path) -> None:
     assert "conteudo relevante" in page["text"]
 
 
-def test_persist_pageindex_cache_writes_tree_and_manifest(tmp_path: Path) -> None:
+def test_persist_pageindex_cache_writes_tree_and_manifest(
+    tmp_path: Path,
+) -> None:
+    """Test creating and saving a tree JSON and manifest file for a given PDF.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     vault = tmp_path / "vault"
     raw_papers = vault / "raw" / "papers"
     pageindex_root = vault / ".pageindex"
@@ -140,7 +194,17 @@ def test_persist_pageindex_cache_writes_tree_and_manifest(tmp_path: Path) -> Non
     assert manifest["page_count_estimate"] == 3
 
 
-def test_persist_pageindex_cache_rejects_invalid_tree_json(tmp_path: Path) -> None:
+def test_persist_pageindex_cache_rejects_invalid_tree_json(
+    tmp_path: Path,
+) -> None:
+    """Test that persist_pageindex_cache raises ValueError on malformed tree input.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     vault = tmp_path / "vault"
     raw_papers = vault / "raw" / "papers"
     pageindex_root = vault / ".pageindex"
@@ -157,6 +221,16 @@ def test_persist_pageindex_cache_rejects_invalid_tree_json(tmp_path: Path) -> No
         )
 
 
-def test_read_pageindex_cache_rejects_invalid_document_id(tmp_path: Path) -> None:
+def test_read_pageindex_cache_rejects_invalid_document_id(
+    tmp_path: Path,
+) -> None:
+    """Test that read_pageindex_cache validates the document ID structure.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     with pytest.raises(ValueError, match="document_id"):
         read_pageindex_cache(tmp_path, "../invalid")
