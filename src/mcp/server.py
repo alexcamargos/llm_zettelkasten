@@ -15,8 +15,13 @@ if str(MCP_TOOLS_ROOT) not in sys.path:
     sys.path.insert(0, str(MCP_TOOLS_ROOT))
 
 from tools_file import list_markdown_files, read_markdown_file
-from tools_pdf import find_pageindex_manifest, sha256_file
-from tools_search import lexical_search
+from tools_pdf import (
+    find_pageindex_manifest,
+    list_pageindex_manifests,
+    read_pageindex_cache,
+    sha256_file,
+)
+from tools_search import hybrid_search
 
 from config import load_settings
 from logger import configure_logging, log_skill_execution
@@ -33,6 +38,7 @@ def health() -> dict[str, Any]:
         "zettelkasten_path": str(settings.zettelkasten_path),
         "raw_articles_path": str(settings.raw_articles_path),
         "youtube_playlist_configured": bool(settings.youtube_playlist_id),
+        "qmd_command": settings.qmd_command,
     }
 
 
@@ -40,7 +46,12 @@ def health() -> dict[str, Any]:
 def search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
     return [
         result.__dict__
-        for result in lexical_search(settings.zettelkasten_path, query, limit=limit)
+        for result in hybrid_search(
+            settings.zettelkasten_path,
+            query,
+            limit=limit,
+            qmd_command=settings.qmd_command,
+        )
     ]
 
 
@@ -58,6 +69,25 @@ def read_zettelkasten_markdown(relative_path: str) -> str:
 def inspect_pdf_manifest(source_path: str) -> dict[str, Any]:
     manifest = find_pageindex_manifest(settings.vault_path / ".pageindex", source_path)
     return manifest or {"found": False, "source_path": source_path}
+
+
+@log_skill_execution
+def list_pdf_manifests() -> list[dict[str, Any]]:
+    return list_pageindex_manifests(settings.vault_path / ".pageindex")
+
+
+@log_skill_execution
+def read_pdf_cache(
+    document_id: str,
+    query: str | None = None,
+    limit: int = 5,
+) -> dict[str, Any]:
+    return read_pageindex_cache(
+        settings.vault_path / ".pageindex",
+        document_id,
+        query=query,
+        limit=limit,
+    )
 
 
 @log_skill_execution
@@ -86,6 +116,8 @@ def build_server() -> Any:
     server.tool()(list_zettelkasten_markdown)
     server.tool()(read_zettelkasten_markdown)
     server.tool()(inspect_pdf_manifest)
+    server.tool()(list_pdf_manifests)
+    server.tool()(read_pdf_cache)
     server.tool()(compute_pdf_sha256)
     return server
 
