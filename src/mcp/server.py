@@ -24,6 +24,7 @@ from tools_embeddings import build_embedding_index, embedding_status, semantic_s
 from tools_file import list_markdown_files, read_markdown_file
 from tools_pdf import (
     find_pageindex_manifest,
+    index_pdf_with_command,
     list_pageindex_manifests,
     persist_pageindex_cache,
     read_pageindex_cache,
@@ -54,7 +55,10 @@ def health() -> dict[str, Any]:
         "raw_articles_path": str(settings.raw_articles_path),
         "youtube_playlist_configured": bool(settings.youtube_playlist_id),
         "qmd_command": settings.qmd_command,
+        "pageindex_command_configured": bool(settings.pageindex_command),
+        "embedding_provider": settings.embedding_provider,
         "embedding_model_name": settings.embedding_model_name,
+        "embedding_endpoint": settings.embedding_endpoint,
         "embedding_index_path": str(settings.embedding_index_path),
     }
 
@@ -84,8 +88,10 @@ def search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
             settings.embedding_index_path,
             query,
             limit=limit,
+            provider=settings.embedding_provider,
             dimensions=settings.embedding_dimensions,
             model_name=settings.embedding_model_name,
+            endpoint=settings.embedding_endpoint,
         )
         results = merge_search_results(
             primary_results,
@@ -113,7 +119,9 @@ def embedding_health() -> dict[str, Any]:
     """Return status for the local semantic embedding index."""
     return embedding_status(
         settings.embedding_index_path,
+        provider=settings.embedding_provider,
         model_name=settings.embedding_model_name,
+        endpoint=settings.embedding_endpoint,
         dimensions=settings.embedding_dimensions,
     ).__dict__
 
@@ -124,8 +132,10 @@ def index_zettelkasten_embeddings() -> dict[str, Any]:
     index = build_embedding_index(
         settings.zettelkasten_path,
         settings.embedding_index_path,
+        provider=settings.embedding_provider,
         dimensions=settings.embedding_dimensions,
         model_name=settings.embedding_model_name,
+        endpoint=settings.embedding_endpoint,
     )
     return {
         "provider": index["provider"],
@@ -147,8 +157,10 @@ def semantic_search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, A
             settings.embedding_index_path,
             query,
             limit=limit,
+            provider=settings.embedding_provider,
             dimensions=settings.embedding_dimensions,
             model_name=settings.embedding_model_name,
+            endpoint=settings.embedding_endpoint,
         )
     ]
 
@@ -278,6 +290,18 @@ def persist_pdf_cache(relative_path: str, tree_json: str) -> dict[str, Any]:
 
 
 @log_skill_execution
+def index_pdf_cache(relative_path: str) -> dict[str, Any]:
+    """Run the configured external PageIndex command and persist its cache output."""
+    return index_pdf_with_command(
+        settings.vault_path,
+        settings.raw_papers_path,
+        settings.vault_path / ".pageindex",
+        relative_path,
+        pageindex_command=settings.pageindex_command,
+    )
+
+
+@log_skill_execution
 def compute_pdf_sha256(relative_path: str) -> dict[str, str]:
     """Compute the SHA-256 checksum for a PDF inside raw/papers.
 
@@ -329,6 +353,7 @@ def build_server() -> Any:
     server.tool()(resolve_pdf)
     server.tool()(read_pdf_page)
     server.tool()(persist_pdf_cache)
+    server.tool()(index_pdf_cache)
     server.tool()(compute_pdf_sha256)
     return server
 
