@@ -1,5 +1,10 @@
 {
   "mcpServers": {
+    "ZettelkastenBrain": {
+      "command": "uv",
+      "args": ["run", "zettel-mcp"],
+      "timeout": 600000
+    },
     "pageindex": {
       "command": "npx",
       "args": ["-y", "@pageindex/mcp"],
