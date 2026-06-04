@@ -11,7 +11,14 @@ from types import SimpleNamespace
 
 import pytest
 from tools_file import list_markdown_files, read_markdown_file
-from tools_search import hybrid_search, lexical_search, qmd_search, retrieval_status
+from tools_search import (
+    SearchResult,
+    hybrid_search,
+    lexical_search,
+    merge_search_results,
+    qmd_search,
+    retrieval_status,
+)
 
 
 def test_lexical_search_returns_ranked_results(tmp_path: Path) -> None:
@@ -119,3 +126,36 @@ def test_file_tools_are_limited_to_markdown_inside_root(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError):
         read_markdown_file(tmp_path, "note.txt")
+
+
+def test_merge_search_results_deduplicates_and_combines_engines() -> None:
+    """Test local hybrid result merging combines scores and engine labels."""
+    merged = merge_search_results(
+        [
+            SearchResult(
+                path="a.md",
+                score=1.5,
+                excerpt="credito",
+                engine="bm25",
+            )
+        ],
+        [
+            SearchResult(
+                path="a.md",
+                score=0.5,
+                excerpt="risco",
+                engine="hash-embedding",
+            ),
+            SearchResult(
+                path="b.md",
+                score=0.7,
+                excerpt="pearls",
+                engine="hash-embedding",
+            ),
+        ],
+        limit=2,
+    )
+
+    assert [result.path for result in merged] == ["a.md", "b.md"]
+    assert merged[0].score == 2.0
+    assert merged[0].engine == "bm25+hash-embedding"
