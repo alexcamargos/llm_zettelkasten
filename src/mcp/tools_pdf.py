@@ -102,6 +102,18 @@ def index_pdf_with_command(
     The command is configured without the target PDF path; this function appends
     the validated absolute PDF path as the final argument and expects stdout to
     be a JSON object/list compatible with `persist_pageindex_cache`.
+
+    Args:
+        vault_path: Root Path of the vault.
+        raw_papers_path: Root Path of the raw papers folder.
+        pageindex_root: Base Path to the .pageindex folder.
+        relative_path: The relative path of the PDF document.
+        pageindex_command: Optional external command executable string.
+        timeout_seconds: Timeout threshold for running the index process. Defaults to 120.
+
+    Returns:
+        dict[str, Any]: Resolution status map containing source path, document ID,
+            cache presence, and loaded manifest (if available).
     """
     pdf_path = _safe_pdf_path(vault_path, raw_papers_path, relative_path)
     if not pageindex_command:
