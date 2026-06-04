@@ -18,6 +18,7 @@ class Settings:
     zettelkasten_path: Path
     logs_path: Path
     youtube_playlist_id: str | None
+    qmd_command: str | None
     llm_model_name: str
     embedding_model_name: str
 
@@ -48,6 +49,7 @@ def load_settings(
         ),
         logs_path=_resolve_path(os.getenv("LOGS_PATH", "logs"), vault_path),
         youtube_playlist_id=_empty_to_none(os.getenv("YOUTUBE_PLAYLIST_ID")),
+        qmd_command=_empty_to_none(os.getenv("QMD_COMMAND", "qmd")),
         llm_model_name=os.getenv("LLM_MODEL_NAME", "gemini-2.5-pro"),
         embedding_model_name=os.getenv("EMBEDDING_MODEL_NAME", "nomic-embed-text"),
     )
