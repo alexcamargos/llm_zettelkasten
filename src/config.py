@@ -33,8 +33,11 @@ class Settings:
         logs_path: Path where log files are written.
         youtube_playlist_id: ID of the YouTube playlist for the ETL pipeline.
         qmd_command: Name of/path to the qmd CLI executable.
+        pageindex_command: Optional external command that indexes a PDF and prints tree JSON.
         llm_model_name: Name of the default LLM model to be used.
+        embedding_provider: Embedding backend name, such as hashing or ollama.
         embedding_model_name: Name of the default embedding model.
+        embedding_endpoint: Local embedding endpoint URL, when provider needs one.
         embedding_index_path: Path to the local embedding index JSON file.
         embedding_dimensions: Number of dimensions in the local embedding vector.
     """
@@ -47,8 +50,11 @@ class Settings:
     logs_path: Path
     youtube_playlist_id: str | None
     qmd_command: str | None
+    pageindex_command: str | None
     llm_model_name: str
+    embedding_provider: str
     embedding_model_name: str
+    embedding_endpoint: str | None
     embedding_index_path: Path
     embedding_dimensions: int
 
@@ -84,13 +90,18 @@ def load_settings(env_path: Path | str | None = None, *, require_youtube: bool =
         logs_path=_resolve_path(os.getenv("LOGS_PATH", "logs"), vault_path),
         youtube_playlist_id=_empty_to_none(os.getenv("YOUTUBE_PLAYLIST_ID")),
         qmd_command=_empty_to_none(os.getenv("QMD_COMMAND", "qmd")),
+        pageindex_command=_empty_to_none(os.getenv("PAGEINDEX_COMMAND")),
         llm_model_name=os.getenv("LLM_MODEL_NAME", "gemini-2.5-pro"),
+        embedding_provider=os.getenv("EMBEDDING_PROVIDER", "hashing").strip().lower(),
         embedding_model_name=os.getenv("EMBEDDING_MODEL_NAME", "nomic-embed-text"),
+        embedding_endpoint=_empty_to_none(
+            os.getenv("EMBEDDING_ENDPOINT", "http://localhost:11434/api/embeddings")
+        ),
         embedding_index_path=_resolve_path(
             os.getenv("EMBEDDING_INDEX_PATH", ".state/embeddings_index.json"),
             vault_path,
         ),
-        embedding_dimensions=int(os.getenv("EMBEDDING_DIMENSIONS", "256")),
+        embedding_dimensions=_parse_positive_int(os.getenv("EMBEDDING_DIMENSIONS", "256")),
     )
     _validate_settings(settings, require_youtube=require_youtube)
     return settings
@@ -168,6 +179,17 @@ def _empty_to_none(value: str | None) -> str | None:
     return stripped or None
 
 
+def _parse_positive_int(value: str | None) -> int:
+    """Parse a positive integer environment value."""
+    try:
+        parsed = int(value or "0")
+    except ValueError as exc:
+        raise ConfigError("EMBEDDING_DIMENSIONS deve ser um inteiro positivo.") from exc
+    if parsed <= 0:
+        raise ConfigError("EMBEDDING_DIMENSIONS deve ser um inteiro positivo.")
+    return parsed
+
+
 def _validate_settings(settings: Settings, *, require_youtube: bool) -> None:
     """Validate that required paths exist and check for YouTube config if required.
 
@@ -196,3 +218,9 @@ def _validate_settings(settings: Settings, *, require_youtube: bool) -> None:
 
     if require_youtube and not settings.youtube_playlist_id:
         raise ConfigError("YOUTUBE_PLAYLIST_ID e obrigatorio para o ETL do YouTube.")
+
+    if settings.embedding_provider not in {"hashing", "ollama"}:
+        raise ConfigError("EMBEDDING_PROVIDER deve ser 'hashing' ou 'ollama'.")
+
+    if settings.embedding_provider == "ollama" and not settings.embedding_endpoint:
+        raise ConfigError("EMBEDDING_ENDPOINT e obrigatorio para EMBEDDING_PROVIDER=ollama.")
