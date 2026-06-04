@@ -36,7 +36,8 @@ llm_zettelkasten/
 │       └── close.md
 ├── .state/
 │       ├── hot.md
-│       └── log.md
+│       ├── log.md
+│       └── embeddings_index.json  # gerado localmente, ignorado pelo Git
 ├── raw/
 │   ├── papers/
 │   ├── articles/
@@ -71,7 +72,10 @@ O repositório agora inclui a primeira camada do motor Python previsto na arquit
 
 O arquivo `.env.example` documenta as variáveis esperadas. O `.env` local fica ignorado pelo Git e deve conter, no mínimo, `OBSIDIAN_VAULT_PATH`, `HISTORICO_INGESTAO_PATH`, `RAW_ARTICLES_PATH`, `RAW_PAPERS_PATH`, `ZETTELKASTEN_PATH`, `LOGS_PATH` e `YOUTUBE_PLAYLIST_ID`. Para validar o servidor sem iniciar o transporte MCP, rode `uv run python src/mcp/server.py --health-json`. Para testar o ETL sem gravar transcrições, rode `uv run python src/ingestion/youtube_etl.py --dry-run --limit 3`.
 
-As configurações `.gemini/settings.json` e `.cursor/mcp.json` registram o servidor `ZettelkastenBrain` via `uv run zettel-mcp`, mantendo o servidor `pageindex` em paralelo até a substituição completa da integração externa. As ferramentas MCP novas cobrem busca híbrida com fallback lexical, leitura segura de Markdown do cofre, inspeção de manifests PageIndex, resolução de PDF por SHA-256, persistência validada de `tree.json` e `manifest.json`, leitura de página cacheada e consulta ao cache `.pageindex/<document_id>/tree.json`.
+As configurações `.gemini/settings.json` e `.cursor/mcp.json` registram o servidor `ZettelkastenBrain` via `uv run zettel-mcp`, mantendo o servidor `pageindex` em paralelo até a substituição completa da integração externa. As ferramentas MCP novas cobrem busca híbrida com fallback BM25 local, status de disponibilidade do `qmd`, índice semântico local por embeddings de hashing, leitura segura de Markdown do cofre, inspeção de manifests PageIndex, resolução de PDF por SHA-256, persistência validada de `tree.json` e `manifest.json`, leitura de página cacheada e consulta ao cache `.pageindex/<document_id>/tree.json`.
+
+### Embeddings Locais
+O servidor MCP expõe `embedding_health`, `index_zettelkasten_embeddings` e `semantic_search_zettelkasten`. A implementação atual usa embeddings determinísticos por hashing normalizado em `.state/embeddings_index.json`, funcionando como fallback offline e reprodutível até a substituição por um provedor vetorial real como `nomic-embed-text` em CPU local. O arquivo de índice é cache operacional e fica ignorado pelo Git.
 
 ### MCP PageIndex (Cursor e Gemini CLI)
 O repositório inclui configuração do servidor **PageIndex** em modo local via **`npx -y @pageindex/mcp`** ([repositório oficial](https://github.com/VectifyAI/pageindex-mcp)). É necessário **Node.js 18 ou superior** e o comando `npx` disponível no PATH. No fluxo **`/ingest-paper`**, o uso de PageIndex segue critérios operacionais definidos nas skills: leitura linear tende a bastar em PDFs com até **10 páginas**; entre **11 e 20 páginas**, a decisão depende da densidade metodológica, presença de tabelas, apêndices, qualidade do OCR e custo de navegação; acima de **20 páginas**, o uso de PageIndex passa a ser o padrão.
@@ -87,7 +91,7 @@ Com o CLI na raiz e o `GEMINI.md` presente, o ambiente está pronto para `/start
 ### Escala do cofre (opcional)
 Enquanto o volume for modesto, **`index.md`** mais leitura dirigida costumam bastar. Quando o número de notas crescer (centenas de páginas ou descoberta pelo índice deixar de ser prática), considere ferramentas **externas** ao repositório, sem torná-las obrigatórias:
 
-- **[qmd](https://github.com/tobi/qmd)** — busca local híbrida (BM25 e vetorial) com CLI e servidor MCP, útil para pré-filtrar antes de o agente abrir arquivos.
+- **[qmd](https://github.com/tobi/qmd)** — busca local híbrida (BM25 e vetorial) com CLI e servidor MCP, útil para pré-filtrar antes de o agente abrir arquivos. Enquanto o índice real do `qmd` não estiver validado, o MCP usa BM25 local e embeddings de hashing como fallback offline.
 - **Obsidian CLI** (a partir do Obsidian 1.12) — acesso programático ao cache do vault; exige Obsidian instalado e documentação atual da sua versão. Reduz custo de varreduras puramente por sistema de arquivos em cofres muito grandes.
 
 ## Conclusão da Preparação
