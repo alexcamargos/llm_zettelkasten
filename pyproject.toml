@@ -12,6 +12,10 @@ dependencies = [
     "youtube-transcript-api>=1.0.3",
 ]
 
+[project.scripts]
+zettel-mcp = "zettel_mcp:main"
+zettel-youtube-etl = "ingestion.youtube_etl:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
@@ -24,7 +28,7 @@ package = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "src/mcp"]
-addopts = "--basetemp=.pytest-tmp"
+addopts = "-p no:cacheprovider"
 
 [tool.ruff]
 line-length = 100
@@ -32,6 +36,7 @@ target-version = "py312"
 exclude = [
     ".git",
     ".pytest-tmp",
+    ".tmp",
     ".ruff_cache",
     ".uv-cache",
     ".venv",
