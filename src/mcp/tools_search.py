@@ -11,6 +11,7 @@ import shlex
 import shutil
 import subprocess
 from dataclasses import dataclass
+from math import log
 from pathlib import Path
 
 
@@ -22,13 +23,21 @@ class SearchResult:
         path: Relative forward-slash path to the matched markdown file.
         score: Relevance score integer (higher is more relevant).
         excerpt: Snippet of matching text around the keywords.
-        engine: The search engine used (e.g., 'lexical' or 'qmd').
+        engine: The search engine used (e.g., 'bm25' or 'qmd').
     """
 
     path: str
-    score: int
+    score: float
     excerpt: str
-    engine: str = "lexical"
+    engine: str = "bm25"
+
+
+@dataclass(frozen=True)
+class RetrievalStatus:
+    qmd_configured: bool
+    qmd_available: bool
+    qmd_command: str | None
+    fallback_engine: str = "bm25"
 
 
 def hybrid_search(
@@ -56,8 +65,20 @@ def hybrid_search(
     return lexical_search(root, query, limit=limit)
 
 
+def retrieval_status(qmd_command: str | None = "qmd") -> RetrievalStatus:
+    """Return availability information for the retrieval stack."""
+    if not qmd_command:
+        return RetrievalStatus(qmd_configured=False, qmd_available=False, qmd_command=None)
+    executable = shlex.split(qmd_command)[0]
+    return RetrievalStatus(
+        qmd_configured=True,
+        qmd_available=shutil.which(executable) is not None,
+        qmd_command=qmd_command,
+    )
+
+
 def lexical_search(root: Path, query: str, *, limit: int = 8) -> list[SearchResult]:
-    """Scan files using regex counting to rank documents by term match density.
+    """Scan files using local BM25 ranking.
 
     Args:
         root: Base Path directory of the Zettelkasten vault.
@@ -67,15 +88,35 @@ def lexical_search(root: Path, query: str, *, limit: int = 8) -> list[SearchResu
     Returns:
         list[SearchResult]: Ranked list of SearchResult matches.
     """
-    terms = [term.lower() for term in re.findall(r"\w+", query) if len(term) >= 2]
+    terms = _tokenize(query)
     if not terms:
         return []
 
-    results: list[SearchResult] = []
+    documents: list[tuple[Path, str, list[str]]] = []
     for path in root.rglob("*.md"):
         text = path.read_text(encoding="utf-8", errors="ignore")
-        lowered = text.lower()
-        score = sum(lowered.count(term) for term in terms)
+        tokens = _tokenize(text)
+        if tokens:
+            documents.append((path, text, tokens))
+
+    if not documents:
+        return []
+
+    document_count = len(documents)
+    average_length = sum(len(tokens) for _, _, tokens in documents) / document_count
+    document_frequency = {
+        term: sum(1 for _, _, tokens in documents if term in set(tokens)) for term in set(terms)
+    }
+
+    results: list[SearchResult] = []
+    for path, text, tokens in documents:
+        score = _bm25_score(
+            query_terms=terms,
+            document_terms=tokens,
+            document_frequency=document_frequency,
+            document_count=document_count,
+            average_length=average_length,
+        )
         if score <= 0:
             continue
         results.append(
@@ -183,7 +224,7 @@ def _parse_qmd_output(output: str, *, root: Path, limit: int) -> list[SearchResu
         results.append(
             SearchResult(
                 path=str(relative_path).replace("\\", "/"),
-                score=max(limit - line_number + 1, 1),
+                score=float(max(limit - line_number + 1, 1)),
                 excerpt=excerpt.strip() or line,
                 engine="qmd",
             )
@@ -191,3 +232,37 @@ def _parse_qmd_output(output: str, *, root: Path, limit: int) -> list[SearchResu
         if len(results) >= limit:
             break
     return results
+
+
+def _tokenize(text: str) -> list[str]:
+    return [term.lower() for term in re.findall(r"\w+", text) if len(term) >= 2]
+
+
+def _bm25_score(
+    *,
+    query_terms: list[str],
+    document_terms: list[str],
+    document_frequency: dict[str, int],
+    document_count: int,
+    average_length: float,
+    k1: float = 1.5,
+    b: float = 0.75,
+) -> float:
+    term_counts = {term: document_terms.count(term) for term in set(query_terms)}
+    document_length = len(document_terms)
+    score = 0.0
+
+    for term in query_terms:
+        frequency = term_counts.get(term, 0)
+        if frequency <= 0:
+            continue
+        frequency_in_corpus = document_frequency.get(term, 0)
+        inverse_document_frequency = log(
+            1 + (document_count - frequency_in_corpus + 0.5) / (frequency_in_corpus + 0.5)
+        )
+        denominator = frequency + k1 * (
+            1 - b + b * (document_length / max(average_length, 1.0))
+        )
+        score += inverse_document_frequency * ((frequency * (k1 + 1)) / denominator)
+
+    return round(score, 6)
