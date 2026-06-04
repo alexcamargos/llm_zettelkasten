@@ -118,7 +118,14 @@ def test_resolve_pdf_cache_by_source_path(tmp_path: Path) -> None:
 
 
 def test_index_pdf_with_command_reports_missing_configuration(tmp_path: Path) -> None:
-    """Test PageIndex command bridge reports explicit disabled status."""
+    """Test PageIndex command bridge reports explicit disabled status.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     vault = tmp_path / "vault"
     raw_papers = vault / "raw" / "papers"
     pageindex_root = vault / ".pageindex"
@@ -142,7 +149,15 @@ def test_index_pdf_with_command_persists_stdout_tree(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test external PageIndex bridge persists stdout JSON as tree cache."""
+    """Test external PageIndex bridge persists stdout JSON as tree cache.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
     vault = tmp_path / "vault"
     raw_papers = vault / "raw" / "papers"
     pageindex_root = vault / ".pageindex"
