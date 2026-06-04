@@ -18,6 +18,7 @@ from tools_file import list_markdown_files, read_markdown_file
 from tools_pdf import (
     find_pageindex_manifest,
     list_pageindex_manifests,
+    persist_pageindex_cache,
     read_pageindex_cache,
     read_pageindex_page,
     resolve_pdf_cache,
@@ -108,6 +109,17 @@ def read_pdf_page(document_id: str, page: int) -> dict[str, Any]:
 
 
 @log_skill_execution
+def persist_pdf_cache(relative_path: str, tree_json: str) -> dict[str, Any]:
+    return persist_pageindex_cache(
+        settings.vault_path,
+        settings.raw_papers_path,
+        settings.vault_path / ".pageindex",
+        relative_path,
+        tree_json,
+    )
+
+
+@log_skill_execution
 def compute_pdf_sha256(relative_path: str) -> dict[str, str]:
     pdf_path = (settings.vault_path / relative_path).resolve()
     if settings.raw_papers_path.resolve() not in pdf_path.parents:
@@ -137,6 +149,7 @@ def build_server() -> Any:
     server.tool()(read_pdf_cache)
     server.tool()(resolve_pdf)
     server.tool()(read_pdf_page)
+    server.tool()(persist_pdf_cache)
     server.tool()(compute_pdf_sha256)
     return server
 
