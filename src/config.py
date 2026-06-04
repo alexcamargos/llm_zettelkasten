@@ -1,3 +1,9 @@
+"""Configuration manager for the LLM Zettelkasten automation engine.
+
+This module loads, resolves, and validates configuration paths and environment
+settings from local system variables and `.env` files.
+"""
+
 from __future__ import annotations
 
 import os
@@ -6,11 +12,31 @@ from pathlib import Path
 
 
 class ConfigError(RuntimeError):
-    """Raised when project configuration is missing or invalid."""
+    """Raised when project configuration is missing or invalid.
+
+    Args:
+        *args: Variable length argument list passed to RuntimeError.
+        **kwargs: Arbitrary keyword arguments passed to RuntimeError.
+    """
 
 
 @dataclass(frozen=True)
 class Settings:
+    """Project-wide settings loaded from environment and config.
+
+    Attributes:
+        vault_path: Path to the Obsidian vault.
+        ingestion_history_path: Path to the file containing ingested video IDs.
+        raw_articles_path: Path to raw Markdown articles.
+        raw_papers_path: Path to raw academic papers (PDFs).
+        zettelkasten_path: Path to the Zettelkasten folder.
+        logs_path: Path where log files are written.
+        youtube_playlist_id: ID of the YouTube playlist for the ETL pipeline.
+        qmd_command: Name of/path to the qmd CLI executable.
+        llm_model_name: Name of the default LLM model to be used.
+        embedding_model_name: Name of the default embedding model.
+    """
+
     vault_path: Path
     ingestion_history_path: Path
     raw_articles_path: Path
@@ -23,10 +49,20 @@ class Settings:
     embedding_model_name: str
 
 
-def load_settings(
-    env_path: Path | str | None = None, *, require_youtube: bool = False
-) -> Settings:
-    """Load project settings from .env and environment variables."""
+def load_settings(env_path: Path | str | None = None, *, require_youtube: bool = False) -> Settings:
+    """Load project settings from .env and environment variables.
+
+    Args:
+        env_path: Path to the .env file. If None, it defaults to the repo root's .env file.
+        require_youtube: If True, validation will fail if YOUTUBE_PLAYLIST_ID is missing.
+
+    Returns:
+        Settings: The loaded and validated Settings object.
+
+    Raises:
+        ConfigError: If mandatory directories are missing or if YouTube settings are
+            required but missing.
+    """
     repo_root = Path(__file__).resolve().parents[1]
     dotenv_path = Path(env_path) if env_path else repo_root / ".env"
     _load_dotenv(dotenv_path)
@@ -38,15 +74,9 @@ def load_settings(
             os.getenv("HISTORICO_INGESTAO_PATH", ".state/historico_ingestao.txt"),
             vault_path,
         ),
-        raw_articles_path=_resolve_path(
-            os.getenv("RAW_ARTICLES_PATH", "raw/articles"), vault_path
-        ),
-        raw_papers_path=_resolve_path(
-            os.getenv("RAW_PAPERS_PATH", "raw/papers"), vault_path
-        ),
-        zettelkasten_path=_resolve_path(
-            os.getenv("ZETTELKASTEN_PATH", "zettelkasten"), vault_path
-        ),
+        raw_articles_path=_resolve_path(os.getenv("RAW_ARTICLES_PATH", "raw/articles"), vault_path),
+        raw_papers_path=_resolve_path(os.getenv("RAW_PAPERS_PATH", "raw/papers"), vault_path),
+        zettelkasten_path=_resolve_path(os.getenv("ZETTELKASTEN_PATH", "zettelkasten"), vault_path),
         logs_path=_resolve_path(os.getenv("LOGS_PATH", "logs"), vault_path),
         youtube_playlist_id=_empty_to_none(os.getenv("YOUTUBE_PLAYLIST_ID")),
         qmd_command=_empty_to_none(os.getenv("QMD_COMMAND", "qmd")),
@@ -58,6 +88,16 @@ def load_settings(
 
 
 def _load_dotenv(dotenv_path: Path) -> None:
+    """Load environment variables from the specified .env path using dotenv.
+
+    If dotenv is not installed, it falls back to a custom parser.
+
+    Args:
+        dotenv_path: Absolute path to the .env file.
+
+    Returns:
+        None
+    """
     try:
         from dotenv import load_dotenv
     except ImportError:
@@ -69,6 +109,14 @@ def _load_dotenv(dotenv_path: Path) -> None:
 
 
 def _load_dotenv_fallback(dotenv_path: Path) -> None:
+    """Fall back to a simple manual parser if python-dotenv is not installed.
+
+    Args:
+        dotenv_path: Absolute path to the .env file.
+
+    Returns:
+        None
+    """
     if not dotenv_path.exists():
         return
 
@@ -81,6 +129,15 @@ def _load_dotenv_fallback(dotenv_path: Path) -> None:
 
 
 def _resolve_path(value: str, base_path: Path) -> Path:
+    """Resolve a path string relative to a base path if it is not absolute.
+
+    Args:
+        value: The path string to resolve.
+        base_path: The base Path to resolve against if the path is relative.
+
+    Returns:
+        Path: The resolved absolute Path object.
+    """
     path = Path(value).expanduser()
     if not path.is_absolute():
         path = base_path / path
@@ -88,6 +145,14 @@ def _resolve_path(value: str, base_path: Path) -> Path:
 
 
 def _empty_to_none(value: str | None) -> str | None:
+    """Convert an empty or whitespace-only string to None.
+
+    Args:
+        value: The string to convert.
+
+    Returns:
+        str | None: The stripped string, or None if it was empty or whitespace-only.
+    """
     if value is None:
         return None
     stripped = value.strip()
@@ -95,6 +160,19 @@ def _empty_to_none(value: str | None) -> str | None:
 
 
 def _validate_settings(settings: Settings, *, require_youtube: bool) -> None:
+    """Validate that required paths exist and check for YouTube config if required.
+
+    Args:
+        settings: The Settings instance to validate.
+        require_youtube: True if youtube configuration must be present.
+
+    Returns:
+        None
+
+    Raises:
+        ConfigError: If any required path does not exist, or if YouTube settings
+            are required but not configured.
+    """
     required_dirs = {
         "OBSIDIAN_VAULT_PATH": settings.vault_path,
         "RAW_ARTICLES_PATH": settings.raw_articles_path,
