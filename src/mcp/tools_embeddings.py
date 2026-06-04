@@ -62,6 +62,7 @@ def embedding_status(
     """Return availability and size information for the local embedding index."""
     index = _load_index(index_path)
     index_provider = str(index.get("provider", provider)) if index else provider
+    fallback_provider = index.get("fallback_provider") if index else None
     return EmbeddingStatus(
         provider=provider,
         active_provider=index_provider,
@@ -71,7 +72,7 @@ def embedding_status(
         index_exists=index_path.exists(),
         document_count=len(index.get("documents", [])) if index else 0,
         dimensions=int(index.get("dimensions", dimensions)) if index else dimensions,
-        fallback_provider=str(index.get("fallback_provider")) if index else None,
+        fallback_provider=str(fallback_provider) if fallback_provider else None,
     )
 
 
@@ -181,6 +182,7 @@ def semantic_search(
                 path=path_text.replace("\\", "/"),
                 score=round(score, 6),
                 excerpt=excerpt,
+                engine=_engine_name(active_provider),
             )
         )
 
@@ -328,6 +330,12 @@ def _normalize(vector: list[float]) -> list[float]:
     if norm == 0:
         return vector
     return [round(value / norm, 8) for value in vector]
+
+
+def _engine_name(provider: str) -> str:
+    if provider == "ollama":
+        return "ollama-embedding"
+    return "hash-embedding"
 
 
 def _load_index(index_path: Path) -> dict[str, Any] | None:
