@@ -65,6 +65,13 @@ O usuário deve clonar o repositório para o disco local utilizando um cliente d
 ### Gemini CLI
 Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `GEMINI.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
 
+### Motor Python Local
+O repositório agora inclui a primeira camada do motor Python previsto na arquitetura: `pyproject.toml`, configuração centralizada em `src/config.py`, logs em `src/logger.py`, ETL de YouTube em `src/ingestion/youtube_etl.py` e servidor MCP mínimo em `src/mcp/server.py`. As dependências são gerenciadas por `uv`; para preparar o ambiente, execute `uv sync` na raiz do projeto. Em ambientes Windows com cache global restrito, use um cache local, por exemplo `$env:UV_CACHE_DIR='.uv-cache'; uv run pytest`.
+
+O arquivo `.env.example` documenta as variáveis esperadas. O `.env` local fica ignorado pelo Git e deve conter, no mínimo, `OBSIDIAN_VAULT_PATH`, `HISTORICO_INGESTAO_PATH`, `RAW_ARTICLES_PATH`, `RAW_PAPERS_PATH`, `ZETTELKASTEN_PATH`, `LOGS_PATH` e `YOUTUBE_PLAYLIST_ID`. Para validar o servidor sem iniciar o transporte MCP, rode `uv run python src/mcp/server.py --health-json`. Para testar o ETL sem gravar transcrições, rode `uv run python src/ingestion/youtube_etl.py --dry-run --limit 3`.
+
+As configurações `.gemini/settings.json` e `.cursor/mcp.json` registram o servidor `ZettelkastenBrain` via `uv run zettel-mcp`, mantendo o servidor `pageindex` em paralelo até a substituição completa da integração externa. As ferramentas MCP novas cobrem busca híbrida com fallback lexical, leitura segura de Markdown do cofre, inspeção de manifests PageIndex, resolução de PDF por SHA-256, persistência validada de `tree.json` e `manifest.json`, leitura de página cacheada e consulta ao cache `.pageindex/<document_id>/tree.json`.
+
 ### MCP PageIndex (Cursor e Gemini CLI)
 O repositório inclui configuração do servidor **PageIndex** em modo local via **`npx -y @pageindex/mcp`** ([repositório oficial](https://github.com/VectifyAI/pageindex-mcp)). É necessário **Node.js 18 ou superior** e o comando `npx` disponível no PATH. No fluxo **`/ingest-paper`**, o uso de PageIndex segue critérios operacionais definidos nas skills: leitura linear tende a bastar em PDFs com até **10 páginas**; entre **11 e 20 páginas**, a decisão depende da densidade metodológica, presença de tabelas, apêndices, qualidade do OCR e custo de navegação; acima de **20 páginas**, o uso de PageIndex passa a ser o padrão.
 
