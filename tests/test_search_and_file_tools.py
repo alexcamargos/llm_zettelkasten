@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from tools_file import list_markdown_files, read_markdown_file
-from tools_search import lexical_search
+from tools_search import hybrid_search, lexical_search, qmd_search
 
 
 def test_lexical_search_returns_ranked_results(tmp_path: Path) -> None:
@@ -15,6 +16,38 @@ def test_lexical_search_returns_ranked_results(tmp_path: Path) -> None:
 
     assert [result.path for result in results] == ["a.md", "b.md"]
     assert results[0].score > results[1].score
+    assert results[0].engine == "lexical"
+
+
+def test_hybrid_search_falls_back_to_lexical_when_qmd_is_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "a.md").write_text("credito risco", encoding="utf-8")
+    monkeypatch.setattr("tools_search.shutil.which", lambda _command: None)
+
+    results = hybrid_search(tmp_path, "credito", qmd_command="qmd")
+
+    assert len(results) == 1
+    assert results[0].engine == "lexical"
+
+
+def test_qmd_search_parses_stdout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tmp_path / "a.md").write_text("conteudo", encoding="utf-8")
+    monkeypatch.setattr("tools_search.shutil.which", lambda _command: "qmd")
+    monkeypatch.setattr(
+        "tools_search.subprocess.run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            returncode=0,
+            stdout="a.md: trecho encontrado\n",
+        ),
+    )
+
+    results = qmd_search(tmp_path, "credito", qmd_command="qmd")
+
+    assert len(results) == 1
+    assert results[0].path == "a.md"
+    assert results[0].engine == "qmd"
 
 
 def test_file_tools_are_limited_to_markdown_inside_root(tmp_path: Path) -> None:
