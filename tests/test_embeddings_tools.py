@@ -16,7 +16,11 @@ from tools_embeddings import (
 
 
 def test_hashing_embedding_is_deterministic_and_normalized() -> None:
-    """Test that hashing embeddings are stable and normalized for non-empty text."""
+    """Test that hashing embeddings are stable and normalized for non-empty text.
+
+    Returns:
+        None
+    """
     first = hashing_embedding("credito cooperativo risco", dimensions=32)
     second = hashing_embedding("credito cooperativo risco", dimensions=32)
 
@@ -26,7 +30,14 @@ def test_hashing_embedding_is_deterministic_and_normalized() -> None:
 
 
 def test_build_embedding_index_and_semantic_search_rank_relevant_doc(tmp_path: Path) -> None:
-    """Test persisted embedding index creation and semantic ranking."""
+    """Test persisted embedding index creation and semantic ranking.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     zettelkasten = tmp_path / "zettelkasten"
     zettelkasten.mkdir()
     (zettelkasten / "credito.md").write_text(
@@ -66,7 +77,14 @@ def test_build_embedding_index_and_semantic_search_rank_relevant_doc(tmp_path: P
 
 
 def test_embedding_status_reports_existing_index(tmp_path: Path) -> None:
-    """Test embedding_status counts indexed documents when cache exists."""
+    """Test embedding_status counts indexed documents when cache exists.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     zettelkasten = tmp_path / "zettelkasten"
     zettelkasten.mkdir()
     (zettelkasten / "note.md").write_text("indicador pearls", encoding="utf-8")
@@ -95,7 +113,14 @@ def test_embedding_status_reports_existing_index(tmp_path: Path) -> None:
 
 
 def test_ollama_provider_falls_back_to_hashing_when_endpoint_fails(tmp_path: Path) -> None:
-    """Test offline fallback if a configured Ollama endpoint is unavailable."""
+    """Test offline fallback if a configured Ollama endpoint is unavailable.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     zettelkasten = tmp_path / "zettelkasten"
     zettelkasten.mkdir()
     (zettelkasten / "note.md").write_text("credito cooperativo", encoding="utf-8")
@@ -116,7 +141,11 @@ def test_ollama_provider_falls_back_to_hashing_when_endpoint_fails(tmp_path: Pat
 
 
 def test_embed_text_uses_hashing_provider() -> None:
-    """Test public embed_text dispatch for the hashing provider."""
+    """Test public embed_text dispatch for the hashing provider.
+
+    Returns:
+        None
+    """
     vector = embed_text(
         "pearls capital",
         provider="hashing",
@@ -130,8 +159,14 @@ def test_embed_text_uses_hashing_provider() -> None:
 
 
 def test_embed_text_uses_ollama_provider(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Test public embed_text dispatch for a successful Ollama-compatible endpoint."""
+    """Test public embed_text dispatch for a successful Ollama-compatible endpoint.
 
+    Args:
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
     class FakeResponse:
         def __enter__(self) -> FakeResponse:
             return self
@@ -167,7 +202,15 @@ def test_semantic_search_labels_ollama_index_engine(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test semantic search labels results with the active index provider."""
+    """Test semantic search labels results with the active index provider.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
     zettelkasten = tmp_path / "zettelkasten"
     zettelkasten.mkdir()
     (zettelkasten / "note.md").write_text("credito cooperativo", encoding="utf-8")
