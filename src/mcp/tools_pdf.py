@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +44,60 @@ def resolve_pdf_cache(
         "source_path": source_path,
         "document_id": document_id,
         "cache_found": manifest is not None,
+        "manifest": manifest,
+    }
+
+
+def persist_pageindex_cache(
+    vault_path: Path,
+    raw_papers_path: Path,
+    pageindex_root: Path,
+    relative_path: str,
+    tree: dict[str, Any] | list[Any] | str,
+    *,
+    hash_tool: str = "python_hashlib_sha256",
+    index_source: str = "pageindex_mcp_local",
+    mcp_transport: str = "npx -y @pageindex/mcp",
+) -> dict[str, Any]:
+    pdf_path = _safe_pdf_path(vault_path, raw_papers_path, relative_path)
+    document_id = sha256_file(pdf_path)
+    source_path = _normalize_relative_path(str(pdf_path.relative_to(vault_path.resolve())))
+    parsed_tree = _parse_tree_payload(tree)
+
+    document_root = pageindex_root / document_id
+    document_root.mkdir(parents=True, exist_ok=True)
+    tree_path = document_root / "tree.json"
+    manifest_path = document_root / "manifest.json"
+
+    tree_path.write_text(
+        json.dumps(parsed_tree, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+        newline="\n",
+    )
+    manifest = {
+        "schema_version": "1",
+        "document_id": document_id,
+        "hash_tool": hash_tool,
+        "source_path": source_path,
+        "source_filename": pdf_path.name,
+        "byte_size": pdf_path.stat().st_size,
+        "indexed_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        "index_source": index_source,
+        "mcp_transport": mcp_transport,
+        **_infer_tree_metadata(parsed_tree),
+    }
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+        newline="\n",
+    )
+    return {
+        "document_id": document_id,
+        "source_path": source_path,
+        "tree_path": _normalize_relative_path(str(tree_path.relative_to(vault_path.resolve()))),
+        "manifest_path": _normalize_relative_path(
+            str(manifest_path.relative_to(vault_path.resolve()))
+        ),
         "manifest": manifest,
     }
 
@@ -218,4 +273,26 @@ def _safe_pdf_path(vault_path: Path, raw_papers_path: Path, relative_path: str) 
 
 
 def _normalize_relative_path(value: str) -> str:
-    return value.replace("\\", "/").strip().lstrip("./")
+    normalized = value.replace("\\", "/").strip()
+    if normalized.startswith("./"):
+        return normalized[2:]
+    return normalized
+
+
+def _parse_tree_payload(tree: dict[str, Any] | list[Any] | str) -> dict[str, Any] | list[Any]:
+    if isinstance(tree, dict | list):
+        return tree
+    try:
+        parsed = json.loads(tree)
+    except json.JSONDecodeError as exc:
+        raise ValueError("tree_json deve ser JSON valido.") from exc
+    if not isinstance(parsed, dict | list):
+        raise ValueError("tree_json deve representar um objeto ou lista JSON.")
+    return parsed
+
+
+def _infer_tree_metadata(tree: dict[str, Any] | list[Any]) -> dict[str, Any]:
+    pages = sorted({page for node in _walk_json(tree) if (page := _node_page(node)) is not None})
+    if not pages:
+        return {}
+    return {"page_count_estimate": max(pages)}
