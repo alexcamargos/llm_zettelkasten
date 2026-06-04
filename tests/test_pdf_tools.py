@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from tools_pdf import (
     list_pageindex_manifests,
+    persist_pageindex_cache,
     read_pageindex_cache,
     read_pageindex_page,
     resolve_pdf_cache,
@@ -109,6 +110,51 @@ def test_read_pageindex_page_returns_page_text(tmp_path: Path) -> None:
     assert page["node_count"] == 1
     assert "Segunda pagina" in page["text"]
     assert "conteudo relevante" in page["text"]
+
+
+def test_persist_pageindex_cache_writes_tree_and_manifest(tmp_path: Path) -> None:
+    vault = tmp_path / "vault"
+    raw_papers = vault / "raw" / "papers"
+    pageindex_root = vault / ".pageindex"
+    raw_papers.mkdir(parents=True)
+    pdf_path = raw_papers / "teste.pdf"
+    pdf_path.write_bytes(b"abc")
+
+    persisted = persist_pageindex_cache(
+        vault,
+        raw_papers,
+        pageindex_root,
+        "raw/papers/teste.pdf",
+        {"nodes": [{"page": 3, "text": "conteudo indexado"}]},
+    )
+
+    tree_path = vault / persisted["tree_path"]
+    manifest_path = vault / persisted["manifest_path"]
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert tree_path.exists()
+    assert manifest_path.exists()
+    assert manifest["document_id"] == sha256_file(pdf_path)
+    assert manifest["source_path"] == "raw/papers/teste.pdf"
+    assert manifest["byte_size"] == 3
+    assert manifest["page_count_estimate"] == 3
+
+
+def test_persist_pageindex_cache_rejects_invalid_tree_json(tmp_path: Path) -> None:
+    vault = tmp_path / "vault"
+    raw_papers = vault / "raw" / "papers"
+    pageindex_root = vault / ".pageindex"
+    raw_papers.mkdir(parents=True)
+    (raw_papers / "teste.pdf").write_bytes(b"abc")
+
+    with pytest.raises(ValueError, match="JSON valido"):
+        persist_pageindex_cache(
+            vault,
+            raw_papers,
+            pageindex_root,
+            "raw/papers/teste.pdf",
+            "{invalid",
+        )
 
 
 def test_read_pageindex_cache_rejects_invalid_document_id(tmp_path: Path) -> None:
