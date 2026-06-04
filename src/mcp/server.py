@@ -19,6 +19,8 @@ from tools_pdf import (
     find_pageindex_manifest,
     list_pageindex_manifests,
     read_pageindex_cache,
+    read_pageindex_page,
+    resolve_pdf_cache,
     sha256_file,
 )
 from tools_search import hybrid_search
@@ -91,6 +93,21 @@ def read_pdf_cache(
 
 
 @log_skill_execution
+def resolve_pdf(relative_path: str) -> dict[str, Any]:
+    return resolve_pdf_cache(
+        settings.vault_path,
+        settings.raw_papers_path,
+        settings.vault_path / ".pageindex",
+        relative_path,
+    )
+
+
+@log_skill_execution
+def read_pdf_page(document_id: str, page: int) -> dict[str, Any]:
+    return read_pageindex_page(settings.vault_path / ".pageindex", document_id, page)
+
+
+@log_skill_execution
 def compute_pdf_sha256(relative_path: str) -> dict[str, str]:
     pdf_path = (settings.vault_path / relative_path).resolve()
     if settings.raw_papers_path.resolve() not in pdf_path.parents:
@@ -118,6 +135,8 @@ def build_server() -> Any:
     server.tool()(inspect_pdf_manifest)
     server.tool()(list_pdf_manifests)
     server.tool()(read_pdf_cache)
+    server.tool()(resolve_pdf)
+    server.tool()(read_pdf_page)
     server.tool()(compute_pdf_sha256)
     return server
 
