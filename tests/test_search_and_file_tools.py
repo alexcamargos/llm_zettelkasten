@@ -1,3 +1,9 @@
+"""Unit tests for file-level retrieval and search utilities.
+
+Tests lexical keyword search, qmd executable checks, subprocess result parsing,
+and file path safety validation.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -9,6 +15,14 @@ from tools_search import hybrid_search, lexical_search, qmd_search
 
 
 def test_lexical_search_returns_ranked_results(tmp_path: Path) -> None:
+    """Test that lexical_search returns correctly ranked search results by density.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     (tmp_path / "a.md").write_text("credito credito risco", encoding="utf-8")
     (tmp_path / "b.md").write_text("risco operacional", encoding="utf-8")
 
@@ -23,6 +37,15 @@ def test_hybrid_search_falls_back_to_lexical_when_qmd_is_missing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Test that hybrid_search falls back to lexical search if qmd is missing.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
     (tmp_path / "a.md").write_text("credito risco", encoding="utf-8")
     monkeypatch.setattr("tools_search.shutil.which", lambda _command: None)
 
@@ -33,6 +56,15 @@ def test_hybrid_search_falls_back_to_lexical_when_qmd_is_missing(
 
 
 def test_qmd_search_parses_stdout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that qmd_search runs qmd command and parses stdout correctly.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
     (tmp_path / "a.md").write_text("conteudo", encoding="utf-8")
     monkeypatch.setattr("tools_search.shutil.which", lambda _command: "qmd")
     monkeypatch.setattr(
@@ -51,6 +83,14 @@ def test_qmd_search_parses_stdout(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
 
 
 def test_file_tools_are_limited_to_markdown_inside_root(tmp_path: Path) -> None:
+    """Test that file listing and reading are constrained within root.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     nested = tmp_path / "nested"
     nested.mkdir()
     (nested / "note.md").write_text("conteudo", encoding="utf-8")
