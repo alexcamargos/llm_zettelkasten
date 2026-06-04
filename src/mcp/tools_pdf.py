@@ -23,3 +23,114 @@ def find_pageindex_manifest(pageindex_root: Path, source_path: str) -> dict[str,
         if manifest.get("source_path") == source_path:
             return manifest
     return None
+
+
+def list_pageindex_manifests(pageindex_root: Path) -> list[dict[str, Any]]:
+    manifests: list[dict[str, Any]] = []
+    for manifest_path in sorted(pageindex_root.glob("*/manifest.json")):
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        manifests.append(
+            {
+                "document_id": manifest_path.parent.name,
+                "source_path": manifest.get("source_path"),
+                "source_filename": manifest.get("source_filename"),
+                "indexed_at": manifest.get("indexed_at"),
+                "page_count": manifest.get("page_count") or manifest.get("page_count_estimate"),
+            }
+        )
+    return manifests
+
+
+def read_pageindex_cache(
+    pageindex_root: Path,
+    document_id: str,
+    *,
+    query: str | None = None,
+    limit: int = 5,
+) -> dict[str, Any]:
+    if not _is_document_id(document_id):
+        raise ValueError("document_id deve ser um SHA-256 hexadecimal em minusculas.")
+
+    resolved_root = pageindex_root.resolve()
+    document_root = (resolved_root / document_id).resolve()
+    if resolved_root not in document_root.parents:
+        raise ValueError("document_id invalido.")
+
+    manifest_path = document_root / "manifest.json"
+    tree_path = document_root / "tree.json"
+    if not manifest_path.exists() or not tree_path.exists():
+        return {"found": False, "document_id": document_id}
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    tree = json.loads(tree_path.read_text(encoding="utf-8"))
+    matches = _find_tree_matches(tree, query=query, limit=limit) if query else []
+    return {
+        "found": True,
+        "document_id": document_id,
+        "manifest": manifest,
+        "matches": matches,
+    }
+
+
+def _find_tree_matches(value: Any, *, query: str | None, limit: int) -> list[dict[str, Any]]:
+    terms = [term.lower() for term in (query or "").split() if len(term) >= 2]
+    if not terms:
+        return []
+
+    matches: list[dict[str, Any]] = []
+    for node in _walk_json(value):
+        text = _node_text(node)
+        lowered = text.lower()
+        score = sum(lowered.count(term) for term in terms)
+        if score <= 0:
+            continue
+        matches.append(
+            {
+                "score": score,
+                "page": _node_page(node),
+                "excerpt": text[:600],
+            }
+        )
+    return sorted(matches, key=lambda item: -int(item["score"]))[:limit]
+
+
+def _walk_json(value: Any) -> list[Any]:
+    nodes = [value]
+    if isinstance(value, dict):
+        for child in value.values():
+            nodes.extend(_walk_json(child))
+    elif isinstance(value, list):
+        for child in value:
+            nodes.extend(_walk_json(child))
+    return nodes
+
+
+def _node_text(node: Any) -> str:
+    if isinstance(node, str):
+        return node
+    if isinstance(node, dict):
+        parts = [
+            str(value)
+            for key, value in node.items()
+            if key.lower() in {"text", "content", "title", "heading", "summary"}
+            and isinstance(value, str)
+        ]
+        return " ".join(parts)
+    return ""
+
+
+def _node_page(node: Any) -> int | None:
+    if not isinstance(node, dict):
+        return None
+    for key in ("page", "page_number", "pageIndex", "page_index"):
+        value = node.get(key)
+        if isinstance(value, int):
+            return value
+    return None
+
+
+def _is_document_id(value: str) -> bool:
+    return len(value) == 64 and all(char in "0123456789abcdef" for char in value)
