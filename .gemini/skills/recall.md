@@ -11,12 +11,14 @@ Acionado quando o usuário disser `gemini "Execute a skill /recall sobre [tópic
 ## Fluxo de Execução (Workflow)
 
 ### Etapa 1: Varredura e Leitura Profunda
-1. Acesse e leia o arquivo `zettelkasten/index.md` para mapear todas as Notas Permanentes e Notas de Literatura que possuam relação semântica com o tópico solicitado.
-2. Leia `zettelkasten/overview.md` para alinhar o dossiê com a síntese viva do cofre quando existir conteúdo útil.
-3. Acesse e leia integralmente os arquivos identificados para absorver o contexto exato e as conexões armazenadas na base.
-4. Quando notas de literatura relevantes referenciarem `raw/papers/` e existir cache PageIndex, localize `.pageindex/<document_id>/manifest.json` cujo `source_path` coincida com o PDF (o `document_id` é o SHA-256 do binário conforme a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no `GEMINI.md`). Use `.pageindex/<document_id>/tree.json` apenas para localizar seções relevantes, confirmar a cobertura temática do paper e orientar um retorno seletivo à fonte primária. O cache PageIndex não deve ser tratado como base primária de afirmações conceituais, teóricas ou metodológicas no dossiê do `/recall`.
-5. Quando a síntese depender de um detalhe não preservado com segurança nas notas do cofre, utilize o PageIndex para apontar a região relevante do paper e então confira a nota de literatura correspondente ou o PDF original antes de consolidar a afirmação.
-6. Avalie explicitamente se o tópico solicitado já está coberto por pelo menos uma Nota Permanente adequada. Se existir apenas cobertura indireta, trate como lacuna parcial.
+1. Priorize a ferramenta MCP `ZettelkastenBrain.search_zettelkasten` para recuperar candidatos por busca híbrida ou fallback lexical local. Se a ferramenta estiver indisponível, registre a indisponibilidade mentalmente e siga para a leitura manual por `zettelkasten/index.md`.
+2. Use `ZettelkastenBrain.list_zettelkasten_markdown` e `ZettelkastenBrain.read_zettelkasten_markdown` para abrir os arquivos candidatos retornados. Se a ferramenta não estiver disponível, acesse e leia o arquivo `zettelkasten/index.md` para mapear todas as Notas Permanentes e Notas de Literatura que possuam relação semântica com o tópico solicitado.
+3. Leia `zettelkasten/overview.md` para alinhar o dossiê com a síntese viva do cofre quando existir conteúdo útil.
+4. Acesse e leia integralmente os arquivos identificados para absorver o contexto exato e as conexões armazenadas na base.
+5. Quando notas de literatura relevantes referenciarem `raw/papers/` e existir cache PageIndex, use primeiro `ZettelkastenBrain.inspect_pdf_manifest`, `ZettelkastenBrain.list_pdf_manifests` ou `ZettelkastenBrain.read_pdf_cache` para localizar `.pageindex/<document_id>/manifest.json` e buscar trechos por termo no `tree.json`. Se a ferramenta estiver indisponível, localize manualmente `.pageindex/<document_id>/manifest.json` cujo `source_path` coincida com o PDF. O `document_id` é o SHA-256 do binário conforme a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no `GEMINI.md`.
+6. Use `.pageindex/<document_id>/tree.json` apenas para localizar seções relevantes, confirmar a cobertura temática do paper e orientar um retorno seletivo à fonte primária. O cache PageIndex não deve ser tratado como base primária de afirmações conceituais, teóricas ou metodológicas no dossiê do `/recall`.
+7. Quando a síntese depender de um detalhe não preservado com segurança nas notas do cofre, utilize o PageIndex para apontar a região relevante do paper e então confira a nota de literatura correspondente ou o PDF original antes de consolidar a afirmação.
+8. Avalie explicitamente se o tópico solicitado já está coberto por pelo menos uma Nota Permanente adequada. Se existir apenas cobertura indireta, trate como lacuna parcial.
 
 ### Etapa 2: Síntese e Exposição (Aplicação Rigorosa de Estilo)
 Apresente ao usuário um dossiê preliminar com os achados. A geração deste texto DEVE respeitar integralmente as Regras Globais de Estilo:
