@@ -161,3 +161,40 @@ def test_embed_text_uses_ollama_provider(monkeypatch: pytest.MonkeyPatch) -> Non
 
     assert captured.request is not None
     assert vector == [0.6, 0.8]
+
+
+def test_semantic_search_labels_ollama_index_engine(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test semantic search labels results with the active index provider."""
+    zettelkasten = tmp_path / "zettelkasten"
+    zettelkasten.mkdir()
+    (zettelkasten / "note.md").write_text("credito cooperativo", encoding="utf-8")
+    index_path = tmp_path / ".state" / "embeddings_index.json"
+
+    monkeypatch.setattr(
+        "tools_embeddings.ollama_embedding",
+        lambda text, **_kwargs: [1.0, 0.0] if "credito" in text else [0.0, 1.0],
+    )
+
+    build_embedding_index(
+        zettelkasten,
+        index_path,
+        provider="ollama",
+        dimensions=2,
+        model_name="nomic-embed-text",
+        endpoint="http://localhost:11434/api/embeddings",
+    )
+    results = semantic_search(
+        zettelkasten,
+        index_path,
+        "credito",
+        limit=1,
+        provider="ollama",
+        dimensions=2,
+        model_name="nomic-embed-text",
+        endpoint="http://localhost:11434/api/embeddings",
+    )
+
+    assert results[0].engine == "ollama-embedding"
