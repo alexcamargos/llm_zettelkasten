@@ -1,0 +1,43 @@
+[project]
+name = "llm-zettelkasten"
+version = "0.1.0"
+description = "Motor Python local para automacao, busca e MCP do cofre LLM Zettelkasten."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "feedparser>=6.0.11",
+    "loguru>=0.7.3",
+    "mcp>=1.9.0",
+    "python-dotenv>=1.1.0",
+    "youtube-transcript-api>=1.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "ruff>=0.11.11",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "src/mcp"]
+addopts = "--basetemp=.pytest-tmp"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+    ".git",
+    ".pytest-tmp",
+    ".ruff_cache",
+    ".uv-cache",
+    ".venv",
+    ".venv-codex",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["UP047"]
