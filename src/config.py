@@ -180,7 +180,17 @@ def _empty_to_none(value: str | None) -> str | None:
 
 
 def _parse_positive_int(value: str | None) -> int:
-    """Parse a positive integer environment value."""
+    """Parse a positive integer environment value.
+
+    Args:
+        value: The string representation of the integer to parse.
+
+    Returns:
+        int: The parsed positive integer.
+
+    Raises:
+        ConfigError: If the value is not a valid integer or is less than or equal to zero.
+    """
     try:
         parsed = int(value or "0")
     except ValueError as exc:
