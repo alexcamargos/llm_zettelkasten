@@ -11,7 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 from tools_file import list_markdown_files, read_markdown_file
-from tools_search import hybrid_search, lexical_search, qmd_search
+from tools_search import hybrid_search, lexical_search, qmd_search, retrieval_status
 
 
 def test_lexical_search_returns_ranked_results(tmp_path: Path) -> None:
@@ -30,7 +30,7 @@ def test_lexical_search_returns_ranked_results(tmp_path: Path) -> None:
 
     assert [result.path for result in results] == ["a.md", "b.md"]
     assert results[0].score > results[1].score
-    assert results[0].engine == "lexical"
+    assert results[0].engine == "bm25"
 
 
 def test_hybrid_search_falls_back_to_lexical_when_qmd_is_missing(
@@ -52,7 +52,25 @@ def test_hybrid_search_falls_back_to_lexical_when_qmd_is_missing(
     results = hybrid_search(tmp_path, "credito", qmd_command="qmd")
 
     assert len(results) == 1
-    assert results[0].engine == "lexical"
+    assert results[0].engine == "bm25"
+
+
+def test_retrieval_status_reports_missing_qmd(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test retrieval_status exposes qmd availability and fallback engine.
+
+    Args:
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
+    monkeypatch.setattr("tools_search.shutil.which", lambda _command: None)
+
+    status = retrieval_status("qmd")
+
+    assert status.qmd_configured is True
+    assert status.qmd_available is False
+    assert status.fallback_engine == "bm25"
 
 
 def test_qmd_search_parses_stdout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
