@@ -12,6 +12,10 @@ Nenhuma entrada ainda. Após a primeira nota de literatura (paper em `raw/papers
 
 Nenhuma entrada ainda. Notas geradas por `/ingest-article` a partir de `raw/articles/` entram nesta seção no mesmo formato de linha do `GEMINI.md`.
 
+## Transcrições do YouTube
+
+Nenhuma entrada ainda. Notas geradas por `/ingest-youtube` a partir de transcrições com `source_kind: youtube_transcript` entram nesta seção no mesmo formato de linha do `GEMINI.md`.
+
 ## Permanentes
 
 Nenhuma entrada ainda.
