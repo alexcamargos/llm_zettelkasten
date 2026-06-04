@@ -35,6 +35,8 @@ class Settings:
         qmd_command: Name of/path to the qmd CLI executable.
         llm_model_name: Name of the default LLM model to be used.
         embedding_model_name: Name of the default embedding model.
+        embedding_index_path: Path to the local embedding index JSON file.
+        embedding_dimensions: Number of dimensions in the local embedding vector.
     """
 
     vault_path: Path
@@ -47,6 +49,8 @@ class Settings:
     qmd_command: str | None
     llm_model_name: str
     embedding_model_name: str
+    embedding_index_path: Path
+    embedding_dimensions: int
 
 
 def load_settings(env_path: Path | str | None = None, *, require_youtube: bool = False) -> Settings:
@@ -82,6 +86,11 @@ def load_settings(env_path: Path | str | None = None, *, require_youtube: bool =
         qmd_command=_empty_to_none(os.getenv("QMD_COMMAND", "qmd")),
         llm_model_name=os.getenv("LLM_MODEL_NAME", "gemini-2.5-pro"),
         embedding_model_name=os.getenv("EMBEDDING_MODEL_NAME", "nomic-embed-text"),
+        embedding_index_path=_resolve_path(
+            os.getenv("EMBEDDING_INDEX_PATH", ".state/embeddings_index.json"),
+            vault_path,
+        ),
+        embedding_dimensions=int(os.getenv("EMBEDDING_DIMENSIONS", "256")),
     )
     _validate_settings(settings, require_youtube=require_youtube)
     return settings
