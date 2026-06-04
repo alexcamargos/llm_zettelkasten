@@ -20,6 +20,7 @@ if str(SRC_ROOT) not in sys.path:
 if str(MCP_TOOLS_ROOT) not in sys.path:
     sys.path.insert(0, str(MCP_TOOLS_ROOT))
 
+from tools_embeddings import build_embedding_index, embedding_status, semantic_search
 from tools_file import list_markdown_files, read_markdown_file
 from tools_pdf import (
     find_pageindex_manifest,
@@ -30,7 +31,7 @@ from tools_pdf import (
     resolve_pdf_cache,
     sha256_file,
 )
-from tools_search import hybrid_search, retrieval_status
+from tools_search import SearchResult, hybrid_search, merge_search_results, retrieval_status
 
 from config import load_settings
 from logger import configure_logging, log_skill_execution
@@ -53,6 +54,8 @@ def health() -> dict[str, Any]:
         "raw_articles_path": str(settings.raw_articles_path),
         "youtube_playlist_configured": bool(settings.youtube_playlist_id),
         "qmd_command": settings.qmd_command,
+        "embedding_model_name": settings.embedding_model_name,
+        "embedding_index_path": str(settings.embedding_index_path),
     }
 
 
@@ -67,20 +70,87 @@ def search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
     Returns:
         list[dict[str, Any]]: List of dictionary mappings representing search results.
     """
-    return [
-        result.__dict__
-        for result in hybrid_search(
+    primary_results = hybrid_search(
+        settings.zettelkasten_path,
+        query,
+        limit=limit,
+        qmd_command=settings.qmd_command,
+    )
+    if primary_results and primary_results[0].engine == "qmd":
+        results = primary_results
+    else:
+        semantic_results = semantic_search(
             settings.zettelkasten_path,
+            settings.embedding_index_path,
             query,
             limit=limit,
-            qmd_command=settings.qmd_command,
+            dimensions=settings.embedding_dimensions,
+            model_name=settings.embedding_model_name,
         )
-    ]
+        results = merge_search_results(
+            primary_results,
+            [
+                SearchResult(
+                    path=result.path,
+                    score=result.score,
+                    excerpt=result.excerpt,
+                    engine=result.engine,
+                )
+                for result in semantic_results
+            ],
+            limit=limit,
+        )
+    return [result.__dict__ for result in results]
 
 
 @log_skill_execution
 def retrieval_health() -> dict[str, Any]:
     return retrieval_status(settings.qmd_command).__dict__
+
+
+@log_skill_execution
+def embedding_health() -> dict[str, Any]:
+    """Return status for the local semantic embedding index."""
+    return embedding_status(
+        settings.embedding_index_path,
+        model_name=settings.embedding_model_name,
+        dimensions=settings.embedding_dimensions,
+    ).__dict__
+
+
+@log_skill_execution
+def index_zettelkasten_embeddings() -> dict[str, Any]:
+    """Rebuild the local embedding index for Markdown files in the Zettelkasten."""
+    index = build_embedding_index(
+        settings.zettelkasten_path,
+        settings.embedding_index_path,
+        dimensions=settings.embedding_dimensions,
+        model_name=settings.embedding_model_name,
+    )
+    return {
+        "provider": index["provider"],
+        "model_name": index["model_name"],
+        "index_path": str(settings.embedding_index_path),
+        "document_count": len(index["documents"]),
+        "dimensions": index["dimensions"],
+        "indexed_at": index["indexed_at"],
+    }
+
+
+@log_skill_execution
+def semantic_search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
+    """Search the Zettelkasten through the local semantic embedding index."""
+    return [
+        result.__dict__
+        for result in semantic_search(
+            settings.zettelkasten_path,
+            settings.embedding_index_path,
+            query,
+            limit=limit,
+            dimensions=settings.embedding_dimensions,
+            model_name=settings.embedding_model_name,
+        )
+    ]
 
 
 @log_skill_execution
@@ -248,6 +318,9 @@ def build_server() -> Any:
     server.tool()(health)
     server.tool()(search_zettelkasten)
     server.tool()(retrieval_health)
+    server.tool()(embedding_health)
+    server.tool()(index_zettelkasten_embeddings)
+    server.tool()(semantic_search_zettelkasten)
     server.tool()(list_zettelkasten_markdown)
     server.tool()(read_zettelkasten_markdown)
     server.tool()(inspect_pdf_manifest)
