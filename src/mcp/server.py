@@ -1,3 +1,9 @@
+"""Model Context Protocol (MCP) server for the LLM Zettelkasten project.
+
+Exposes tools for searching the Zettelkasten vault, listing/reading markdown
+files, and reading/writing the PageIndex cache for PDF files.
+"""
+
 from __future__ import annotations
 
 import json
@@ -35,6 +41,11 @@ configure_logging(settings.logs_path)
 
 @log_skill_execution
 def health() -> dict[str, Any]:
+    """Retrieve server status and system configuration paths.
+
+    Returns:
+        dict[str, Any]: Server status mapping with configuration keys and settings.
+    """
     return {
         "status": "ok",
         "vault_path": str(settings.vault_path),
@@ -47,6 +58,15 @@ def health() -> dict[str, Any]:
 
 @log_skill_execution
 def search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
+    """Perform a hybrid (lexical + semantic qmd fallback) search on the Zettelkasten.
+
+    Args:
+        query: The search query text term(s).
+        limit: The maximum number of search results to return. Defaults to 8.
+
+    Returns:
+        list[dict[str, Any]]: List of dictionary mappings representing search results.
+    """
     return [
         result.__dict__
         for result in hybrid_search(
@@ -60,22 +80,48 @@ def search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
 
 @log_skill_execution
 def list_zettelkasten_markdown() -> list[str]:
+    """List all markdown files inside the Zettelkasten folder.
+
+    Returns:
+        list[str]: Relative path strings of markdown files.
+    """
     return list_markdown_files(settings.zettelkasten_path)
 
 
 @log_skill_execution
 def read_zettelkasten_markdown(relative_path: str) -> str:
+    """Read the full content of a markdown file in the Zettelkasten.
+
+    Args:
+        relative_path: Relative path of the markdown file to read.
+
+    Returns:
+        str: UTF-8 decoded text content of the markdown file.
+    """
     return read_markdown_file(settings.zettelkasten_path, relative_path)
 
 
 @log_skill_execution
 def inspect_pdf_manifest(source_path: str) -> dict[str, Any]:
+    """Search and inspect the PageIndex manifest for a given PDF path.
+
+    Args:
+        source_path: The relative source path of the PDF.
+
+    Returns:
+        dict[str, Any]: Manifest details if found, otherwise an empty representation.
+    """
     manifest = find_pageindex_manifest(settings.vault_path / ".pageindex", source_path)
     return manifest or {"found": False, "source_path": source_path}
 
 
 @log_skill_execution
 def list_pdf_manifests() -> list[dict[str, Any]]:
+    """List all PageIndex manifests cached in the vault.
+
+    Returns:
+        list[dict[str, Any]]: List of metadata dictionaries representing cached manifests.
+    """
     return list_pageindex_manifests(settings.vault_path / ".pageindex")
 
 
@@ -85,6 +131,17 @@ def read_pdf_cache(
     query: str | None = None,
     limit: int = 5,
 ) -> dict[str, Any]:
+    """Read the PageIndex cache for a document ID, with optional term search.
+
+    Args:
+        document_id: Hexadecimal SHA-256 fingerprint identifying the document.
+        query: Optional search term(s) to query against the tree.
+        limit: Max search results matching the query. Defaults to 5.
+
+    Returns:
+        dict[str, Any]: Dictionary representing the document's manifest, tree
+            and search matches.
+    """
     return read_pageindex_cache(
         settings.vault_path / ".pageindex",
         document_id,
@@ -95,6 +152,14 @@ def read_pdf_cache(
 
 @log_skill_execution
 def resolve_pdf(relative_path: str) -> dict[str, Any]:
+    """Resolve a PDF's document ID and verify if its cache exists in PageIndex.
+
+    Args:
+        relative_path: The relative path of the target PDF file.
+
+    Returns:
+        dict[str, Any]: Map containing source path, document ID, cache status and manifest.
+    """
     return resolve_pdf_cache(
         settings.vault_path,
         settings.raw_papers_path,
@@ -105,11 +170,29 @@ def resolve_pdf(relative_path: str) -> dict[str, Any]:
 
 @log_skill_execution
 def read_pdf_page(document_id: str, page: int) -> dict[str, Any]:
+    """Retrieve the text content of a single page from a cached PDF.
+
+    Args:
+        document_id: Hexadecimal SHA-256 fingerprint identifying the document.
+        page: 1-indexed page number to extract.
+
+    Returns:
+        dict[str, Any]: Page search status, manifest, text content and node count.
+    """
     return read_pageindex_page(settings.vault_path / ".pageindex", document_id, page)
 
 
 @log_skill_execution
 def persist_pdf_cache(relative_path: str, tree_json: str) -> dict[str, Any]:
+    """Persist a PageIndex tree and its manifest metadata to the cache directory.
+
+    Args:
+        relative_path: The relative path of the PDF source file.
+        tree_json: JSON string representing the parsed layout/content tree structure.
+
+    Returns:
+        dict[str, Any]: Details of the persisted paths, document ID and manifest.
+    """
     return persist_pageindex_cache(
         settings.vault_path,
         settings.raw_papers_path,
@@ -121,6 +204,17 @@ def persist_pdf_cache(relative_path: str, tree_json: str) -> dict[str, Any]:
 
 @log_skill_execution
 def compute_pdf_sha256(relative_path: str) -> dict[str, str]:
+    """Compute the SHA-256 checksum for a PDF inside raw/papers.
+
+    Args:
+        relative_path: Relative path to the PDF inside raw/papers.
+
+    Returns:
+        dict[str, str]: A dictionary with the source path and hexadecimal SHA-256 hash.
+
+    Raises:
+        ValueError: If the file is not a PDF or lies outside raw/papers.
+    """
     pdf_path = (settings.vault_path / relative_path).resolve()
     if settings.raw_papers_path.resolve() not in pdf_path.parents:
         raise ValueError(
@@ -132,12 +226,18 @@ def compute_pdf_sha256(relative_path: str) -> dict[str, str]:
 
 
 def build_server() -> Any:
+    """Build and configure the FastMCP server instance.
+
+    Returns:
+        Any: Configured FastMCP server instance.
+
+    Raises:
+        RuntimeError: If FastMCP library cannot be imported.
+    """
     try:
         from mcp.server.fastmcp import FastMCP
     except ImportError as exc:  # pragma: no cover - depends on runtime dependency
-        raise RuntimeError(
-            "Instale as dependencias com `uv sync` antes de iniciar o MCP."
-        ) from exc
+        raise RuntimeError("Instale as dependencias com `uv sync` antes de iniciar o MCP.") from exc
 
     server = FastMCP("ZettelkastenBrain")
     server.tool()(health)
@@ -155,6 +255,11 @@ def build_server() -> Any:
 
 
 def main() -> None:
+    """Bootstrap entry point for running the MCP server or dumping health JSON.
+
+    Returns:
+        None
+    """
     if "--health-json" in sys.argv:
         print(json.dumps(health(), ensure_ascii=False))
         return
