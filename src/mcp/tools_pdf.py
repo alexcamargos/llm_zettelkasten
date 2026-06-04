@@ -1,3 +1,10 @@
+"""PageIndex layout cache and PDF indexing utilities.
+
+Provides layout caching services for PDF documents under the Obsidian vault.
+Manages metadata manifests, layout trees, page extraction, and cryptographic
+SHA-256 integrity verification.
+"""
+
 from __future__ import annotations
 
 import hashlib
@@ -8,6 +15,14 @@ from typing import Any
 
 
 def sha256_file(path: Path) -> str:
+    """Compute the SHA-256 hexadecimal hash of a file's entire binary content.
+
+    Args:
+        path: Path to the target file.
+
+    Returns:
+        str: The 64-character lowercase hexadecimal hash.
+    """
     digest = hashlib.sha256()
     with path.open("rb") as file:
         for chunk in iter(lambda: file.read(1024 * 1024), b""):
@@ -16,6 +31,16 @@ def sha256_file(path: Path) -> str:
 
 
 def find_pageindex_manifest(pageindex_root: Path, source_path: str) -> dict[str, Any] | None:
+    """Find a PageIndex manifest for a given PDF source path in the cache.
+
+    Args:
+        pageindex_root: Base Path to the .pageindex folder.
+        source_path: The relative path of the PDF document.
+
+    Returns:
+        dict[str, Any] | None: The loaded manifest data dictionary, or None if
+            no matching manifest exists.
+    """
     normalized_source = _normalize_relative_path(source_path)
     for manifest_path in pageindex_root.glob("*/manifest.json"):
         try:
@@ -33,6 +58,18 @@ def resolve_pdf_cache(
     pageindex_root: Path,
     relative_path: str,
 ) -> dict[str, Any]:
+    """Resolve a PDF's document ID and check if its manifest exists.
+
+    Args:
+        vault_path: Root Path of the vault.
+        raw_papers_path: Root Path of the raw papers folder.
+        pageindex_root: Base Path to the .pageindex directory.
+        relative_path: The relative path of the PDF.
+
+    Returns:
+        dict[str, Any]: Resolution status map containing source path, document ID,
+            cache presence, and loaded manifest (if available).
+    """
     pdf_path = _safe_pdf_path(vault_path, raw_papers_path, relative_path)
     document_id = sha256_file(pdf_path)
     source_path = _normalize_relative_path(str(pdf_path.relative_to(vault_path.resolve())))
@@ -59,6 +96,23 @@ def persist_pageindex_cache(
     index_source: str = "pageindex_mcp_local",
     mcp_transport: str = "npx -y @pageindex/mcp",
 ) -> dict[str, Any]:
+    """Write the layout tree and a metadata manifest to the PageIndex cache.
+
+    Args:
+        vault_path: Root Path of the vault.
+        raw_papers_path: Root Path of the raw papers folder.
+        pageindex_root: Base Path of the .pageindex folder.
+        relative_path: The relative path of the PDF file.
+        tree: Parsed tree data structure or raw JSON representation of it.
+        hash_tool: Name of the hashing mechanism. Defaults to "python_hashlib_sha256".
+        index_source: String tag identifying the index client. Defaults to
+            "pageindex_mcp_local".
+        mcp_transport: String tag describing the MCP invocation script. Defaults to
+            "npx -y @pageindex/mcp".
+
+    Returns:
+        dict[str, Any]: Information mapping of the written paths and metadata.
+    """
     pdf_path = _safe_pdf_path(vault_path, raw_papers_path, relative_path)
     document_id = sha256_file(pdf_path)
     source_path = _normalize_relative_path(str(pdf_path.relative_to(vault_path.resolve())))
@@ -103,6 +157,14 @@ def persist_pageindex_cache(
 
 
 def list_pageindex_manifests(pageindex_root: Path) -> list[dict[str, Any]]:
+    """List summary metadata for all PageIndex cache entries.
+
+    Args:
+        pageindex_root: Base Path of the .pageindex folder.
+
+    Returns:
+        list[dict[str, Any]]: List of metadata maps containing document IDs and source paths.
+    """
     manifests: list[dict[str, Any]] = []
     for manifest_path in sorted(pageindex_root.glob("*/manifest.json")):
         try:
@@ -128,6 +190,20 @@ def read_pageindex_cache(
     query: str | None = None,
     limit: int = 5,
 ) -> dict[str, Any]:
+    """Read cached tree/manifest files and optionally search for terms in the tree.
+
+    Args:
+        pageindex_root: Base Path of the .pageindex folder.
+        document_id: Hexadecimal SHA-256 document identifier.
+        query: Optional whitespace-separated search term(s) to query.
+        limit: Maximum number of search results to return. Defaults to 5.
+
+    Returns:
+        dict[str, Any]: Dict containing resolution status, manifest info, and match list.
+
+    Raises:
+        ValueError: If document_id is not a valid SHA-256 identifier or escapes boundaries.
+    """
     if not _is_document_id(document_id):
         raise ValueError("document_id deve ser um SHA-256 hexadecimal em minusculas.")
 
@@ -153,6 +229,19 @@ def read_pageindex_cache(
 
 
 def read_pageindex_page(pageindex_root: Path, document_id: str, page: int) -> dict[str, Any]:
+    """Retrieve layout text content for a single page from cached tree.
+
+    Args:
+        pageindex_root: Base Path of the .pageindex folder.
+        document_id: Hexadecimal SHA-256 document identifier.
+        page: 1-indexed page number to look up.
+
+    Returns:
+        dict[str, Any]: Status dictionary containing matching page text and metadata.
+
+    Raises:
+        ValueError: If page is less than 1 or if document_id is invalid.
+    """
     if page < 1:
         raise ValueError("page deve ser maior ou igual a 1.")
     if not _is_document_id(document_id):
@@ -182,6 +271,16 @@ def read_pageindex_page(pageindex_root: Path, document_id: str, page: int) -> di
 
 
 def _find_tree_matches(value: Any, *, query: str | None, limit: int) -> list[dict[str, Any]]:
+    """Scan the layout tree for nodes containing search terms.
+
+    Args:
+        value: Root node or sub-tree layout list/dictionary.
+        query: Search query containing space-separated terms.
+        limit: Maximum results to return.
+
+    Returns:
+        list[dict[str, Any]]: List of dictionary mappings representing matches.
+    """
     terms = [term.lower() for term in (query or "").split() if len(term) >= 2]
     if not terms:
         return []
@@ -204,6 +303,14 @@ def _find_tree_matches(value: Any, *, query: str | None, limit: int) -> list[dic
 
 
 def _walk_json(value: Any) -> list[Any]:
+    """Recursively traverse a JSON object hierarchy to collect nested nodes.
+
+    Args:
+        value: JSON-like structure (dict, list, string, etc.).
+
+    Returns:
+        list[Any]: Flat list of all child nodes and structures found.
+    """
     nodes = [value]
     if isinstance(value, dict):
         for child in value.values():
@@ -215,6 +322,14 @@ def _walk_json(value: Any) -> list[Any]:
 
 
 def _node_text(node: Any) -> str:
+    """Extract string content out of a layout tree node.
+
+    Args:
+        node: A node from the layout tree.
+
+    Returns:
+        str: Textual description/content of the node.
+    """
     if isinstance(node, str):
         return node
     if isinstance(node, dict):
@@ -229,6 +344,14 @@ def _node_text(node: Any) -> str:
 
 
 def _node_page(node: Any) -> int | None:
+    """Extract page number from a node if it represents one.
+
+    Args:
+        node: A node from the layout tree.
+
+    Returns:
+        int | None: Page number if found, otherwise None.
+    """
     if not isinstance(node, dict):
         return None
     for key in ("page", "page_number", "pageIndex", "page_index"):
@@ -239,10 +362,27 @@ def _node_page(node: Any) -> int | None:
 
 
 def _is_document_id(value: str) -> bool:
+    """Validate if string conforms to lowercase hexadecimal SHA-256 pattern.
+
+    Args:
+        value: Input string.
+
+    Returns:
+        bool: True if it is a valid format, otherwise False.
+    """
     return len(value) == 64 and all(char in "0123456789abcdef" for char in value)
 
 
 def _find_page_nodes(value: Any, *, page: int) -> list[Any]:
+    """Filter layout nodes that belong to a specific page index.
+
+    Args:
+        value: The parent tree node or list.
+        page: The page number to match.
+
+    Returns:
+        list[Any]: Matching nodes in the sub-tree.
+    """
     return [node for node in _walk_json(value) if _node_page(node) == page]
 
 
@@ -250,6 +390,15 @@ def _read_manifest_for_document_id(
     pageindex_root: Path,
     document_id: str,
 ) -> dict[str, Any] | None:
+    """Read PageIndex manifest file by document ID folder path.
+
+    Args:
+        pageindex_root: Base Path of .pageindex folder.
+        document_id: Hexadecimal SHA-256 document identifier.
+
+    Returns:
+        dict[str, Any] | None: Loaded manifest dictionary or None if missing/invalid.
+    """
     manifest_path = pageindex_root / document_id / "manifest.json"
     if not manifest_path.exists():
         return None
@@ -260,6 +409,20 @@ def _read_manifest_for_document_id(
 
 
 def _safe_pdf_path(vault_path: Path, raw_papers_path: Path, relative_path: str) -> Path:
+    """Verify that a path is a PDF, exists, and resides within raw/papers directory.
+
+    Args:
+        vault_path: Obsidian vault root Path.
+        raw_papers_path: Papers folder Path.
+        relative_path: The relative path to resolve.
+
+    Returns:
+        Path: Resolved absolute PDF Path.
+
+    Raises:
+        ValueError: If path escapes raw/papers directory or is not a PDF.
+        FileNotFoundError: If the target file does not exist.
+    """
     resolved_vault = vault_path.resolve()
     resolved_raw_papers = raw_papers_path.resolve()
     pdf_path = (resolved_vault / relative_path).resolve()
@@ -273,6 +436,14 @@ def _safe_pdf_path(vault_path: Path, raw_papers_path: Path, relative_path: str) 
 
 
 def _normalize_relative_path(value: str) -> str:
+    """Convert backslashes and strip prefix indicators from a path string.
+
+    Args:
+        value: Input path string.
+
+    Returns:
+        str: Normalized relative path string.
+    """
     normalized = value.replace("\\", "/").strip()
     if normalized.startswith("./"):
         return normalized[2:]
@@ -280,6 +451,17 @@ def _normalize_relative_path(value: str) -> str:
 
 
 def _parse_tree_payload(tree: dict[str, Any] | list[Any] | str) -> dict[str, Any] | list[Any]:
+    """Parse layout tree from tree data payload.
+
+    Args:
+        tree: Pre-parsed dictionary/list, or raw JSON string.
+
+    Returns:
+        dict[str, Any] | list[Any]: Validated tree representation.
+
+    Raises:
+        ValueError: If serialization is not a valid JSON object or list.
+    """
     if isinstance(tree, dict | list):
         return tree
     try:
@@ -292,6 +474,14 @@ def _parse_tree_payload(tree: dict[str, Any] | list[Any] | str) -> dict[str, Any
 
 
 def _infer_tree_metadata(tree: dict[str, Any] | list[Any]) -> dict[str, Any]:
+    """Infer the total page count for a tree structure.
+
+    Args:
+        tree: The layout tree payload.
+
+    Returns:
+        dict[str, Any]: Metdata dict containing page count estimate if found.
+    """
     pages = sorted({page for node in _walk_json(tree) if (page := _node_page(node)) is not None})
     if not pages:
         return {}
