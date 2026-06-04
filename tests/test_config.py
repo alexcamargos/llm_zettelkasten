@@ -43,6 +43,8 @@ def test_load_settings_from_env_file(tmp_path: Path, monkeypatch: pytest.MonkeyP
     assert settings.vault_path == tmp_path.resolve()
     assert settings.youtube_playlist_id == "PL_TESTE"
     assert settings.raw_articles_path == (tmp_path / "raw" / "articles").resolve()
+    assert settings.embedding_index_path == (tmp_path / ".state" / "embeddings_index.json")
+    assert settings.embedding_dimensions == 256
 
 
 def test_load_settings_requires_youtube_when_requested(
