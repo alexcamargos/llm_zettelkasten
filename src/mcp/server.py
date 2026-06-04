@@ -111,12 +111,21 @@ def search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
 
 @log_skill_execution
 def retrieval_health() -> dict[str, Any]:
+    """Retrieve operational status for the retrieval engine.
+
+    Returns:
+        dict[str, Any]: Dictionary representing the current retrieval status.
+    """
     return retrieval_status(settings.qmd_command).__dict__
 
 
 @log_skill_execution
 def embedding_health() -> dict[str, Any]:
-    """Return status for the local semantic embedding index."""
+    """Return status for the local semantic embedding index.
+
+    Returns:
+        dict[str, Any]: Dictionary representing the local embedding status.
+    """
     return embedding_status(
         settings.embedding_index_path,
         provider=settings.embedding_provider,
@@ -128,7 +137,11 @@ def embedding_health() -> dict[str, Any]:
 
 @log_skill_execution
 def index_zettelkasten_embeddings() -> dict[str, Any]:
-    """Rebuild the local embedding index for Markdown files in the Zettelkasten."""
+    """Rebuild the local embedding index for Markdown files in the Zettelkasten.
+
+    Returns:
+        dict[str, Any]: Summary details of the generated embedding index.
+    """
     index = build_embedding_index(
         settings.zettelkasten_path,
         settings.embedding_index_path,
@@ -149,7 +162,15 @@ def index_zettelkasten_embeddings() -> dict[str, Any]:
 
 @log_skill_execution
 def semantic_search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
-    """Search the Zettelkasten through the local semantic embedding index."""
+    """Search the Zettelkasten through the local semantic embedding index.
+
+    Args:
+        query: The semantic search query terms.
+        limit: The maximum number of search results. Defaults to 8.
+
+    Returns:
+        list[dict[str, Any]]: List of dictionary mappings representing matching search results.
+    """
     return [
         result.__dict__
         for result in semantic_search(
@@ -291,7 +312,14 @@ def persist_pdf_cache(relative_path: str, tree_json: str) -> dict[str, Any]:
 
 @log_skill_execution
 def index_pdf_cache(relative_path: str) -> dict[str, Any]:
-    """Run the configured external PageIndex command and persist its cache output."""
+    """Run the configured external PageIndex command and persist its cache output.
+
+    Args:
+        relative_path: Relative path to the PDF inside raw/papers.
+
+    Returns:
+        dict[str, Any]: Metadata detailing the persisted cache structure.
+    """
     return index_pdf_with_command(
         settings.vault_path,
         settings.raw_papers_path,
