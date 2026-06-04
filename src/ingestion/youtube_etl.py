@@ -217,7 +217,7 @@ def render_transcript_markdown(video: FeedVideo, transcript: list[TranscriptSegm
             f"# {video.title}",
             "",
             "Transcricao bruta extraida automaticamente do YouTube. Este arquivo deve ser "
-            "tratado pelo fluxo `/ingest-article` antes de entrar no cofre Zettelkasten.",
+            "tratado pelo fluxo `/ingest-youtube` antes de entrar no cofre Zettelkasten.",
             "",
             "## Transcricao",
             "",
