@@ -14,6 +14,7 @@ import math
 import re
 import urllib.error
 import urllib.request
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -28,7 +29,14 @@ DEFAULT_TIMEOUT_SECONDS = 20
 
 @dataclass(frozen=True)
 class EmbeddingSearchResult:
-    """Represents a semantic search result from the local embedding index."""
+    """Represents a semantic search result from the local embedding index.
+
+    Attributes:
+        path: Relative forward-slash path to the matched markdown file.
+        score: Cosine similarity score.
+        excerpt: Snippet of matching text around the keywords.
+        engine: Name of the embedding engine used.
+    """
 
     path: str
     score: float
@@ -38,7 +46,19 @@ class EmbeddingSearchResult:
 
 @dataclass(frozen=True)
 class EmbeddingStatus:
-    """Operational status for the local embedding index."""
+    """Operational status for the local embedding index.
+
+    Attributes:
+        provider: The configured embedding provider name.
+        active_provider: The active embedding provider name.
+        model_name: Name of the embedding model.
+        endpoint: Endpoint URL for API-based embedding providers.
+        index_path: Absolute path to the index JSON file.
+        index_exists: True if the index file exists.
+        document_count: Number of documents indexed.
+        dimensions: Vector space dimensionality of the embeddings.
+        fallback_provider: Optional fallback embedding provider name.
+    """
 
     provider: str
     active_provider: str
@@ -59,7 +79,18 @@ def embedding_status(
     endpoint: str | None,
     dimensions: int,
 ) -> EmbeddingStatus:
-    """Return availability and size information for the local embedding index."""
+    """Return availability and size information for the local embedding index.
+
+    Args:
+        index_path: Absolute path to the local embedding index JSON file.
+        provider: Configured embedding provider name.
+        model_name: Name of the default embedding model.
+        endpoint: Local embedding endpoint URL.
+        dimensions: Number of dimensions in the local embedding vector.
+
+    Returns:
+        EmbeddingStatus: Operational status values mapping.
+    """
     index = _load_index(index_path)
     index_provider = str(index.get("provider", provider)) if index else provider
     fallback_provider = index.get("fallback_provider") if index else None
@@ -85,7 +116,19 @@ def build_embedding_index(
     model_name: str,
     endpoint: str | None,
 ) -> dict[str, Any]:
-    """Build and persist a local embedding index for Markdown files under root."""
+    """Build and persist a local embedding index for Markdown files under root.
+
+    Args:
+        root: Root folder Path to scan for files.
+        index_path: Absolute path to save the index JSON.
+        provider: Configured embedding provider name (e.g. 'hashing' or 'ollama').
+        dimensions: Target dimensions size.
+        model_name: Name of the default embedding model.
+        endpoint: Endpoint URL for API-based providers.
+
+    Returns:
+        dict[str, Any]: Payload dictionary stored in the index path.
+    """
     embedder = _resolve_embedder(
         provider=provider,
         model_name=model_name,
@@ -138,7 +181,22 @@ def semantic_search(
     endpoint: str | None,
     rebuild_if_missing: bool = True,
 ) -> list[EmbeddingSearchResult]:
-    """Search the local embedding index using cosine similarity."""
+    """Search the local embedding index using cosine similarity.
+
+    Args:
+        root: Root folder Path containing the Zettelkasten files.
+        index_path: Absolute path to the index JSON.
+        query: Semantic search query terms.
+        limit: Maximum results to return.
+        provider: Configured embedding provider name.
+        dimensions: Target dimensions size.
+        model_name: Name of the default embedding model.
+        endpoint: Endpoint URL for API-based providers.
+        rebuild_if_missing: Automatically build index if file does not exist.
+
+    Returns:
+        list[EmbeddingSearchResult]: Sorted list of search results.
+    """
     index = _load_index(index_path)
     if index is None and rebuild_if_missing:
         index = build_embedding_index(
@@ -190,7 +248,18 @@ def semantic_search(
 
 
 def hashing_embedding(text: str, *, dimensions: int) -> list[float]:
-    """Generate a normalized signed hashing vector for text."""
+    """Generate a normalized signed hashing vector for text.
+
+    Args:
+        text: Input text content to embed.
+        dimensions: Dimensionality size of the target vector space.
+
+    Returns:
+        list[float]: Normalized vector representing the deterministic sign-hashes.
+
+    Raises:
+        ValueError: If dimensions is less than or equal to zero.
+    """
     if dimensions <= 0:
         raise ValueError("dimensions deve ser maior que zero.")
 
@@ -214,7 +283,20 @@ def ollama_embedding(
     model_name: str,
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
 ) -> list[float]:
-    """Request an embedding vector from a local Ollama-compatible endpoint."""
+    """Request an embedding vector from a local Ollama-compatible endpoint.
+
+    Args:
+        text: Input text content to embed.
+        endpoint: Target Ollama server api endpoint URL.
+        model_name: Model identifier name.
+        timeout_seconds: Network connection timeout threshold.
+
+    Returns:
+        list[float]: Retrieved embedding vector values.
+
+    Raises:
+        RuntimeError: If the remote endpoint request fails.
+    """
     payload = json.dumps({"model": model_name, "prompt": text}).encode("utf-8")
     request = urllib.request.Request(
         endpoint,
@@ -243,7 +325,21 @@ def embed_text(
     endpoint: str | None,
     dimensions: int,
 ) -> list[float]:
-    """Embed text using the configured provider."""
+    """Embed text using the configured provider.
+
+    Args:
+        text: Input text content to embed.
+        provider: Configured embedding provider name (e.g. 'hashing' or 'ollama').
+        model_name: Model identifier name.
+        endpoint: Endpoint URL for API-based providers.
+        dimensions: Target dimensions size.
+
+    Returns:
+        list[float]: Normalized vector representing the text embedding.
+
+    Raises:
+        RuntimeError: If provider is ollama and endpoint is missing.
+    """
     if provider == "ollama":
         if not endpoint:
             raise RuntimeError("EMBEDDING_ENDPOINT nao configurado para provider ollama.")
@@ -252,35 +348,214 @@ def embed_text(
 
 
 def cosine_similarity(left: list[float], right: list[float]) -> float:
-    """Compute cosine similarity between two normalized vectors."""
+    """Compute cosine similarity between two normalized vectors.
+
+    Args:
+        left: Left operand vector.
+        right: Right operand vector.
+
+    Returns:
+        float: Dot product of both normalized vectors.
+    """
     if len(left) != len(right):
         return 0.0
     return sum(a * b for a, b in zip(left, right, strict=True))
 
 
-class _Embedder:
+class Embedder(ABC):
+    """Abstract base class representing a text embedding generator.
+
+    Attributes:
+        active_provider: The active embedding provider string.
+        fallback_provider: Optional fallback embedding provider string.
+        model_name: Name of the embedding model.
+        endpoint: Endpoint URL for API-based embedding providers.
+        dimensions: Vector space dimensionality of the embeddings.
+    """
+
     def __init__(
         self,
         *,
         active_provider: str,
-        fallback_provider: str | None,
+        fallback_provider: str | None = None,
         model_name: str,
-        endpoint: str | None,
+        endpoint: str | None = None,
         dimensions: int,
     ) -> None:
+        """Initialize the base Embedder settings.
+
+        Args:
+            active_provider: The active embedding provider string.
+            fallback_provider: Optional fallback embedding provider string.
+            model_name: Name of the embedding model.
+            endpoint: Endpoint URL for API-based embedding providers.
+            dimensions: Vector space dimensionality of the embeddings.
+        """
         self.active_provider = active_provider
         self.fallback_provider = fallback_provider
         self.model_name = model_name
         self.endpoint = endpoint
         self.dimensions = dimensions
 
+    @abstractmethod
     def embed(self, text: str) -> list[float]:
-        return embed_text(
-            text,
-            provider=self.active_provider,
-            model_name=self.model_name,
-            endpoint=self.endpoint,
-            dimensions=self.dimensions,
+        """Generate a normalized embedding vector for the input text.
+
+        Args:
+            text: The input text to embed.
+
+        Returns:
+            list[float]: The generated and normalized embedding vector.
+
+        Raises:
+            RuntimeError: If vector generation fails.
+        """
+        pass
+
+
+class HashingEmbedder(Embedder):
+    """Deterministic signed hashing text embedding generator."""
+
+    def __init__(
+        self,
+        *,
+        model_name: str,
+        endpoint: str | None = None,
+        dimensions: int,
+    ) -> None:
+        """Initialize HashingEmbedder.
+
+        Args:
+            model_name: Name of the embedding model.
+            endpoint: Endpoint URL for API-based embedding providers (ignored).
+            dimensions: Vector space dimensionality of the embeddings.
+        """
+        super().__init__(
+            active_provider="hashing",
+            fallback_provider=None,
+            model_name=model_name,
+            endpoint=endpoint,
+            dimensions=dimensions,
+        )
+
+    def embed(self, text: str) -> list[float]:
+        """Generate a deterministic signed hashing vector for text.
+
+        Args:
+            text: The input text to embed.
+
+        Returns:
+            list[float]: The generated and normalized embedding vector.
+        """
+        return hashing_embedding(text, dimensions=self.dimensions)
+
+
+class OllamaEmbedder(Embedder):
+    """Local Ollama-compatible HTTP endpoint embedding generator."""
+
+    def __init__(
+        self,
+        *,
+        model_name: str,
+        endpoint: str,
+        dimensions: int,
+        fallback_provider: str | None = None,
+    ) -> None:
+        """Initialize OllamaEmbedder.
+
+        Args:
+            model_name: Name of the embedding model.
+            endpoint: Endpoint URL for Ollama service.
+            dimensions: Vector space dimensionality of the embeddings.
+            fallback_provider: Optional fallback embedding provider string.
+        """
+        super().__init__(
+            active_provider="ollama",
+            fallback_provider=fallback_provider,
+            model_name=model_name,
+            endpoint=endpoint,
+            dimensions=dimensions,
+        )
+
+    def embed(self, text: str) -> list[float]:
+        """Request an embedding vector from the local Ollama endpoint.
+
+        Args:
+            text: The input text to embed.
+
+        Returns:
+            list[float]: The generated and normalized embedding vector.
+
+        Raises:
+            RuntimeError: If request or vector generation fails.
+        """
+        return _normalize(
+            ollama_embedding(
+                text,
+                endpoint=self.endpoint or "",
+                model_name=self.model_name,
+            )
+        )
+
+
+class EmbedderFactory:
+    """Factory to instantiate and configure Embedder implementations."""
+
+    @staticmethod
+    def get_embedder(
+        *,
+        provider: str,
+        model_name: str,
+        endpoint: str | None,
+        dimensions: int,
+    ) -> Embedder:
+        """Resolve and return the appropriate Embedder implementation.
+
+        Checks provider type and validates availability, falling back to HashingEmbedder
+        if the configured remote provider is unreachable.
+
+        Args:
+            provider: Configured embedding provider name (e.g. 'hashing' or 'ollama').
+            model_name: Name of the embedding model.
+            endpoint: Endpoint URL for API-based embedding providers.
+            dimensions: Vector space dimensionality of the embeddings.
+
+        Returns:
+            Embedder: An initialized Embedder instance.
+        """
+        if provider != "ollama":
+            return HashingEmbedder(
+                model_name=model_name,
+                endpoint=endpoint,
+                dimensions=dimensions,
+            )
+
+        if not endpoint:
+            return HashingEmbedder(
+                model_name=model_name,
+                endpoint=endpoint,
+                dimensions=dimensions,
+            )
+
+        try:
+            ollama_embedding(
+                "healthcheck",
+                endpoint=endpoint,
+                model_name=model_name,
+            )
+        except RuntimeError:
+            embedder = HashingEmbedder(
+                model_name=model_name,
+                endpoint=endpoint,
+                dimensions=dimensions,
+            )
+            object.__setattr__(embedder, "fallback_provider", "hashing")
+            return embedder
+
+        return OllamaEmbedder(
+            model_name=model_name,
+            endpoint=endpoint,
+            dimensions=dimensions,
         )
 
 
@@ -290,35 +565,20 @@ def _resolve_embedder(
     model_name: str,
     endpoint: str | None,
     dimensions: int,
-) -> _Embedder:
-    if provider != "ollama":
-        return _Embedder(
-            active_provider=DEFAULT_PROVIDER,
-            fallback_provider=None,
-            model_name=model_name,
-            endpoint=endpoint,
-            dimensions=dimensions,
-        )
+) -> Embedder:
+    """Resolve and return an Embedder implementation using the EmbedderFactory.
 
-    try:
-        embed_text(
-            "healthcheck",
-            provider="ollama",
-            model_name=model_name,
-            endpoint=endpoint,
-            dimensions=dimensions,
-        )
-    except RuntimeError:
-        return _Embedder(
-            active_provider=FALLBACK_PROVIDER,
-            fallback_provider=FALLBACK_PROVIDER,
-            model_name=model_name,
-            endpoint=endpoint,
-            dimensions=dimensions,
-        )
-    return _Embedder(
-        active_provider="ollama",
-        fallback_provider=None,
+    Args:
+        provider: Configured embedding provider name.
+        model_name: Name of the embedding model.
+        endpoint: Endpoint URL for API-based embedding providers.
+        dimensions: Vector space dimensionality of the embeddings.
+
+    Returns:
+        Embedder: An initialized Embedder instance.
+    """
+    return EmbedderFactory.get_embedder(
+        provider=provider,
         model_name=model_name,
         endpoint=endpoint,
         dimensions=dimensions,
@@ -326,6 +586,14 @@ def _resolve_embedder(
 
 
 def _normalize(vector: list[float]) -> list[float]:
+    """Normalize vector magnitude using L2 norm.
+
+    Args:
+        vector: A list of floats to normalize.
+
+    Returns:
+        list[float]: The L2 normalized vector.
+    """
     norm = math.sqrt(sum(value * value for value in vector))
     if norm == 0:
         return vector
@@ -333,12 +601,29 @@ def _normalize(vector: list[float]) -> list[float]:
 
 
 def _engine_name(provider: str) -> str:
+    """Resolve retrieval engine label tag based on provider name.
+
+    Args:
+        provider: The provider name string.
+
+    Returns:
+        str: Standard engine tag name.
+    """
     if provider == "ollama":
         return "ollama-embedding"
     return "hash-embedding"
 
 
 def _load_index(index_path: Path) -> dict[str, Any] | None:
+    """Read local JSON file index.
+
+    Args:
+        index_path: The index file Path.
+
+    Returns:
+        dict[str, Any] | None: Decoded index map if file exists and is valid JSON,
+            otherwise None.
+    """
     if not index_path.exists():
         return None
     try:
@@ -351,6 +636,16 @@ def _load_index(index_path: Path) -> dict[str, Any] | None:
 
 
 def _excerpt(text: str, query: str, *, radius: int = 180) -> str:
+    """Slices a contextual snippet around first query match within text.
+
+    Args:
+        text: Source text to extract context.
+        query: Space-separated keyword string.
+        radius: Number of characters to scan left and right. Defaults to 180.
+
+    Returns:
+        str: Excerpt snippet text.
+    """
     terms = _tokenize(query)
     lowered = text.lower()
     positions = [lowered.find(term) for term in terms if lowered.find(term) >= 0]
@@ -362,6 +657,14 @@ def _excerpt(text: str, query: str, *, radius: int = 180) -> str:
 
 
 def _tokenize(text: str) -> list[str]:
+    """Tokenize and normalize text into words of minimum length.
+
+    Args:
+        text: The source text to tokenize.
+
+    Returns:
+        list[str]: Normalized token word list.
+    """
     return [
         token.lower()
         for token in re.findall(r"\w+", text)
