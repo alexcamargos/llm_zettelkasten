@@ -1,3 +1,9 @@
+"""Unit tests for the YouTube playlist ETL pipeline.
+
+Tests parsing RSS feeds XML, formatting markdown transcript files, checking safety
+contracts, and validating pipeline history helper methods.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -14,6 +20,11 @@ from ingestion.youtube_etl import (
 
 
 def test_parse_youtube_feed_extracts_video_metadata() -> None:
+    """Test that parse_youtube_feed extracts the correct video metadata.
+
+    Returns:
+        None
+    """
     xml = """<?xml version="1.0" encoding="UTF-8"?>
     <feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
           xmlns="http://www.w3.org/2005/Atom">
@@ -39,20 +50,36 @@ def test_parse_youtube_feed_extracts_video_metadata() -> None:
 
 
 def test_render_transcript_markdown_has_ingest_article_contract() -> None:
-    video = FeedVideo("abc123", "Titulo \"Especial\"", "https://youtube.test/watch?v=abc123")
-    transcript = [TranscriptSegment("Primeira fala", start=3), TranscriptSegment("Segunda fala")]
+    """Test that render_transcript_markdown contains required metadata fields.
+
+    Returns:
+        None
+    """
+    video = FeedVideo("abc123", 'Titulo "Especial"', "https://youtube.test/watch?v=abc123")
+    transcript = [
+        TranscriptSegment("Primeira fala", start=3),
+        TranscriptSegment("Segunda fala"),
+    ]
 
     markdown = render_transcript_markdown(video, transcript)
 
     assert "source_kind: youtube_transcript" in markdown
     assert "video_id: abc123" in markdown
-    assert "# Titulo \"Especial\"" in markdown
+    assert '# Titulo "Especial"' in markdown
     assert "[00:03] Primeira fala" in markdown
     assert "Segunda fala" in markdown
     assert "`/ingest-article`" in markdown
 
 
 def test_write_transcript_artifact_and_history_helpers(tmp_path: Path) -> None:
+    """Test writing the transcript file and using the history logs helper methods.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
     video = FeedVideo("abc123", "Meu Video de Teste", "https://youtube.test/watch?v=abc123")
     output = write_transcript_artifact(tmp_path, video, [TranscriptSegment("conteudo")])
 
