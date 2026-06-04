@@ -129,7 +129,11 @@ def test_file_tools_are_limited_to_markdown_inside_root(tmp_path: Path) -> None:
 
 
 def test_merge_search_results_deduplicates_and_combines_engines() -> None:
-    """Test local hybrid result merging combines scores and engine labels."""
+    """Test local hybrid result merging combines scores and engine labels.
+
+    Returns:
+        None
+    """
     merged = merge_search_results(
         [
             SearchResult(
