@@ -7,9 +7,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from tools_pdf import (
+    index_pdf_with_command,
     list_pageindex_manifests,
     persist_pageindex_cache,
     read_pageindex_cache,
@@ -113,6 +115,63 @@ def test_resolve_pdf_cache_by_source_path(tmp_path: Path) -> None:
     assert resolved["document_id"] == document_id
     assert resolved["cache_found"] is True
     assert resolved["manifest"]["source_path"] == "raw/papers/teste.pdf"
+
+
+def test_index_pdf_with_command_reports_missing_configuration(tmp_path: Path) -> None:
+    """Test PageIndex command bridge reports explicit disabled status."""
+    vault = tmp_path / "vault"
+    raw_papers = vault / "raw" / "papers"
+    pageindex_root = vault / ".pageindex"
+    raw_papers.mkdir(parents=True)
+    pageindex_root.mkdir()
+    (raw_papers / "teste.pdf").write_bytes(b"abc")
+
+    result = index_pdf_with_command(
+        vault,
+        raw_papers,
+        pageindex_root,
+        "raw/papers/teste.pdf",
+        pageindex_command=None,
+    )
+
+    assert result["indexed"] is False
+    assert "PAGEINDEX_COMMAND" in result["reason"]
+
+
+def test_index_pdf_with_command_persists_stdout_tree(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test external PageIndex bridge persists stdout JSON as tree cache."""
+    vault = tmp_path / "vault"
+    raw_papers = vault / "raw" / "papers"
+    pageindex_root = vault / ".pageindex"
+    raw_papers.mkdir(parents=True)
+    pageindex_root.mkdir()
+    pdf_path = raw_papers / "teste.pdf"
+    pdf_path.write_bytes(b"abc")
+
+    monkeypatch.setattr("tools_pdf.shutil.which", lambda _command: "fake-pageindex")
+    monkeypatch.setattr(
+        "tools_pdf.subprocess.run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            returncode=0,
+            stdout='{"nodes": [{"page": 1, "text": "conteudo indexado"}]}',
+            stderr="",
+        ),
+    )
+
+    result = index_pdf_with_command(
+        vault,
+        raw_papers,
+        pageindex_root,
+        "raw/papers/teste.pdf",
+        pageindex_command="fake-pageindex --json",
+    )
+
+    assert result["indexed"] is True
+    assert (vault / result["tree_path"]).exists()
+    assert result["manifest"]["index_source"] == "pageindex_external_command"
 
 
 def test_read_pageindex_page_returns_page_text(tmp_path: Path) -> None:
