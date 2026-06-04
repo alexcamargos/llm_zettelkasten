@@ -13,7 +13,7 @@ Acionado quando o usuário disser `gemini "Execute a skill /ghost para escrever 
 ### Etapa 1: Mineração e Escopo Inicial
 1. Priorize `ZettelkastenBrain.search_zettelkasten` para localizar Notas Permanentes e Notas de Literatura relevantes ao tópico solicitado por busca híbrida ou fallback lexical local.
 2. Use `ZettelkastenBrain.read_zettelkasten_markdown` para ler o conteúdo das notas candidatas retornadas. Se o MCP estiver indisponível ou insuficiente, acesse `zettelkasten/index.md` e localize manualmente todas as notas relevantes.
-3. Leia o conteúdo destas notas para compreender o panorama teórico, os dados estatísticos disponíveis e as divergências entre autores. Quando houver referência a PDF e cache PageIndex, use `ZettelkastenBrain.read_pdf_cache` apenas como apoio de navegação e confirmação localizada, sem substituir as notas do cofre como fonte primária.
+3. Leia o conteúdo destas notas para compreender o panorama teórico, os dados estatísticos disponíveis e as divergências entre autores. Quando houver referência a PDF e cache PageIndex, use `ZettelkastenBrain.resolve_pdf`, `ZettelkastenBrain.read_pdf_cache` ou `ZettelkastenBrain.read_pdf_page` apenas como apoio de navegação e confirmação localizada, sem substituir as notas do cofre como fonte primária.
 
 ### Etapa 2: Alinhamento Estratégico (Pausa Obrigatória e Interação)
 É terminantemente proibido iniciar a redação do texto antes de concluir esta etapa. Apresente ao usuário um plano de voo contendo:
