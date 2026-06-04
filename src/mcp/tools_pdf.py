@@ -9,6 +9,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shlex
+import shutil
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -83,6 +86,77 @@ def resolve_pdf_cache(
         "cache_found": manifest is not None,
         "manifest": manifest,
     }
+
+
+def index_pdf_with_command(
+    vault_path: Path,
+    raw_papers_path: Path,
+    pageindex_root: Path,
+    relative_path: str,
+    *,
+    pageindex_command: str | None,
+    timeout_seconds: int = 120,
+) -> dict[str, Any]:
+    """Index a PDF using an external command that emits PageIndex tree JSON.
+
+    The command is configured without the target PDF path; this function appends
+    the validated absolute PDF path as the final argument and expects stdout to
+    be a JSON object/list compatible with `persist_pageindex_cache`.
+    """
+    pdf_path = _safe_pdf_path(vault_path, raw_papers_path, relative_path)
+    if not pageindex_command:
+        return {
+            "indexed": False,
+            "reason": "PAGEINDEX_COMMAND nao configurado.",
+            "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
+            "document_id": sha256_file(pdf_path),
+        }
+
+    executable = shlex.split(pageindex_command)[0]
+    if shutil.which(executable) is None:
+        return {
+            "indexed": False,
+            "reason": f"Comando PageIndex indisponivel: {executable}",
+            "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
+            "document_id": sha256_file(pdf_path),
+        }
+
+    command = [*shlex.split(pageindex_command), str(pdf_path)]
+    try:
+        completed = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            cwd=vault_path,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {
+            "indexed": False,
+            "reason": f"Falha ao executar PageIndex: {exc}",
+            "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
+            "document_id": sha256_file(pdf_path),
+        }
+
+    if completed.returncode != 0:
+        return {
+            "indexed": False,
+            "reason": completed.stderr.strip() or "PageIndex retornou codigo diferente de zero.",
+            "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
+            "document_id": sha256_file(pdf_path),
+        }
+
+    persisted = persist_pageindex_cache(
+        vault_path,
+        raw_papers_path,
+        pageindex_root,
+        relative_path,
+        completed.stdout,
+        index_source="pageindex_external_command",
+        mcp_transport=pageindex_command,
+    )
+    return {"indexed": True, **persisted}
 
 
 def persist_pageindex_cache(
