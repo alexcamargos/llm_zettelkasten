@@ -30,7 +30,7 @@ from tools_pdf import (
     resolve_pdf_cache,
     sha256_file,
 )
-from tools_search import hybrid_search
+from tools_search import hybrid_search, retrieval_status
 
 from config import load_settings
 from logger import configure_logging, log_skill_execution
@@ -76,6 +76,11 @@ def search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
             qmd_command=settings.qmd_command,
         )
     ]
+
+
+@log_skill_execution
+def retrieval_health() -> dict[str, Any]:
+    return retrieval_status(settings.qmd_command).__dict__
 
 
 @log_skill_execution
@@ -242,6 +247,7 @@ def build_server() -> Any:
     server = FastMCP("ZettelkastenBrain")
     server.tool()(health)
     server.tool()(search_zettelkasten)
+    server.tool()(retrieval_health)
     server.tool()(list_zettelkasten_markdown)
     server.tool()(read_zettelkasten_markdown)
     server.tool()(inspect_pdf_manifest)
