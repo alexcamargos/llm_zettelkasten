@@ -27,6 +27,7 @@ llm_zettelkasten/
 │       ├── ingest-paper.md
 │       ├── ingest-paper-intro.md
 │       ├── ingest-article.md
+│       ├── ingest-youtube.md
 │       ├── recall.md
 │       ├── visual.md
 │       ├── lint.md
@@ -60,7 +61,7 @@ Pastas sem notas ainda usam um arquivo **`.gitkeep`** (vazio) para o Git version
 A inicialização em um novo ambiente resume-se a clonar o repositório, instalar o Gemini CLI conforme a documentação oficial e passar a operar na raiz do projeto. As pastas necessárias já vêm no clone; o foco segue sendo a mineração de dados acadêmicos com o agente.
 
 ### Clonagem e Versionamento
-O usuário deve clonar o repositório para o disco local utilizando um cliente de controle de versão. A árvore de pastas versionada (`raw/`, `zettelkasten/`, `.state/`) já vem preparada para uso imediato; adicione PDFs formais em `raw/papers/` (skills `/ingest-paper` e `/ingest-paper-intro`) e recortes informais da web em Markdown em `raw/articles/` (skill `/ingest-article`).
+O usuário deve clonar o repositório para o disco local utilizando um cliente de controle de versão. A árvore de pastas versionada (`raw/`, `zettelkasten/`, `.state/`) já vem preparada para uso imediato; adicione PDFs formais em `raw/papers/` (skills `/ingest-paper` e `/ingest-paper-intro`), recortes informais da web em Markdown em `raw/articles/` (skill `/ingest-article`) e transcrições geradas pelo ETL de YouTube em `raw/articles/` (skill `/ingest-youtube`).
 
 ### Gemini CLI
 Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `GEMINI.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
@@ -97,7 +98,7 @@ Seguindo as etapas de inicialização, o ambiente de pesquisa estará perfeitame
 O fluxo de trabalho foi projetado para cobrir o ciclo completo da inteligência de negócios aplicada à pesquisa científica. Cada comando aciona um fluxo isolado e validado, garantindo que a rotina de estudos seja convertida em ativos de conhecimento mensuráveis e estruturados.
 
 ### Fluxo Acionável
-O fluxo operacional inicia com o comando de abertura de sessão para recuperar o estado atual do estudo sobre métricas de insolvência. Durante a leitura de um novo estudo formal, use `/ingest-paper` ou `/ingest-paper-intro` em `raw/papers/`; para artigos da web em `raw/articles/`, use `/ingest-article`, sempre com referência e validação humana conforme o `GEMINI.md`. Para cruzar os dados extraídos com indicadores financeiros previamente estudados, o comando de busca é acionado para recuperar a inteligência acumulada no cofre. No fluxo **`/recall`**, quando existir cache PageIndex para um paper já ligado ao cofre, esse índice deve servir apenas como apoio de navegação e verificação localizada, orientando retorno seletivo à nota de literatura correspondente ou ao PDF original, sem substituir as notas do cofre como fonte primária da síntese. A etapa de consolidação utiliza o comando de redação acadêmica para criar o rascunho estruturado do texto. O ciclo é finalizado utilizando o comando de encerramento para atualizar o contexto e preparar o ambiente de forma automática para a próxima rotina.
+O fluxo operacional inicia com o comando de abertura de sessão para recuperar o estado atual do estudo sobre métricas de insolvência. Durante a leitura de um novo estudo formal, use `/ingest-paper` ou `/ingest-paper-intro` em `raw/papers/`; para artigos da web em `raw/articles/`, use `/ingest-article`; para transcrições geradas pelo ETL de YouTube, use `/ingest-youtube`, sempre com referência e validação humana conforme o `GEMINI.md`. Para cruzar os dados extraídos com indicadores financeiros previamente estudados, o comando de busca é acionado para recuperar a inteligência acumulada no cofre. No fluxo **`/recall`**, quando existir cache PageIndex para um paper já ligado ao cofre, esse índice deve servir apenas como apoio de navegação e verificação localizada, orientando retorno seletivo à nota de literatura correspondente ou ao PDF original, sem substituir as notas do cofre como fonte primária da síntese. A etapa de consolidação utiliza o comando de redação acadêmica para criar o rascunho estruturado do texto. O ciclo é finalizado utilizando o comando de encerramento para atualizar o contexto e preparar o ambiente de forma automática para a próxima rotina.
 
 ### Considerações Finais
 A cadência operacional descrita transforma a interface de comando em um verdadeiro parceiro analítico. A previsibilidade estrutural elimina o atrito tecnológico e garante a sofisticação intelectual exigida em avaliações acadêmicas rigorosas e no mercado corporativo.
