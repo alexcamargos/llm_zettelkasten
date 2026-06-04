@@ -17,7 +17,7 @@ Use este ramo conforme os seguintes critérios de tamanho e complexidade do PDF.
 
 **Identificador único (`document_id`):** calcule a impressão digital **SHA-256** do arquivo binário completo em `raw/papers/`, representada como **64 caracteres hexadecimais em minúsculas**. Essa string é o nome da subpasta. Siga **somente** a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no topo do `GEMINI.md` (ferramenta normativa: PowerShell **`Get-FileHash`** no Windows); não derive o hash por leitura parcial do PDF no modelo nem por APIs não determinísticas. No **`manifest.json`**, preencha **`hash_tool`** conforme o método usado (ex.: `powershell_get_file_hash` ou `python_hashlib_sha256`). Se já existir `.pageindex/<document_id>/tree.json` com `manifest.json` cujo `source_path` e `byte_size` coincidam com o PDF atual, **reutilize** o cache, salvo instrução do usuário em contrário.
 
-**Persistência no repositório:** após obter a árvore PageIndex (via ferramentas expostas pelo MCP), grave **exatamente** estes arquivos (crie a pasta se necessário):
+**Persistência no repositório:** após obter a árvore PageIndex (via ferramentas expostas pelo MCP `pageindex`), priorize a chamada `ZettelkastenBrain.persist_pdf_cache(relative_path, tree_json)` para gravar de forma determinística o cache e o manifesto. Se `ZettelkastenBrain` estiver indisponível, grave manualmente **exatamente** estes arquivos (crie a pasta se necessário):
 1. `.pageindex/<document_id>/tree.json` — saída estrutural PageIndex (JSON).
 2. `.pageindex/<document_id>/manifest.json` — metadados conforme o `GEMINI.md` (seção Manifest PageIndex), incluindo `indexed_at` em UTC, `index_source: "pageindex_mcp_local"` e `mcp_transport` descrevendo o `npx` utilizado.
 
