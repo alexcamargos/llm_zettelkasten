@@ -76,6 +76,14 @@ def merge_search_results(
     Scores are summed when both engines find the same document; unique secondary
     hits are kept with their original score. This gives the MCP server a local
     hybrid fallback without forcing qmd availability.
+
+    Args:
+        primary: Primary search result list.
+        secondary: Secondary search result list.
+        limit: Maximum results to return after merging.
+
+    Returns:
+        list[SearchResult]: Merged and sorted list of search results.
     """
     merged: dict[str, SearchResult] = {}
     for result in [*primary, *secondary]:
@@ -93,7 +101,14 @@ def merge_search_results(
 
 
 def retrieval_status(qmd_command: str | None = "qmd") -> RetrievalStatus:
-    """Return availability information for the retrieval stack."""
+    """Return availability information for the retrieval stack.
+
+    Args:
+        qmd_command: Optional executable command for qmd search tool. Defaults to "qmd".
+
+    Returns:
+        RetrievalStatus: Availability and configuration status of retrieval tools.
+    """
     if not qmd_command:
         return RetrievalStatus(qmd_configured=False, qmd_available=False, qmd_command=None)
     executable = shlex.split(qmd_command)[0]
@@ -262,10 +277,27 @@ def _parse_qmd_output(output: str, *, root: Path, limit: int) -> list[SearchResu
 
 
 def _tokenize(text: str) -> list[str]:
+    """Tokenize and normalize text into word lists.
+
+    Args:
+        text: The text content to tokenize.
+
+    Returns:
+        list[str]: Lowercase word token list of at least 2 characters.
+    """
     return [term.lower() for term in re.findall(r"\w+", text) if len(term) >= 2]
 
 
 def _merge_engine_names(left: str, right: str) -> str:
+    """Combine and deduplicate engine name tags.
+
+    Args:
+        left: Left operand engine name string.
+        right: Right operand engine name string.
+
+    Returns:
+        str: Combined engine names joined by a plus sign.
+    """
     names = []
     for name in [*left.split("+"), *right.split("+")]:
         if name not in names:
@@ -283,6 +315,20 @@ def _bm25_score(
     k1: float = 1.5,
     b: float = 0.75,
 ) -> float:
+    """Calculate the BM25 relevance score for a document.
+
+    Args:
+        query_terms: Token list of the query.
+        document_terms: Token list of the document content.
+        document_frequency: Corpus frequencies of query terms.
+        document_count: Total count of documents in corpus.
+        average_length: Average length of documents in corpus.
+        k1: Term frequency saturation tuning parameter. Defaults to 1.5.
+        b: Document length normalization tuning parameter. Defaults to 0.75.
+
+    Returns:
+        float: BM25 score.
+    """
     term_counts = {term: document_terms.count(term) for term in set(query_terms)}
     document_length = len(document_terms)
     score = 0.0
