@@ -54,6 +54,283 @@ class TranscriptSegment:
     duration: float | None = None
 
 
+class YouTubeFeedReader:
+    """Handles fetching and parsing YouTube playlist RSS feeds."""
+
+    def __init__(self, playlist_id: str) -> None:
+        """Initialize the feed reader with a playlist ID.
+
+        Args:
+            playlist_id: The YouTube playlist ID.
+        """
+        self.playlist_id = playlist_id
+
+    def get_feed_url(self) -> str:
+        """Format the YouTube RSS feed URL for the playlist.
+
+        Returns:
+            str: The formatted feed URL.
+        """
+        return YOUTUBE_FEED_URL.format(playlist_id=self.playlist_id)
+
+    def fetch_videos(self) -> list[FeedVideo]:
+        """Fetch and parse feed videos for the playlist using the feedparser library.
+
+        Returns:
+            list[FeedVideo]: A list of FeedVideo metadata objects.
+        """
+        import feedparser
+
+        parsed_feed = feedparser.parse(self.get_feed_url())
+        videos: list[FeedVideo] = []
+        for entry in parsed_feed.entries:
+            video_id = getattr(entry, "yt_videoid", None) or _video_id_from_url(
+                getattr(entry, "link", "")
+            )
+            if not video_id:
+                continue
+            videos.append(
+                FeedVideo(
+                    video_id=video_id,
+                    title=getattr(entry, "title", video_id),
+                    url=getattr(entry, "link", f"https://www.youtube.com/watch?v={video_id}"),
+                    published_at=getattr(entry, "published", None),
+                )
+            )
+        return videos
+
+    @staticmethod
+    def parse_feed_xml(xml_content: str) -> list[FeedVideo]:
+        """Parse raw YouTube RSS feed XML content to extract video metadata.
+
+        Args:
+            xml_content: The raw XML string from the feed.
+
+        Returns:
+            list[FeedVideo]: A list of FeedVideo metadata objects.
+        """
+        root = ElementTree.fromstring(xml_content)
+        ns = {
+            "atom": "http://www.w3.org/2005/Atom",
+            "yt": "http://www.youtube.com/xml/schemas/2015",
+        }
+        videos: list[FeedVideo] = []
+        for entry in root.findall("atom:entry", ns):
+            video_id = _text(entry.find("yt:videoId", ns))
+            title = _text(entry.find("atom:title", ns))
+            link = entry.find("atom:link", ns)
+            url = link.attrib.get("href", "") if link is not None else ""
+            published_at = _text(entry.find("atom:published", ns)) or None
+            if video_id and title and url:
+                videos.append(
+                    FeedVideo(
+                        video_id=video_id,
+                        title=title,
+                        url=url,
+                        published_at=published_at,
+                    )
+                )
+        return videos
+
+
+class YouTubeTranscriptFetcher:
+    """Fetches transcripts from YouTube API."""
+
+    def __init__(self, languages: tuple[str, ...] = ("pt", "pt-BR", "en")) -> None:
+        """Initialize the transcript fetcher with preferred languages.
+
+        Args:
+            languages: Priority tuple of language codes. Defaults to ("pt", "pt-BR", "en").
+        """
+        self.languages = languages
+
+    def fetch(self, video_id: str) -> list[TranscriptSegment]:
+        """Fetch the transcript for a YouTube video in the preferred languages.
+
+        Args:
+            video_id: The unique YouTube video ID.
+
+        Returns:
+            list[TranscriptSegment]: List of retrieved transcript segments.
+        """
+        from youtube_transcript_api import YouTubeTranscriptApi
+
+        raw_segments = YouTubeTranscriptApi.get_transcript(video_id, languages=list(self.languages))
+        return [
+            TranscriptSegment(
+                text=str(segment.get("text", "")).strip(),
+                start=_float_or_none(segment.get("start")),
+                duration=_float_or_none(segment.get("duration")),
+            )
+            for segment in raw_segments
+            if str(segment.get("text", "")).strip()
+        ]
+
+
+class TranscriptWriter:
+    """Manages formatting, output paths, and writing transcripts to files.
+
+    Also handles tracking processed video IDs.
+    """
+
+    def __init__(self, raw_articles_path: Path, history_path: Path) -> None:
+        """Initialize the transcript writer.
+
+        Args:
+            raw_articles_path: Directory path for storing transcripts.
+            history_path: Path to the text file tracking ingested IDs.
+        """
+        self.raw_articles_path = raw_articles_path
+        self.history_path = history_path
+
+    def load_processed_ids(self) -> set[str]:
+        """Load the set of already processed YouTube video IDs from the history file.
+
+        Returns:
+            set[str]: A set of unique video ID strings.
+        """
+        if not self.history_path.exists():
+            return set()
+        return {
+            line.strip()
+            for line in self.history_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        }
+
+    def append_processed_id(self, video_id: str) -> None:
+        """Append a newly processed YouTube video ID to the history file.
+
+        Args:
+            video_id: The video ID to record.
+        """
+        self.history_path.parent.mkdir(parents=True, exist_ok=True)
+        with self.history_path.open("a", encoding="utf-8", newline="\n") as file:
+            file.write(f"{video_id}\n")
+
+    def get_output_path(self, video: FeedVideo) -> Path:
+        """Determine the file output path for a video transcript markdown file.
+
+        Args:
+            video: The video metadata object.
+
+        Returns:
+            Path: Output markdown file Path.
+        """
+        return self.raw_articles_path / f"youtube-{video.video_id}-{slugify(video.title)}.md"
+
+    def render_markdown(self, video: FeedVideo, transcript: list[TranscriptSegment]) -> str:
+        """Render YouTube video and transcript data into formatted Markdown text.
+
+        Args:
+            video: The video metadata object.
+            transcript: The transcript segment objects list.
+
+        Returns:
+            str: Formatted Markdown string representing the transcript.
+        """
+        retrieved_at = datetime.now(UTC).isoformat(timespec="seconds")
+        lines = [
+            "---",
+            f'title: "{_yaml_escape(video.title)}"',
+            "source_kind: youtube_transcript",
+            f"video_id: {video.video_id}",
+            f'url: "{video.url}"',
+            f'retrieved_at: "{retrieved_at}"',
+        ]
+        if video.published_at:
+            lines.append(f'published_at: "{_yaml_escape(video.published_at)}"')
+        lines.extend(
+            [
+                "---",
+                "",
+                f"# {video.title}",
+                "",
+                "Transcricao bruta extraida automaticamente do YouTube. Este arquivo deve ser "
+                "tratado pelo fluxo `/ingest-youtube` antes de entrar no cofre Zettelkasten.",
+                "",
+                "## Transcricao",
+                "",
+            ]
+        )
+        lines.extend(_format_transcript_lines(transcript))
+        return "\n".join(lines).rstrip() + "\n"
+
+    def write(self, video: FeedVideo, transcript: list[TranscriptSegment]) -> Path:
+        """Write the rendered transcript markdown content to a local file.
+
+        Args:
+            video: The video metadata object.
+            transcript: The list of transcript segments.
+
+        Returns:
+            Path: The file Path where the transcript was saved.
+        """
+        self.raw_articles_path.mkdir(parents=True, exist_ok=True)
+        output_path = self.get_output_path(video)
+        output_path.write_text(
+            self.render_markdown(video, transcript),
+            encoding="utf-8",
+            newline="\n",
+        )
+        return output_path
+
+
+class YouTubeETLPipeline:
+    """Orchestrates the YouTube RSS playlist ETL pipeline."""
+
+    def __init__(
+        self,
+        feed_reader: YouTubeFeedReader,
+        transcript_fetcher: YouTubeTranscriptFetcher,
+        writer: TranscriptWriter,
+    ) -> None:
+        """Initialize the pipeline with its collaborators.
+
+        Args:
+            feed_reader: The reader responsible for fetching playlist feeds.
+            transcript_fetcher: The fetcher responsible for retrieving transcripts.
+            writer: The writer responsible for formatting and persisting results.
+        """
+        self.feed_reader = feed_reader
+        self.transcript_fetcher = transcript_fetcher
+        self.writer = writer
+
+    def run(self, *, dry_run: bool = False, limit: int | None = None) -> list[Path]:
+        """Ingest new video transcripts from the configured YouTube playlist.
+
+        Args:
+            dry_run: If True, detects candidates without downloading or saving transcripts.
+            limit: Maximum number of new videos to process in this run.
+
+        Returns:
+            list[Path]: A list of file Paths created during ingestion.
+        """
+        logger = get_logger()
+        processed_ids = self.writer.load_processed_ids()
+        candidates = [
+            video
+            for video in self.feed_reader.fetch_videos()
+            if video.video_id not in processed_ids
+        ]
+        if limit is not None:
+            candidates = candidates[:limit]
+
+        created: list[Path] = []
+        for video in candidates:
+            logger.info("youtube_etl_video_detected id={} title={}", video.video_id, video.title)
+            if dry_run:
+                continue
+            transcript = self.transcript_fetcher.fetch(video.video_id)
+            created_path = self.writer.write(video, transcript)
+            self.writer.append_processed_id(video.video_id)
+            created.append(created_path)
+            logger.info("youtube_etl_artifact_created path={}", created_path)
+        return created
+
+
+# Module level backward-compatibility wrapper functions
+
+
 def playlist_feed_url(playlist_id: str) -> str:
     """Format the YouTube RSS feed URL for a given playlist ID.
 
@@ -63,7 +340,8 @@ def playlist_feed_url(playlist_id: str) -> str:
     Returns:
         str: The formatted feed URL.
     """
-    return YOUTUBE_FEED_URL.format(playlist_id=playlist_id)
+    reader = YouTubeFeedReader(playlist_id)
+    return reader.get_feed_url()
 
 
 def load_processed_ids(history_path: Path) -> set[str]:
@@ -75,13 +353,8 @@ def load_processed_ids(history_path: Path) -> set[str]:
     Returns:
         set[str]: A set of unique video ID strings.
     """
-    if not history_path.exists():
-        return set()
-    return {
-        line.strip()
-        for line in history_path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    }
+    writer = TranscriptWriter(Path(), history_path)
+    return writer.load_processed_ids()
 
 
 def append_processed_id(history_path: Path, video_id: str) -> None:
@@ -90,13 +363,9 @@ def append_processed_id(history_path: Path, video_id: str) -> None:
     Args:
         history_path: Path to the text file tracking ingested IDs.
         video_id: The video ID to record.
-
-    Returns:
-        None
     """
-    history_path.parent.mkdir(parents=True, exist_ok=True)
-    with history_path.open("a", encoding="utf-8", newline="\n") as file:
-        file.write(f"{video_id}\n")
+    writer = TranscriptWriter(Path(), history_path)
+    writer.append_processed_id(video_id)
 
 
 def parse_youtube_feed(xml_content: str) -> list[FeedVideo]:
@@ -108,28 +377,7 @@ def parse_youtube_feed(xml_content: str) -> list[FeedVideo]:
     Returns:
         list[FeedVideo]: A list of FeedVideo metadata objects.
     """
-    root = ElementTree.fromstring(xml_content)
-    ns = {
-        "atom": "http://www.w3.org/2005/Atom",
-        "yt": "http://www.youtube.com/xml/schemas/2015",
-    }
-    videos: list[FeedVideo] = []
-    for entry in root.findall("atom:entry", ns):
-        video_id = _text(entry.find("yt:videoId", ns))
-        title = _text(entry.find("atom:title", ns))
-        link = entry.find("atom:link", ns)
-        url = link.attrib.get("href", "") if link is not None else ""
-        published_at = _text(entry.find("atom:published", ns)) or None
-        if video_id and title and url:
-            videos.append(
-                FeedVideo(
-                    video_id=video_id,
-                    title=title,
-                    url=url,
-                    published_at=published_at,
-                )
-            )
-    return videos
+    return YouTubeFeedReader.parse_feed_xml(xml_content)
 
 
 def fetch_feed_videos(playlist_id: str) -> list[FeedVideo]:
@@ -141,25 +389,8 @@ def fetch_feed_videos(playlist_id: str) -> list[FeedVideo]:
     Returns:
         list[FeedVideo]: A list of FeedVideo metadata objects from the playlist feed.
     """
-    import feedparser
-
-    parsed_feed = feedparser.parse(playlist_feed_url(playlist_id))
-    videos: list[FeedVideo] = []
-    for entry in parsed_feed.entries:
-        video_id = getattr(entry, "yt_videoid", None) or _video_id_from_url(
-            getattr(entry, "link", "")
-        )
-        if not video_id:
-            continue
-        videos.append(
-            FeedVideo(
-                video_id=video_id,
-                title=getattr(entry, "title", video_id),
-                url=getattr(entry, "link", f"https://www.youtube.com/watch?v={video_id}"),
-                published_at=getattr(entry, "published", None),
-            )
-        )
-    return videos
+    reader = YouTubeFeedReader(playlist_id)
+    return reader.fetch_videos()
 
 
 def fetch_transcript(
@@ -175,18 +406,8 @@ def fetch_transcript(
     Returns:
         list[TranscriptSegment]: List of retrieved transcript segments.
     """
-    from youtube_transcript_api import YouTubeTranscriptApi
-
-    raw_segments = YouTubeTranscriptApi.get_transcript(video_id, languages=list(languages))
-    return [
-        TranscriptSegment(
-            text=str(segment.get("text", "")).strip(),
-            start=_float_or_none(segment.get("start")),
-            duration=_float_or_none(segment.get("duration")),
-        )
-        for segment in raw_segments
-        if str(segment.get("text", "")).strip()
-    ]
+    fetcher = YouTubeTranscriptFetcher(languages)
+    return fetcher.fetch(video_id)
 
 
 def render_transcript_markdown(video: FeedVideo, transcript: list[TranscriptSegment]) -> str:
@@ -199,32 +420,8 @@ def render_transcript_markdown(video: FeedVideo, transcript: list[TranscriptSegm
     Returns:
         str: Formatted Markdown string representing the transcript.
     """
-    retrieved_at = datetime.now(UTC).isoformat(timespec="seconds")
-    lines = [
-        "---",
-        f'title: "{_yaml_escape(video.title)}"',
-        "source_kind: youtube_transcript",
-        f"video_id: {video.video_id}",
-        f'url: "{video.url}"',
-        f'retrieved_at: "{retrieved_at}"',
-    ]
-    if video.published_at:
-        lines.append(f'published_at: "{_yaml_escape(video.published_at)}"')
-    lines.extend(
-        [
-            "---",
-            "",
-            f"# {video.title}",
-            "",
-            "Transcricao bruta extraida automaticamente do YouTube. Este arquivo deve ser "
-            "tratado pelo fluxo `/ingest-youtube` antes de entrar no cofre Zettelkasten.",
-            "",
-            "## Transcricao",
-            "",
-        ]
-    )
-    lines.extend(_format_transcript_lines(transcript))
-    return "\n".join(lines).rstrip() + "\n"
+    writer = TranscriptWriter(Path(), Path())
+    return writer.render_markdown(video, transcript)
 
 
 def transcript_output_path(raw_articles_path: Path, video: FeedVideo) -> Path:
@@ -237,7 +434,8 @@ def transcript_output_path(raw_articles_path: Path, video: FeedVideo) -> Path:
     Returns:
         Path: Output markdown file Path.
     """
-    return raw_articles_path / f"youtube-{video.video_id}-{slugify(video.title)}.md"
+    writer = TranscriptWriter(raw_articles_path, Path())
+    return writer.get_output_path(video)
 
 
 def write_transcript_artifact(
@@ -255,14 +453,8 @@ def write_transcript_artifact(
     Returns:
         Path: The file Path where the transcript was saved.
     """
-    raw_articles_path.mkdir(parents=True, exist_ok=True)
-    output_path = transcript_output_path(raw_articles_path, video)
-    output_path.write_text(
-        render_transcript_markdown(video, transcript),
-        encoding="utf-8",
-        newline="\n",
-    )
-    return output_path
+    writer = TranscriptWriter(raw_articles_path, Path())
+    return writer.write(video, transcript)
 
 
 def ingest_youtube_playlist(
@@ -272,9 +464,6 @@ def ingest_youtube_playlist(
     limit: int | None = None,
 ) -> list[Path]:
     """Ingest new video transcripts from the configured YouTube playlist.
-
-    Fetches the playlist feed, filters out already processed video IDs,
-    retrieves their transcripts, writes the Markdown files, and logs the history.
 
     Args:
         settings: The project configuration settings.
@@ -290,27 +479,11 @@ def ingest_youtube_playlist(
     if not settings.youtube_playlist_id:
         raise ValueError("YOUTUBE_PLAYLIST_ID nao configurado.")
 
-    logger = get_logger()
-    processed_ids = load_processed_ids(settings.ingestion_history_path)
-    candidates = [
-        video
-        for video in fetch_feed_videos(settings.youtube_playlist_id)
-        if video.video_id not in processed_ids
-    ]
-    if limit is not None:
-        candidates = candidates[:limit]
-
-    created: list[Path] = []
-    for video in candidates:
-        logger.info("youtube_etl_video_detected id={} title={}", video.video_id, video.title)
-        if dry_run:
-            continue
-        transcript = fetch_transcript(video.video_id)
-        created_path = write_transcript_artifact(settings.raw_articles_path, video, transcript)
-        append_processed_id(settings.ingestion_history_path, video.video_id)
-        created.append(created_path)
-        logger.info("youtube_etl_artifact_created path={}", created_path)
-    return created
+    reader = YouTubeFeedReader(settings.youtube_playlist_id)
+    fetcher = YouTubeTranscriptFetcher()
+    writer = TranscriptWriter(settings.raw_articles_path, settings.ingestion_history_path)
+    pipeline = YouTubeETLPipeline(reader, fetcher, writer)
+    return pipeline.run(dry_run=dry_run, limit=limit)
 
 
 def slugify(value: str) -> str:
@@ -332,9 +505,6 @@ def main() -> None:
     """CLI execution entrypoint for the YouTube ETL.
 
     Parses command-line arguments and runs the playlist ingestion pipeline.
-
-    Returns:
-        None
     """
     parser = argparse.ArgumentParser(
         description="Ingere transcricoes novas de uma playlist YouTube."
