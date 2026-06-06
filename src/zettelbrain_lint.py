@@ -19,8 +19,12 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from config import load_settings
 from logger import log_skill_execution
+
+FRONTMATTER_PATTERN = re.compile(r"\A---[ \t]*\r?\n(.*?)\r?\n---[ \t]*(?:\r?\n|$)", re.DOTALL)
 
 
 @dataclass
@@ -84,49 +88,41 @@ def parse_frontmatter_and_body(content: str) -> tuple[dict[str, Any], str]:
     frontmatter: dict[str, Any] = {}
     body = content
 
-    if content.startswith("---"):
-        parts = content.split("---", 2)
-        if len(parts) >= 3:
-            yaml_text = parts[1]
-            body = parts[2].strip()
+    match = FRONTMATTER_PATTERN.match(content)
+    if match:
+        yaml_text = match.group(1)
+        body = content[match.end() :].strip()
+        parsed = yaml.safe_load(yaml_text) or {}
 
-            for line in yaml_text.splitlines():
-                line = line.strip()
-                if not line or line.startswith("#") or ":" not in line:
-                    continue
-                key, val = line.split(":", 1)
-                key = key.strip()
-                val = val.strip()
+        if isinstance(parsed, dict):
+            frontmatter = {
+                str(key): _normalize_frontmatter_value(value) for key, value in parsed.items()
+            }
 
-                # Trata listas tipo [item1, item2] ou [[link1]]
-                if val.startswith("[") and val.endswith("]"):
-                    list_content = val[1:-1].strip()
-                    if list_content.startswith("[") and list_content.endswith("]"):
-                        # Lista de wikilinks no frontmatter: [[link1]], [[link2]]
-                        items = []
-                        for item in list_content.split(","):
-                            item = item.strip().strip("[").strip("]")
-                            if item:
-                                items.append(item)
-                        frontmatter[key] = items
-                    else:
-                        # Lista simples de strings
-                        items = []
-                        for item in list_content.split(","):
-                            item = item.strip().strip('"').strip("'")
-                            if item:
-                                items.append(item)
-                        frontmatter[key] = items
-                else:
-                    # Valor escalar (string, boolean, int)
-                    val = val.strip('"').strip("'")
-                    if val.lower() == "true":
-                        frontmatter[key] = True
-                    elif val.lower() == "false":
-                        frontmatter[key] = False
-                    else:
-                        frontmatter[key] = val
     return frontmatter, body
+
+
+def _normalize_frontmatter_value(value: Any) -> Any:
+    """Mantém a compatibilidade com o parser anterior após o parse YAML."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, list):
+        return _normalize_frontmatter_list(value)
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    return str(value)
+
+
+def _normalize_frontmatter_list(values: list[Any]) -> list[Any]:
+    normalized: list[Any] = []
+    for item in values:
+        if isinstance(item, list):
+            normalized.extend(_normalize_frontmatter_list(item))
+        else:
+            normalized.append(_normalize_frontmatter_value(item))
+    return normalized
 
 
 class ZettelLinter:
