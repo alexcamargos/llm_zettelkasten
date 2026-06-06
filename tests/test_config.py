@@ -25,7 +25,7 @@ def test_load_settings_from_env_file(tmp_path: Path, monkeypatch: pytest.MonkeyP
     (tmp_path / "raw" / "articles").mkdir(parents=True)
     (tmp_path / "raw" / "youtube").mkdir(parents=True)
     (tmp_path / "raw" / "papers").mkdir(parents=True)
-    (tmp_path / "zettelkasten").mkdir()
+    (tmp_path / "zettelbrain").mkdir()
     env_file = tmp_path / ".env"
     env_file.write_text(
         "\n".join(
@@ -67,7 +67,7 @@ def test_load_settings_requires_youtube_when_requested(
     (tmp_path / "raw" / "articles").mkdir(parents=True)
     (tmp_path / "raw" / "youtube").mkdir(parents=True)
     (tmp_path / "raw" / "papers").mkdir(parents=True)
-    (tmp_path / "zettelkasten").mkdir()
+    (tmp_path / "zettelbrain").mkdir()
     env_file = tmp_path / ".env"
     env_file.write_text(f"OBSIDIAN_VAULT_PATH={tmp_path}\n", encoding="utf-8")
     monkeypatch.delenv("YOUTUBE_PLAYLIST_ID", raising=False)
