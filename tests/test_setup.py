@@ -133,7 +133,7 @@ def test_configure_cursor_success(mocker: MockerFixture) -> None:
     def exists_mock(self: Path) -> bool:
         if self.name == "mcp.json":
             return False
-        return self.name in ("GEMINI.md", "skills")
+        return self.name in ("ZETTELBRAIN.md", "skills")
 
     mocker.patch.object(Path, "exists", exists_mock)
 
@@ -144,7 +144,7 @@ def test_configure_cursor_success(mocker: MockerFixture) -> None:
     mocker.patch.object(Path, "glob", return_value=[fake_skill_1, fake_skill_2])
 
     def read_text_mock(self: Path, encoding: str = "utf-8") -> str:
-        if self.name == "GEMINI.md":
+        if self.name == "ZETTELBRAIN.md":
             return "Master rules content"
         if self.name == "1_start.md":
             return "Start workflow"
@@ -169,7 +169,7 @@ def test_configure_cursor_success(mocker: MockerFixture) -> None:
 
 
 def test_configure_cursor_missing_gemini_md(mocker: MockerFixture) -> None:
-    """Test Cursor configuration when GEMINI.md does not exist.
+    """Test Cursor configuration when ZETTELBRAIN.md does not exist.
 
     Args:
         mocker: Pytest mocker fixture.
@@ -185,7 +185,7 @@ def test_configure_cursor_missing_gemini_md(mocker: MockerFixture) -> None:
     def exists_mock(self: Path) -> bool:
         if self.name == "mcp.json":
             return True
-        if self.name == "GEMINI.md":
+        if self.name == "ZETTELBRAIN.md":
             return False
         return False
 
