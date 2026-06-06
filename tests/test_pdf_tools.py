@@ -334,7 +334,7 @@ def test_persist_pageindex_cache_rejects_invalid_tree_json(
     raw_papers.mkdir(parents=True)
     (raw_papers / "teste.pdf").write_bytes(b"abc")
 
-    with pytest.raises(ValueError, match="JSON valido"):
+    with pytest.raises(ValueError, match="valid JSON"):
         persist_pageindex_cache(
             vault,
             raw_papers,
