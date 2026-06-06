@@ -15,6 +15,7 @@ Para garantir o funcionamento perfeito do agente local acionado pelo terminal, o
 llm_zettelkasten/
 ├── README.md
 ├── GEMINI.md
+├── Manual_Funcionalidades_Agente.md  # Manual de uso e exemplos
 ├── .gitignore
 ├── .pageindex/
 │   └── .gitkeep
@@ -32,12 +33,14 @@ llm_zettelkasten/
 │       ├── visual.md
 │       ├── lint.md
 │       ├── trace.md
+│       ├── bridge.md
+│       ├── research-deep.md
 │       ├── ghost.md
 │       └── close.md
 ├── .state/
-│       ├── hot.md
-│       ├── log.md
-│       └── embeddings_index.json  # gerado localmente, ignorado pelo Git
+│   ├── hot.md
+│   ├── log.md
+│   └── embeddings_index.json  # gerado localmente, ignorado pelo Git
 ├── raw/
 │   ├── papers/
 │   ├── articles/
@@ -68,43 +71,24 @@ O usuário deve clonar o repositório para o disco local utilizando um cliente d
 Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `GEMINI.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
 
 ### Motor Python Local
-O repositório agora inclui a primeira camada do motor Python previsto na arquitetura: `pyproject.toml`, configuração centralizada em `src/config.py`, logs em `src/logger.py`, ETL de YouTube em `src/ingestion/youtube_etl.py` e servidor MCP mínimo em `src/mcp/server.py`. As dependências são gerenciadas por `uv`; para preparar o ambiente, execute `uv sync` na raiz do projeto. Em ambientes Windows com cache global restrito, use um cache local, por exemplo `$env:UV_CACHE_DIR='.uv-cache'; uv run pytest`.
+O repositório agora inclui a primeira camada do motor Python previsto na arquitetura: `pyproject.toml`, configuração centralizada em `src/config.py`, logs em `src/logger.py`, ETL de YouTube em `src/ingestion/youtube_etl.py` e servidor MCP em `src/mcp/server.py`. As dependências são gerenciadas por `uv`; para preparar o ambiente, execute `uv sync` na raiz do projeto.
 
-O arquivo `.env.example` documenta as variáveis esperadas. O `.env` local fica ignorado pelo Git e deve conter, no mínimo, `OBSIDIAN_VAULT_PATH`, `HISTORICO_INGESTAO_PATH`, `RAW_ARTICLES_PATH`, `RAW_PAPERS_PATH`, `ZETTELKASTEN_PATH`, `LOGS_PATH` e `YOUTUBE_PLAYLIST_ID`. Para validar o servidor sem iniciar o transporte MCP, rode `uv run python src/mcp/server.py --health-json`. Para testar o ETL sem gravar transcrições, rode `uv run python src/ingestion/youtube_etl.py --dry-run --limit 3`.
-
-As configurações `.gemini/settings.json` e `.cursor/mcp.json` registram o servidor `ZettelkastenBrain` via `uv run zettel-mcp`, mantendo o servidor `pageindex` em paralelo até a substituição completa da integração externa. As ferramentas MCP novas cobrem busca híbrida com fallback BM25 local, status de disponibilidade do `qmd`, índice semântico local por embeddings, leitura segura de Markdown do cofre, inspeção de manifests PageIndex, resolução de PDF por SHA-256, ponte configurável `PAGEINDEX_COMMAND` para indexação externa, persistência validada de `tree.json` e `manifest.json`, leitura de página cacheada e consulta ao cache `.pageindex/<document_id>/tree.json`.
+O arquivo `.env.example` documenta as variáveis esperadas. O `.env` local fica ignorado pelo Git e deve conter, no mínimo, `OBSIDIAN_VAULT_PATH`, `HISTORICO_INGESTAO_PATH`, `RAW_ARTICLES_PATH`, `RAW_PAPERS_PATH`, `ZETTELKASTEN_PATH`, `LOGS_PATH` e `YOUTUBE_PLAYLIST_ID`. Para validar o servidor sem iniciar o transporte MCP, rode `uv run python src/mcp/server.py --health-json`.
 
 ### Embeddings Locais
-O servidor MCP expõe `embedding_health`, `index_zettelkasten_embeddings` e `semantic_search_zettelkasten`. A implementação aceita `EMBEDDING_PROVIDER=hashing` para fallback offline determinístico ou `EMBEDDING_PROVIDER=ollama` para consultar um endpoint local compatível com Ollama, por padrão `http://localhost:11434/api/embeddings`, usando `EMBEDDING_MODEL_NAME=nomic-embed-text`. Se o endpoint Ollama não estiver disponível no momento de reconstrução do índice, o servidor persiste automaticamente um índice por hashing normalizado em `.state/embeddings_index.json`, mantendo a busca funcional. O arquivo de índice é cache operacional e fica ignorado pelo Git.
+O servidor MCP expõe `embedding_health`, `index_zettelkasten_embeddings` e `semantic_search_zettelkasten`. A implementação aceita `EMBEDDING_PROVIDER=hashing` para fallback offline determinístico ou `EMBEDDING_PROVIDER=ollama` para consultar um endpoint local compatível com Ollama, usando `EMBEDDING_MODEL_NAME=nomic-embed-text`.
 
-### MCP PageIndex (Cursor e Gemini CLI)
-O repositório inclui configuração do servidor **PageIndex** em modo local via **`npx -y @pageindex/mcp`** ([repositório oficial](https://github.com/VectifyAI/pageindex-mcp)). É necessário **Node.js 18 ou superior** e o comando `npx` disponível no PATH. No fluxo **`/ingest-paper`**, o uso de PageIndex segue critérios operacionais definidos nas skills: leitura linear tende a bastar em PDFs com até **10 páginas**; entre **11 e 20 páginas**, a decisão depende da densidade metodológica, presença de tabelas, apêndices, qualidade do OCR e custo de navegação; acima de **20 páginas**, o uso de PageIndex passa a ser o padrão.
+### Novas Funcionalidades Agênticas
+O projeto agora suporta recursos avançados de atrito semântico, reconciliação e colheita:
+- **Ponte Semântica (`/bridge`):** Localiza notas com baixa similaridade no cofre e estimula conexões interdisciplinares.
+- **Pesquisa Científica Profunda (`/research-deep`):** Conecta a bases de preprints e publicações (arXiv, OpenAlex) para suprir lacunas teóricas.
+- **Colheita de Sessão (Harvesting):** Executado automaticamente no `/close` para transformar insights de chat em rascunhos de notas.
+- **Auto-Reconciliação:** Mecanismo obrigatório de checagem contra redundâncias conceituais no cofre (registrado em `GEMINI.md`).
 
-- **Cursor:** `.cursor/mcp.json` registra o servidor `pageindex`. Após alterações, reinicie o Cursor para recarregar os servidores MCP.
-- **Gemini CLI:** `.gemini/settings.json` declara o mesmo servidor em `mcpServers`, com `timeout` alargado para indexação de PDFs longos. Detalhes do protocolo estão na [documentação de MCP do Gemini CLI](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html).
+Para uma explicação detalhada e exemplos práticos de uso dessas funcionalidades, consulte o documento:
+*   [Manual_Funcionalidades_Agente.md](Manual_Funcionalidades_Agente.md)
 
-Para usar o endpoint HTTP com chave de API em vez do `npx` local, substitua a entrada por `httpUrl` e `headers` conforme [PageIndex MCP for Developers](https://docs.pageindex.ai/mcp); evite commitar segredos no repositório.
-
-Quando existir um indexador PageIndex externo capaz de receber o caminho absoluto do PDF como último argumento e emitir `tree.json` no `stdout`, configure `PAGEINDEX_COMMAND` no `.env`. A tool MCP `index_pdf_cache` executa esse comando de forma controlada, valida que o PDF está em `raw/papers/` e persiste o cache em `.pageindex/<document_id>/`.
-
-### Prontidão Operacional
-Com o CLI na raiz e o `GEMINI.md` presente, o ambiente está pronto para `/start` e demais comandos descritos no schema.
-
-### Escala do cofre (opcional)
-Enquanto o volume for modesto, **`index.md`** mais leitura dirigida costumam bastar. Quando o número de notas crescer (centenas de páginas ou descoberta pelo índice deixar de ser prática), considere ferramentas **externas** ao repositório, sem torná-las obrigatórias:
-
-- **[qmd](https://github.com/tobi/qmd)** — busca local híbrida (BM25 e vetorial) com CLI e servidor MCP, útil para pré-filtrar antes de o agente abrir arquivos. Enquanto o índice real do `qmd` não estiver validado, o MCP usa BM25 local e embeddings de hashing como fallback offline.
-- **Obsidian CLI** (a partir do Obsidian 1.12) — acesso programático ao cache do vault; exige Obsidian instalado e documentação atual da sua versão. Reduz custo de varreduras puramente por sistema de arquivos em cofres muito grandes.
-
-## Conclusão da Preparação
-Seguindo as etapas de inicialização, o ambiente de pesquisa estará perfeitamente ativo e blindado contra alucinações estruturais. O sistema operará com previsibilidade máxima para processar a literatura metodológica de forma contínua.
+---
 
 ## Operação Diária e Casos de Uso
-### Dinâmica Geral
-O fluxo de trabalho foi projetado para cobrir o ciclo completo da inteligência de negócios aplicada à pesquisa científica. Cada comando aciona um fluxo isolado e validado, garantindo que a rotina de estudos seja convertida em ativos de conhecimento mensuráveis e estruturados.
-
-### Fluxo Acionável
-O fluxo operacional inicia com o comando de abertura de sessão para recuperar o estado atual do estudo sobre métricas de insolvência. Durante a leitura de um novo estudo formal, use `/ingest-paper` ou `/ingest-paper-intro` em `raw/papers/`; para artigos da web em `raw/articles/`, use `/ingest-article`; para transcrições geradas pelo ETL de YouTube, use `/ingest-youtube`, sempre com referência e validação humana conforme o `GEMINI.md`. Para cruzar os dados extraídos com indicadores financeiros previamente estudados, o comando de busca é acionado para recuperar a inteligência acumulada no cofre. No fluxo **`/recall`**, quando existir cache PageIndex para um paper já ligado ao cofre, esse índice deve servir apenas como apoio de navegação e verificação localizada, orientando retorno seletivo à nota de literatura correspondente ou ao PDF original, sem substituir as notas do cofre como fonte primária da síntese. A etapa de consolidação utiliza o comando de redação acadêmica para criar o rascunho estruturado do texto. O ciclo é finalizado utilizando o comando de encerramento para atualizar o contexto e preparar o ambiente de forma automática para a próxima rotina.
-
-### Considerações Finais
-A cadência operacional descrita transforma a interface de comando em um verdadeiro parceiro analítico. A previsibilidade estrutural elimina o atrito tecnológico e garante a sofisticação intelectual exigida em avaliações acadêmicas rigorosas e no mercado corporativo.
+O ciclo diário inicia-se com `/start` para briefings e contextualização de metas, passa pela ingestão (`/ingest-paper`, `/ingest-article`, `/ingest-youtube`), validação cruzada (`/recall`), cruzamento interdisciplinar (`/bridge`), pesquisa de lacunas (`/research-deep`) e redação de sínteses (`/ghost`). O encerramento com `/close` realiza a colheita dos rascunhos conceituais e consolida o histórico.
