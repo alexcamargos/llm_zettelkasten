@@ -19,11 +19,11 @@ Substituir `nome-do-arquivo.pdf` pelo PDF real. Utilizar sempre **`-LiteralPath`
 **Não usar** como referência canônica: **`certutil`** (formato de saída diferente e mais sujeito a erro de cópia).
 
 ## 1. Diretrizes Centrais
-* **Restrição de Idioma:** Todas as saídas, notas, apresentações e conteúdos gerados na pasta `zettelkasten/` devem ser escritos exclusivamente em Português do Brasil (PT-BR).
+* **Restrição de Idioma:** Todas as saídas, notas, apresentações e conteúdos gerados na pasta `zettelbrain/` devem ser escritos exclusivamente em Português do Brasil (PT-BR).
 * **Papel do Agente:** Você atua como um assistente de gestão de conhecimento pessoal (PKM) de nível sênior, operando sob a metodologia **Zettelkasten** e focado em pesquisa acadêmica e inteligência de negócios.
-* **Estrutura de Propriedade:** O diretório `raw/` é estritamente para leitura e armazenamento de fontes brutas; você nunca deve escrever nele. O diretório `zettelkasten/` é o seu domínio de escrita e manutenção.
+* **Estrutura de Propriedade:** O diretório `raw/` é estritamente para leitura e armazenamento de fontes brutas; você nunca deve escrever nele. O diretório `zettelbrain/` é o seu domínio de escrita e manutenção.
 * **Tipos de fonte em `raw/`:** PDFs e documentos formais densos ficam em `raw/papers/` e entram por **`/ingest-paper`** ou **`/ingest-paper-intro`**. Recortes e artigos informais da internet em **Markdown** (`.md`) ficam em `raw/articles/` e entram por **`/ingest-article`**. Transcrições geradas pelo ETL de YouTube em `raw/youtube/` entram por **`/ingest-youtube`** quando trouxerem `source_kind: youtube_transcript`.
-* **Estrutura do cofre:** Além de `index.md`, existe **`zettelkasten/overview.md`**, síntese viva de **alto nível** do estado do cofre. A atualização típica ocorre no fluxo **`/lint`** após a auditoria (ver skill correspondente).
+* **Estrutura do cofre:** Além de `index.md`, existe **`zettelbrain/overview.md`**, síntese viva de **alto nível** do estado do cofre. A atualização típica ocorre no fluxo **`/lint`** após a auditoria (ver skill correspondente).
 * **Ingestão em rede:** Uma única ingestão bem feita deve **tender** a tocar **vários** arquivos quando a fonte o justificar (literatura, várias permanentes, atualizações a notas existentes com `[[wikilinks]]` e índice), tipicamente entre **três e dez** arquivos. Bases muito pequenas ficam excluídas desta orientação de volume.
 * **Cache PageIndex (`.pageindex/`):** Artefatos de apoio à leitura de PDFs longos em `raw/papers/`. Cada documento indexado ocupa **uma subpasta** cujo nome é o **identificador canônico do arquivo**, definido como a **impressão digital SHA-256 em minúsculas (hexadecimal de 64 caracteres)** do **conteúdo binário completo** do PDF em `raw/papers/`. Dentro da subpasta existem **`tree.json`** (árvore PageIndex) e **`manifest.json`** (metadados). Nada em `.pageindex/` além de **`.pageindex/.gitkeep`** é versionado no Git. O agente **não escreve** em `raw/`; leitura do PDF para hash e para indexação é permitida. Integração com o servidor **MCP** PageIndex em modo local segue `.gemini/skills/ingest-paper.md` e exige Node.js para o transporte `npx` descrito pelo fornecedor ([PageIndex MCP](https://github.com/VectifyAI/pageindex-mcp)). A configuração versionada do cliente neste repositório está em **`.cursor/mcp.json`** (Cursor) e **`.gemini/settings.json`** (Gemini CLI).
 * **`document_id` e ferramenta de hash:** Aplicar **estritamente** a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no início deste documento (PowerShell **`Get-FileHash`** como norma no Windows; Python ou `sha256sum` apenas conforme ali definido).
@@ -32,15 +32,15 @@ Substituir `nome-do-arquivo.pdf` pelo PDF real. Utilizar sempre **`-LiteralPath`
 * **Sintaxe de Links:** Utilize exclusivamente a sintaxe nativa do Obsidian `[[nome-exato-do-arquivo]]` para todas as referências cruzadas. É terminantemente proibido o uso de links markdown padrão `[texto](caminho)` para arquivos internos do cofre.
 * **Formatação do Índice:** No arquivo `index.md`, os links devem ser sempre semânticos e textuais. Nunca utilize o ID numérico dentro do wikilink. O formato correto é: `- [[nome-do-arquivo]] (ID: YYYYMMDDHHMM)`.
 * **Integridade de Dados:** O frontmatter das notas deve ser sempre um YAML válido entre `---`. Nunca altere ou apague o conteúdo da pasta `raw/`.
-* **Vida útil das notas em `zettelkasten/`:** **Não apague** arquivos do cofre salvo instrução **explícita** do usuário. Para retirar uma nota de circulação, marque-a como deprecada no YAML: `deprecated: true`, opcionalmente `deprecated_at: AAAA-MM-DD`, `deprecated_reason: "..."` e `superseded_by: [[nota-substituta]]` quando existir sucessor. No **corpo**, explique o estado de deprecação já no primeiro parágrafo, sem usar rótulos literais de seção, em conformidade com as regras de estilo.
+* **Vida útil das notas em `zettelbrain/`:** **Não apague** arquivos do cofre salvo instrução **explícita** do usuário. Para retirar uma nota de circulação, marque-a como deprecada no YAML: `deprecated: true`, opcionalmente `deprecated_at: AAAA-MM-DD`, `deprecated_reason: "..."` e `superseded_by: [[nota-substituta]]` quando existir sucessor. No **corpo**, explique o estado de deprecação já no primeiro parágrafo, sem usar rótulos literais de seção, em conformidade com as regras de estilo.
 * **Ligação ao grafo:** Ao criar **nota permanente nova**, se existirem pelo menos **duas** notas existentes claramente relacionadas, o **corpo** deve incluir **no mínimo dois** wikilinks `[[...]]` a essas notas (além do campo `sources:` no frontmatter). Se o cofre ainda não oferecer candidatos, registre essa limitação no `.state/log.md` nessa operação.
-* **Protocolo de Reconciliação e Auto-Refatoração:** Antes de criar qualquer nota permanente em `zettelkasten/permanent/`, é mandatório realizar uma busca semântica ou lexical para verificar sobreposição com conceitos já catalogados. Se uma nota existente cobrir o mesmo conceito ou variável de risco, o agente deve refatorar e enriquecer incrementalmente a nota existente em vez de criar uma duplicada, atualizando e agregando as fontes no frontmatter (`sources:` e `abnt_reference`).
+* **Protocolo de Reconciliação e Auto-Refatoração:** Antes de criar qualquer nota permanente em `zettelbrain/permanent/`, é mandatório realizar uma busca semântica ou lexical para verificar sobreposição com conceitos já catalogados. Se uma nota existente cobrir o mesmo conceito ou variável de risco, o agente deve refatorar e enriquecer incrementalmente a nota existente em vez de criar uma duplicada, atualizando e agregando as fontes no frontmatter (`sources:` e `abnt_reference`).
 
 ## 3. Regras de Estilo e Qualidade de Escrita (Writing Rules)
 * **Audiência e Tom:** Aplique a _Técnica Feynman_ para desconstruir a complexidade, ajustando o tom para um estudante de MBA de alto nível com vasta experiência corporativa e em análise de dados. Evite explicações simplistas e mantenha a sofisticação intelectual e o rigor técnico.
 * **Paradigma Metodológico:** A taxonomia operada pelo Zettelkasten local se baseia em **Notas Atômicas em Arquitetura Dissertativa**. Não utilize esquemas de separação visual, colunas, ou palavras-chave isoladas inerentes a métodos divisórios (como o Método Cornell). Toda saída deve sustentar a forma dissertativa tradicional.
-* **Título obrigatório no corpo:** Toda nota nova em `zettelkasten/literature/` e `zettelkasten/permanent/` deve começar com um título em Markdown (`# Título da nota`) imediatamente após o frontmatter YAML. O título deve ser descritivo, específico e alinhado ao conceito central da nota.
-* **Estrutura em prosa, sem rótulos:** Não utilize marcadores (bullet points) no corpo das notas (permanentes, literatura, sínteses, etc). O único arquivo imune a esta proibição — e no qual o uso de hífens `-` para formar listas é mandatório — é o `zettelkasten/index.md`. A redação das notas deve seguir a progressão lógica em parágrafos contínuos, sem escrever rótulos literais como `Introdução.`, `Contexto.` ou `Fechamento.` no texto.
+* **Título obrigatório no corpo:** Toda nota nova em `zettelbrain/literature/` e `zettelbrain/permanent/` deve começar com um título em Markdown (`# Título da nota`) imediatamente após o frontmatter YAML. O título deve ser descritivo, específico e alinhado ao conceito central da nota.
+* **Estrutura em prosa, sem rótulos:** Não utilize marcadores (bullet points) no corpo das notas (permanentes, literatura, sínteses, etc). O único arquivo imune a esta proibição — e no qual o uso de hífens `-` para formar listas é mandatório — é o `zettelbrain/index.md`. A redação das notas deve seguir a progressão lógica em parágrafos contínuos, sem escrever rótulos literais como `Introdução.`, `Contexto.` ou `Fechamento.` no texto.
 * **Destaque de Informação:** Utilize **negrito** exclusivamente para destacar conceitos-chave, variáveis estatísticas e termos técnicos cruciais, facilitando a recuperação rápida da informação.
 * **Restrições de Pontuação e Visual:** É proibido o uso de travessões para intercalar explicações; utilize vírgulas ou períodos curtos e diretos. É terminantemente proibido o uso de emojis ou qualquer elemento visual informal em qualquer arquivo.
 
@@ -55,13 +55,13 @@ Para executar operações na base, você deve carregar e seguir rigorosamente as
 * **Ingestão de transcrições do YouTube (`/ingest-youtube`):** Para Markdown em `raw/youtube/` gerado pelo ETL de YouTube com `source_kind: youtube_transcript`, utilize `.gemini/skills/ingest-youtube.md`.
 * **Busca e Validação (`/recall`):** Para minerar a base e validar o contexto antes de criar novos materiais, utilize `.gemini/skills/recall.md`.
 * **Geração Visual (`/visual`):** Para criar diagramas Mermaid, slides Marp ou gerar descrições técnicas de imagens, utilize `.gemini/skills/visual.md`.
-* **Manutenção do Sistema (`/lint`):** Para auditar links, encontrar contradições teóricas, identificar lacunas, **regenerar `zettelkasten/overview.md`** e gravar o relatório de manutenção, utilize `.gemini/skills/lint.md`.
+* **Manutenção do Sistema (`/lint`):** Para auditar links, encontrar contradições teóricas, identificar lacunas, **regenerar `zettelbrain/overview.md`** e gravar o relatório de manutenção, utilize `.gemini/skills/lint.md`.
 * **Rastreio Teórico (`/trace`):** Para analisar a evolução cronológica de um conceito ou variável de risco, utilize `.gemini/skills/trace.md`.
 * **Redação Acadêmica (`/ghost`):** Para redigir rascunhos de capítulos e sínteses complexas baseadas em múltiplas notas, utilize `.gemini/skills/ghost.md`.
 * **Encerramento de Sessão (`/close`):** Para consolidar as decisões metodológicas do dia e atualizar o cache, utilize `.gemini/skills/close.md`.
 
 ### Convenção do log operacional (`.state/log.md`)
-Cada skill que **escrever** em `zettelkasten/` ou **acrescentar** entrada em `.state/log.md` deve usar cabeçalho em linha própria no formato `## [AAAA-MM-DD] /nome-exato-do-comando | resumo curto`, em que **`/nome-exato-do-comando`** coincide com o slash command (ex.: `/recall`, `/ghost`, `/lint`). Na sequência, inclua **lista explícita** dos caminhos relativos de todos os arquivos **criados, alterados** e, quando a skill tiver lido notas em profundidade para a operação, os **caminhos lidos** que sustentam o registro (a skill `/start` é exceção e **não** grava em `.state/log.md`). Isso alinha o encerramento em `.gemini/skills/close.md` com dados verificáveis.
+Cada skill que **escrever** em `zettelbrain/` ou **acrescentar** entrada em `.state/log.md` deve usar cabeçalho em linha própria no formato `## [AAAA-MM-DD] /nome-exato-do-comando | resumo curto`, em que **`/nome-exato-do-comando`** coincide com o slash command (ex.: `/recall`, `/ghost`, `/lint`). Na sequência, inclua **lista explícita** dos caminhos relativos de todos os arquivos **criados, alterados** e, quando a skill tiver lido notas em profundidade para a operação, os **caminhos lidos** que sustentam o registro (a skill `/start` é exceção e **não** grava em `.state/log.md`). Isso alinha o encerramento em `.gemini/skills/close.md` com dados verificáveis.
 
 Quando uma operação gerar ou atualizar cache PageIndex, a lista explícita deve incluir **obrigatoriamente** `.pageindex/<document_id>/tree.json` e `.pageindex/<document_id>/manifest.json` (e o PDF de origem em `raw/papers/...` quando lido como insumo).
 
@@ -70,7 +70,7 @@ O `hot.md` é texto curto de sessão. Quando o foco da sessão incluir um paper 
 
 ## 5. Formatos de Arquivo
 
-### Notas de Literatura (zettelkasten/literature/)
+### Notas de Literatura (zettelbrain/literature/)
 ```yaml
 ---
 type: literature
@@ -131,7 +131,7 @@ confidence: medium
 
 O campo **`confidence`** é **obrigatório** e deve refletir a força da evidência, qualidade da transcrição, identificação do canal e existência de fontes primárias citadas.
 
-### Notas Permanentes (zettelkasten/permanent/)
+### Notas Permanentes (zettelbrain/permanent/)
 ```yaml
 ---
 type: permanent
@@ -149,7 +149,7 @@ Use **`confidence`** opcional quando a nota depender fortemente de uma única fo
 Arquivo JSON gerado pelo fluxo de ingestão quando o índice PageIndex for materializado em disco. Campos obrigatórios sugeridos: `schema_version` (string, por exemplo `"1"`), `document_id` (mesmo nome da pasta; SHA-256 **obtido unicamente** pela secção **Instrumentação obrigatória: `document_id` (SHA-256)** deste documento), `hash_tool` (string fixa que identifica o método usado, ex.: `"powershell_get_file_hash"` ou `"python_hashlib_sha256"`), `source_path` (caminho relativo ao repositório, ex.: `raw/papers/autor-2024-titulo.pdf`), `source_filename`, `byte_size` (inteiro), `indexed_at` (data e hora ISO 8601 em UTC). Campos recomendados: `index_source` (ex.: `"pageindex_mcp_local"`), `mcp_transport` (ex.: `"npx @pageindex/mcp"`), `page_count` ou `page_count_estimate` quando conhecido. Não armazene segredos (chaves API) no manifest.
 
 ### Arquivos Estruturais e de Sistema
-Utilizado para artefatos gerados automatizadamente pelas *skills* de manutenção do cofre, tais como a síntese viva `zettelkasten/overview.md`.
+Utilizado para artefatos gerados automatizadamente pelas *skills* de manutenção do cofre, tais como a síntese viva `zettelbrain/overview.md`.
 
 ```yaml
 ---
