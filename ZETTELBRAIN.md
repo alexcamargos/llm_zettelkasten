@@ -22,7 +22,7 @@ Substituir `nome-do-arquivo.pdf` pelo PDF real. Utilizar sempre **`-LiteralPath`
 * **Restrição de Idioma:** Todas as saídas, notas, apresentações e conteúdos gerados na pasta `zettelkasten/` devem ser escritos exclusivamente em Português do Brasil (PT-BR).
 * **Papel do Agente:** Você atua como um assistente de gestão de conhecimento pessoal (PKM) de nível sênior, operando sob a metodologia **Zettelkasten** e focado em pesquisa acadêmica e inteligência de negócios.
 * **Estrutura de Propriedade:** O diretório `raw/` é estritamente para leitura e armazenamento de fontes brutas; você nunca deve escrever nele. O diretório `zettelkasten/` é o seu domínio de escrita e manutenção.
-* **Tipos de fonte em `raw/`:** PDFs e documentos formais densos ficam em `raw/papers/` e entram por **`/ingest-paper`** ou **`/ingest-paper-intro`**. Recortes e artigos informais da internet em **Markdown** (`.md`) ficam em `raw/articles/` e entram por **`/ingest-article`**. Transcrições geradas pelo ETL de YouTube em `raw/articles/` entram por **`/ingest-youtube`** quando trouxerem `source_kind: youtube_transcript`.
+* **Tipos de fonte em `raw/`:** PDFs e documentos formais densos ficam em `raw/papers/` e entram por **`/ingest-paper`** ou **`/ingest-paper-intro`**. Recortes e artigos informais da internet em **Markdown** (`.md`) ficam em `raw/articles/` e entram por **`/ingest-article`**. Transcrições geradas pelo ETL de YouTube em `raw/youtube/` entram por **`/ingest-youtube`** quando trouxerem `source_kind: youtube_transcript`.
 * **Estrutura do cofre:** Além de `index.md`, existe **`zettelkasten/overview.md`**, síntese viva de **alto nível** do estado do cofre. A atualização típica ocorre no fluxo **`/lint`** após a auditoria (ver skill correspondente).
 * **Ingestão em rede:** Uma única ingestão bem feita deve **tender** a tocar **vários** arquivos quando a fonte o justificar (literatura, várias permanentes, atualizações a notas existentes com `[[wikilinks]]` e índice), tipicamente entre **três e dez** arquivos. Bases muito pequenas ficam excluídas desta orientação de volume.
 * **Cache PageIndex (`.pageindex/`):** Artefatos de apoio à leitura de PDFs longos em `raw/papers/`. Cada documento indexado ocupa **uma subpasta** cujo nome é o **identificador canônico do arquivo**, definido como a **impressão digital SHA-256 em minúsculas (hexadecimal de 64 caracteres)** do **conteúdo binário completo** do PDF em `raw/papers/`. Dentro da subpasta existem **`tree.json`** (árvore PageIndex) e **`manifest.json`** (metadados). Nada em `.pageindex/` além de **`.pageindex/.gitkeep`** é versionado no Git. O agente **não escreve** em `raw/`; leitura do PDF para hash e para indexação é permitida. Integração com o servidor **MCP** PageIndex em modo local segue `.gemini/skills/ingest-paper.md` e exige Node.js para o transporte `npx` descrito pelo fornecedor ([PageIndex MCP](https://github.com/VectifyAI/pageindex-mcp)). A configuração versionada do cliente neste repositório está em **`.cursor/mcp.json`** (Cursor) e **`.gemini/settings.json`** (Gemini CLI).
@@ -52,7 +52,7 @@ Para executar operações na base, você deve carregar e seguir rigorosamente as
 * **Ingestão de paper (`/ingest-paper`):** Para processar documentos formais completos em `raw/papers/` (PDF ou equivalente) com ABNT e validação de conceitos, utilize `.gemini/skills/ingest-paper.md`.
 * **Triagem de introdução de paper (`/ingest-paper-intro`):** Para leitura rápida de abstract e introdução apenas em `raw/papers/`, utilize `.gemini/skills/ingest-paper-intro.md`.
 * **Ingestão de artigos da web (`/ingest-article`):** Para Markdown em `raw/articles/` (blog, wiki, docs, notícias, etc.), com citação recuperável e avaliação de procedência, utilize `.gemini/skills/ingest-article.md`.
-* **Ingestão de transcrições do YouTube (`/ingest-youtube`):** Para Markdown em `raw/articles/` gerado pelo ETL de YouTube com `source_kind: youtube_transcript`, utilize `.gemini/skills/ingest-youtube.md`.
+* **Ingestão de transcrições do YouTube (`/ingest-youtube`):** Para Markdown em `raw/youtube/` gerado pelo ETL de YouTube com `source_kind: youtube_transcript`, utilize `.gemini/skills/ingest-youtube.md`.
 * **Busca e Validação (`/recall`):** Para minerar a base e validar o contexto antes de criar novos materiais, utilize `.gemini/skills/recall.md`.
 * **Geração Visual (`/visual`):** Para criar diagramas Mermaid, slides Marp ou gerar descrições técnicas de imagens, utilize `.gemini/skills/visual.md`.
 * **Manutenção do Sistema (`/lint`):** Para auditar links, encontrar contradições teóricas, identificar lacunas, **regenerar `zettelkasten/overview.md`** e gravar o relatório de manutenção, utilize `.gemini/skills/lint.md`.
@@ -107,7 +107,7 @@ confidence: medium
 
 O campo **`confidence`** é **obrigatório** em literatura web (`web_article`), refletindo a força da evidência e da citação recuperável após a avaliação de procedência.
 
-### Notas de literatura (transcrição do YouTube, `raw/articles/`)
+### Notas de literatura (transcrição do YouTube, `raw/youtube/`)
 Use quando `source_kind: youtube_transcript`. O corpo da nota deve explicitar que a fonte é uma transcrição de vídeo, com risco de oralidade, edição, erro automático e necessidade de checagem em fontes primárias quando houver afirmações fortes.
 
 ```yaml
@@ -118,7 +118,7 @@ id: YYYYMMDDHHMM
 title: "Título do vídeo"
 authors: [Canal ou apresentador]
 year: YYYY
-source_file: raw/articles/youtube-video-id-slug.md
+source_file: raw/youtube/youtube-video-id-slug.md
 video_id: "VIDEO_ID"
 url: "https://www.youtube.com/watch?v=VIDEO_ID"
 retrieved_at: "AAAA-MM-DD"
