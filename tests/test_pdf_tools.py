@@ -79,10 +79,11 @@ def test_list_and_read_pageindex_cache(tmp_path: Path) -> None:
     )
 
     manifests = list_pageindex_manifests(tmp_path)
-    cache = read_pageindex_cache(tmp_path, document_id, query="credito", limit=1)
+    cache = read_pageindex_cache(tmp_path, document_id, query="credito", limit=5)
 
     assert manifests[0]["source_path"] == "raw/papers/teste.pdf"
     assert cache["found"] is True
+    assert len(cache["matches"]) == 1
     assert cache["matches"][0]["page"] == 1
     assert "credito" in cache["matches"][0]["excerpt"]
 
