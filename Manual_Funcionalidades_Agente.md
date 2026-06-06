@@ -63,16 +63,22 @@ flowchart TD
 
 ### 2.1. Ingestão de Papers Completos (`/ingest-paper`)
 *   **Arquivo de Regras:** [ingest-paper.md](.gemini/skills/ingest-paper.md)
-*   **Objetivo:** Extrair a referência ABNT, mapear conceitos e gerar notas de literatura a partir de PDFs formais densos.
+*   **Objetivo:** Extrair a referência ABNT, mapear conceitos estruturados e gerar notas de literatura a partir de PDFs formais densos, com estimativas de custos e tokens antes do processamento.
 *   **Caso de Uso:** Processar artigos científicos e relatórios depositados em `raw/papers/` com mais de 10 páginas (com apoio de PageIndex para >20 páginas).
-*   **Gatilho:** `/ingest-paper raw/papers/[nome-do-arquivo].pdf`
-*   **Requisito de Hash SHA-256 (`document_id`):** O agente deve calcular o hash binário do PDF via PowerShell no Windows:
+*   **Gatilho:** `/ingest-paper raw/papers/[nome-do-arquivo].pdf` ou `/ingest-paper raw/papers/[nome-do-arquivo].pdf --analyze-only` (ou `-a`).
+*   **Requisito de Hash SHA-256 (`document_id`):** O agente calcula o hash binário do PDF via PowerShell no Windows:
     ```powershell
     (Get-FileHash -Algorithm SHA256 -LiteralPath 'raw/papers/nome.pdf').Hash.ToLower()
     ```
     Isso materializa o cache PageIndex em `.pageindex/<document_id>/tree.json` e `manifest.json`.
-*   **Pausa Obrigatória:** O agente extrai os conceitos e apresenta o resumo e a ABNT na tela, pausando e perguntando ao usuário quais conceitos devem virar Notas Permanentes.
-*   **Exemplo Prático de Nota de Literatura Gerada (`zettelkasten/literature/`):**
+*   **Melhorias Arquiteturais e de Extração:**
+    - **Estimativa Pré-Voo:** Utiliza a ferramenta MCP `estimate_pdf_processing` para calcular páginas, tokens e custos aproximados em USD nos modelos Gemini Flash e Pro antes da ingestão profunda.
+    - **Extração com Docling:** Caso o pacote `docling` esteja ativo, utiliza a biblioteca da IBM no parser MCP local para extrair tabelas técnicas e blocos de código com formatação Markdown impecável.
+    - **Modularização de Literatura:** Para papers extensos (>30 páginas), divide automaticamente a Nota de Literatura em um índice de literatura mestre e subnotas individuais por capítulo para economizar contexto nas sessões.
+    - **Taxonomia de Notas Permanentes:** Orienta a geração em prosa Feynman contínua com foco em quatro eixos: **Frameworks** (modelos aplicáveis), **Princípios de Decisão**, **Técnicas** e **Anti-padrões**.
+    - **Modo Apenas Análise (`--analyze-only`):** Gera um relatório estruturado em `zettelkasten/drafts/analise-[document_id].md`, abortando o fluxo antes de poluir as pastas e índices definitivos.
+*   **Pausa Obrigatória:** O agente extrai os conceitos e apresenta o resumo, a estimativa de custo pré-voo e a ABNT na tela, pausando e perguntando ao usuário quais conceitos devem virar Notas Permanentes (ou confirmando a gravação do rascunho temporário).
+*   **Exemplo Prático de Nota de Literatura Mestre Gerada (`zettelkasten/literature/`):**
     ```yaml
     ---
     type: literature
