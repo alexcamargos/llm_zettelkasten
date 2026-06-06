@@ -487,7 +487,7 @@ def ingest_youtube_playlist(
         ValueError: If YOUTUBE_PLAYLIST_ID is not configured in settings.
     """
     if not settings.youtube_playlist_id:
-        raise ValueError("YOUTUBE_PLAYLIST_ID nao configurado.")
+        raise ValueError("YOUTUBE_PLAYLIST_ID is not configured.")
 
     reader = YouTubeFeedReader(settings.youtube_playlist_id)
     fetcher = YouTubeTranscriptFetcher()
