@@ -1,7 +1,7 @@
 [project]
-name = "llm-zettelkasten"
+name = "zettelbrain"
 version = "0.1.0"
-description = "Motor Python local para automacao, busca e MCP do cofre LLM Zettelkasten."
+description = "Motor Python local para automacao, busca e MCP do cofre ZettelBrain."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -13,9 +13,13 @@ dependencies = [
 ]
 
 [project.scripts]
-zettel-mcp = "zettel_mcp:main"
-zettel-youtube-etl = "ingestion.youtube_etl:main"
-zettel-lint = "zettel_lint:main"
+zettelbrain-mcp = "zettelbrain_mcp:main"
+zettelbrain-youtube-etl = "ingestion.youtube_etl:main"
+zettelbrain-lint = "zettelbrain_lint:main"
+zb-mcp = "zettelbrain_mcp:main"
+zb-youtube-etl = "ingestion.youtube_etl:main"
+zb-lint = "zettelbrain_lint:main"
+zb-install = "setup:main"
 install = "setup:main"
 
 
