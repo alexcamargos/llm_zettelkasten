@@ -190,6 +190,53 @@ def test_index_pdf_with_command_persists_stdout_tree(
     assert result["manifest"]["index_source"] == "pageindex_external_command"
 
 
+def test_index_pdf_with_command_preserves_windows_command_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test PageIndex bridge preserves Windows absolute executable paths.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
+    vault = tmp_path / "vault"
+    raw_papers = vault / "raw" / "papers"
+    pageindex_root = vault / ".pageindex"
+    raw_papers.mkdir(parents=True)
+    pageindex_root.mkdir()
+    (raw_papers / "teste.pdf").write_bytes(b"abc")
+    captured: dict[str, list[str]] = {}
+    windows_pageindex = r"C:\Users\Nome\.gemini\pageindex"
+
+    monkeypatch.setattr("tools_command.os.name", "nt")
+    monkeypatch.setattr("tools_pdf.shutil.which", lambda command: command)
+
+    def fake_run(command: list[str], *_args: object, **_kwargs: object) -> SimpleNamespace:
+        captured["command"] = command
+        return SimpleNamespace(
+            returncode=0,
+            stdout='{"nodes": [{"page": 1, "text": "conteudo indexado"}]}',
+            stderr="",
+        )
+
+    monkeypatch.setattr("tools_pdf.subprocess.run", fake_run)
+
+    result = index_pdf_with_command(
+        vault,
+        raw_papers,
+        pageindex_root,
+        "raw/papers/teste.pdf",
+        pageindex_command=f"{windows_pageindex} --json",
+    )
+
+    assert result["indexed"] is True
+    assert captured["command"][:2] == [windows_pageindex, "--json"]
+
+
 def test_read_pageindex_page_returns_page_text(tmp_path: Path) -> None:
     """Test extracting layout text of a specific page from PageIndex cache tree.
 
