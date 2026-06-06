@@ -5,15 +5,15 @@ Este manual serve como o guia definitivo para operação, comandos, casos de uso
 ---
 
 ## Estrutura de Diretórios e Fluxo de Informação
-O ecossistema é dividido estritamente em dados brutos imutáveis de fontes de pesquisa (`raw/`), notas dinâmicas estruturadas da base de conhecimento (`zettelkasten/`), logs e caches do sistema (`.state/`) e a lógica de software executada via Python (`src/`).
+O ecossistema é dividido estritamente em dados brutos imutáveis de fontes de pesquisa (`raw/`), notas dinâmicas estruturadas da base de conhecimento (`zettelbrain/`), logs e caches do sistema (`.state/`) e a lógica de software executada via Python (`src/`).
 
 ```mermaid
 flowchart TD
-    A[Fontes Brutas: raw/] -->|Ingestão Modulada /ingest-*| B(Zettelkasten: literature/)
-    B -->|Síntese e Refatoração| C(Zettelkasten: permanent/)
+    A[Fontes Brutas: raw/] -->|Ingestão Modulada /ingest-*| B(ZettelBrain: literature/)
+    B -->|Síntese e Refatoração| C(ZettelBrain: permanent/)
     C -->|Pesquisa Híbrida /recall| D[Agente de Resolução Científica]
-    D -->|Fricção Semântica /bridge| E(Zettelkasten: drafts/)
-    D -->|Detecção de Lacunas /lint| F(Zettelkasten: overview & syntheses/)
+    D -->|Fricção Semântica /bridge| E(ZettelBrain: drafts/)
+    D -->|Detecção de Lacunas /lint| F(ZettelBrain: overview & syntheses/)
     D -->|Pesquisa Externa /research-deep| G[Fontes Adicionais: raw/articles]
 ```
 
@@ -27,7 +27,7 @@ flowchart TD
 *   **Caso de Uso:** Executado obrigatoriamente no primeiro prompt de um novo dia ou sessão de pesquisa para absorver os caches ativos.
 *   **Gatilho:** `/start` ou `gemini "Inicie a sessão"`
 *   **Entradas e Saídas:**
-    *   *Lê:* `.state/hot.md`, `.state/log.md` (últimas 5 entradas) e `zettelkasten/overview.md`.
+    *   *Lê:* `.state/hot.md`, `.state/log.md` (últimas 5 entradas) e `zettelbrain/overview.md`.
     *   *Gera:* Resumo de situação contínuo na tela em exatamente 3 parágrafos Feynman sem listas.
 *   **Exemplo Prático:**
     *   *Input:* `/start`
@@ -47,13 +47,13 @@ flowchart TD
 *   **Gatilho:** `/close` ou `gemini "Encerre a sessão"`
 *   **Entradas e Saídas:**
     *   *Lê:* Histórico de chat recente, `.state/log.md` (intervalo ativo) e `.state/hot.md`.
-    *   *Grava:* `.state/hot.md` (sobrescrito em 3 parágrafos Feynman), `.state/log.md` (entrada de encerramento) e gera arquivos em `zettelkasten/drafts/` caso identifique novos conceitos não salvos.
+    *   *Grava:* `.state/hot.md` (sobrescrito em 3 parágrafos Feynman), `.state/log.md` (entrada de encerramento) e gera arquivos em `zettelbrain/drafts/` caso identifique novos conceitos não salvos.
 *   **Exemplo Prático:**
     *   *Input:* `/close`
     *   *Output (Log final gerado em log.md):*
         ```markdown
         ## [2026-06-06] /close | Sessão encerrada e rascunhos colhidos
-        - Criado: zettelkasten/drafts/rascunho-ajuste-risco-liquidez-20260606.md
+        - Criado: zettelbrain/drafts/rascunho-ajuste-risco-liquidez-20260606.md
         - Alterado: .state/hot.md
         ```
 
@@ -76,9 +76,9 @@ flowchart TD
     - **Extração com Docling:** Caso o pacote `docling` esteja ativo, utiliza a biblioteca da IBM no parser MCP local para extrair tabelas técnicas e blocos de código com formatação Markdown impecável.
     - **Modularização de Literatura:** Para papers extensos (>30 páginas), divide automaticamente a Nota de Literatura em um índice de literatura mestre e subnotas individuais por capítulo para economizar contexto nas sessões.
     - **Taxonomia de Notas Permanentes:** Orienta a geração em prosa Feynman contínua com foco em quatro eixos: **Frameworks** (modelos aplicáveis), **Princípios de Decisão**, **Técnicas** e **Anti-padrões**.
-    - **Modo Apenas Análise (`--analyze-only`):** Gera um relatório estruturado em `zettelkasten/drafts/analise-[document_id].md`, abortando o fluxo antes de poluir as pastas e índices definitivos.
+    - **Modo Apenas Análise (`--analyze-only`):** Gera um relatório estruturado em `zettelbrain/drafts/analise-[document_id].md`, abortando o fluxo antes de poluir as pastas e índices definitivos.
 *   **Pausa Obrigatória:** O agente extrai os conceitos e apresenta o resumo, a estimativa de custo pré-voo e a ABNT na tela, pausando e perguntando ao usuário quais conceitos devem virar Notas Permanentes (ou confirmando a gravação do rascunho temporário).
-*   **Exemplo Prático de Nota de Literatura Mestre Gerada (`zettelkasten/literature/`):**
+*   **Exemplo Prático de Nota de Literatura Mestre Gerada (`zettelbrain/literature/`):**
     ```yaml
     ---
     type: literature
@@ -154,7 +154,7 @@ flowchart TD
 *   **Objetivo:** Recuperar notas e trechos da base unindo termos de busca exatos e similaridade semântica local.
 *   **Caso de Uso:** Recuperar informações teóricas antes de propor novas conexões ou rascunhos.
 *   **Gatilho:** `/recall [termo-de-busca]`
-*   **Funcionamento Interno:** Aciona as ferramentas MCP `search_zettelkasten` and `semantic_search_zettelkasten` (via endpoint local Ollama com `nomic-embed-text` ou fallback offline por hashing normalizado).
+*   **Funcionamento Interno:** Aciona as ferramentas MCP `search_zettelbrain` and `semantic_search_zettelbrain` (via endpoint local Ollama com `nomic-embed-text` ou fallback offline por hashing normalizado).
 
 ---
 
@@ -202,18 +202,18 @@ flowchart TD
 
 ## CAPÍTULO 5: Consolidação, Auditoria e Saúde do Cofre
 
-### 5.1. Auditoria e Saúde do Zettelkasten (`/lint`)
+### 5.1. Auditoria e Saúde do ZettelBrain (`/lint`)
 *   **Arquivo de Regras:** [lint.md](.gemini/skills/lint.md)
-*   **Objetivo:** Auditar a integridade estrutural das notas, encontrar links mortos, notas órfãs, e **regenerar a síntese viva** em [overview.md](zettelkasten/overview.md).
+*   **Objetivo:** Auditar a integridade estrutural das notas, encontrar links mortos, notas órfãs, e **regenerar a síntese viva** em [overview.md](zettelbrain/overview.md).
 *   **Caso de Uso:** Executar periodicamente para auditar a qualidade técnica da base e documentar anomalias.
-*   **Gatilho:** `/lint zettelkasten/` ou via terminal direta `uv run zettelbrain-lint` (ou alias `uv run zb-lint`).
+*   **Gatilho:** `/lint zettelbrain/` ou via terminal direta `uv run zettelbrain-lint` (ou alias `uv run zb-lint`).
 *   **Funcionamento Híbrido Determinístico:**
-    - A varredura de integridade estrutural e busca por links mortos, órfãos conceituais, ligação mínima e padrões emergentes é realizada localmente pelo script Python nativo `zettelbrain_lint.py` (via ferramenta MCP `lint_zettelkasten()`), evitando ler todos os arquivos da base na chamada de LLM.
+    - A varredura de integridade estrutural e busca por links mortos, órfãos conceituais, ligação mínima e padrões emergentes é realizada localmente pelo script Python nativo `zettelbrain_lint.py` (via ferramenta MCP `lint_zettelbrain()`), evitando ler todos os arquivos da base na chamada de LLM.
     - A IA atua de forma focada apenas para a auditoria conceitual qualitativa (Etapa 2) e para a redação formal do relatório acadêmico final e do `overview.md`.
 *   **Saídas:**
-    *   Regenera o arquivo [overview.md](zettelkasten/overview.md).
-    *   Adiciona o link semântico no [index.md](zettelkasten/index.md).
-    *   Gera um relatório descritivo contínuo de 3 parágrafos Feynman em `zettelkasten/syntheses/relatorio-manutencao-[data].md`.
+    *   Regenera o arquivo [overview.md](zettelbrain/overview.md).
+    *   Adiciona o link semântico no [index.md](zettelbrain/index.md).
+    *   Gera um relatório descritivo contínuo de 3 parágrafos Feynman em `zettelbrain/syntheses/relatorio-manutencao-[data].md`.
 
 ---
 
@@ -222,7 +222,7 @@ flowchart TD
 *   **Objetivo:** Redigir rascunhos de sínteses complexas, ensaios ou capítulos de livros baseando-se em múltiplas notas existentes no cofre.
 *   **Caso de Uso:** Escrever seções teóricas estruturadas de trabalhos científicos cruzando a literatura e as notas permanentes catalogadas.
 *   **Gatilho:** `/ghost [tema/lista-de-notas]`
-*   **Saída:** Salva um rascunho dissertativo robusto na pasta `zettelkasten/drafts/` e o vincula ao índice.
+*   **Saída:** Salva um rascunho dissertativo robusto na pasta `zettelbrain/drafts/` e o vincula ao índice.
 
 ---
 
@@ -233,7 +233,7 @@ flowchart TD
 *   **Objetivo:** Gerar diagramas conceituais estruturados em Mermaid ou criar slides acadêmicos em formato Marp Markdown.
 *   **Caso de Uso:** Apresentar graficamente conexões de variáveis contábeis ou estruturas de modelos estatísticos.
 *   **Gatilho:** `/visual [conceito-a-explicar]`
-*   **Exemplo Prático (Slide Marp Gerado em zettelkasten/presentations/):**
+*   **Exemplo Prático (Slide Marp Gerado em zettelbrain/presentations/):**
     ```markdown
     ---
     marp: true
@@ -260,8 +260,8 @@ flowchart TD
 *   **Regra de Ouro:** Antes de criar qualquer nova nota permanente, o agente **deve** pesquisar a base (lexical e semântica). Se já houver nota tratando do conceito, o agente deve **acrescentar** as informações na nota permanente antiga, atualizando o frontmatter com as novas referências. Duplicações conceituais são proibidas.
 
 ### 7.2. Regras de Escrita e Estilo Feynman
-Toda e qualquer nota criada ou alterada na pasta `zettelkasten/` (literature, permanent, drafts, syntheses) deve obedecer aos seguintes critérios:
-*   **Escrita em Prosa Contínua:** Listas de marcadores (bullet points) são proibidas no corpo das notas (o arquivo `zettelkasten/index.md` é a única exceção).
+Toda e qualquer nota criada ou alterada na pasta `zettelbrain/` (literature, permanent, drafts, syntheses) deve obedecer aos seguintes critérios:
+*   **Escrita em Prosa Contínua:** Listas de marcadores (bullet points) são proibidas no corpo das notas (o arquivo `zettelbrain/index.md` é a única exceção).
 *   **Técnica Feynman:** Desconstruir complexidades matemáticas e conceituais de forma simples e precisa.
 *   **Sem Rótulos de Seção:** É proibido iniciar parágrafos com títulos textuais informais (ex: "Introdução.", "Desenvolvimento.").
 *   **Destaque Restrito:** **Negrito** deve ser usado estritamente para constructos, nomes de variáveis e algoritmos centrais.
