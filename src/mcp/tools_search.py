@@ -7,12 +7,13 @@ with semantic index querying using the external `qmd` tool.
 from __future__ import annotations
 
 import re
-import shlex
 import shutil
 import subprocess
 from dataclasses import dataclass
 from math import log
 from pathlib import Path
+
+from tools_command import split_command
 
 
 @dataclass(frozen=True)
@@ -111,7 +112,8 @@ def retrieval_status(qmd_command: str | None = "qmd") -> RetrievalStatus:
     """
     if not qmd_command:
         return RetrievalStatus(qmd_configured=False, qmd_available=False, qmd_command=None)
-    executable = shlex.split(qmd_command)[0]
+    command_args = split_command(qmd_command)
+    executable = command_args[0]
     return RetrievalStatus(
         qmd_configured=True,
         qmd_available=shutil.which(executable) is not None,
@@ -189,12 +191,13 @@ def qmd_search(
     Returns:
         list[SearchResult]: Ranked list of SearchResult matches or empty list on error.
     """
-    executable = shlex.split(qmd_command)[0]
+    command_args = split_command(qmd_command)
+    executable = command_args[0]
     if shutil.which(executable) is None:
         return []
 
     command = [
-        *shlex.split(qmd_command),
+        *command_args,
         "search",
         query,
         "--limit",
