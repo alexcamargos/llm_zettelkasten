@@ -53,15 +53,15 @@ def test_parse_frontmatter_and_body() -> None:
 
 @pytest.fixture
 def mock_zettel_vault(tmp_path: Path) -> Generator[Path, None, None]:
-    """Fixture que cria uma estrutura temporária de Zettelkasten populada para testes.
+    """Fixture que cria uma estrutura temporária de ZettelBrain populada para testes.
 
     Args:
         tmp_path: Fixture nativa do pytest para diretórios temporários.
 
     Yields:
-        Path: O caminho do diretório temporário zettelkasten.
+        Path: O caminho do diretório temporário zettelbrain.
     """
-    zettel_dir = tmp_path / "zettelkasten"
+    zettel_dir = tmp_path / "zettelbrain"
     zettel_dir.mkdir()
 
     # Cria subpastas
@@ -75,7 +75,7 @@ def mock_zettel_vault(tmp_path: Path) -> Generator[Path, None, None]:
         "---\n"
         "type: literature\n"
         "id: 202606060001\n"
-        "title: \"Linear Regression Basics\"\n"
+        'title: "Linear Regression Basics"\n'
         "---\n"
         "Explica conceitos de **Regressão Linear** e **Gradiente Descendente**.\n"
         "Veja também a nota [[perm-linear-regression]].",
@@ -138,9 +138,7 @@ def mock_zettel_vault(tmp_path: Path) -> Generator[Path, None, None]:
     # Arquivo de índice do cofre
     index_file = zettel_dir / "index.md"
     index_file.write_text(
-        "# Índice\n"
-        "- [[lit-linear-regression]]\n"
-        "- [[perm-linear-regression]]",
+        "# Índice\n- [[lit-linear-regression]]\n- [[perm-linear-regression]]",
         encoding="utf-8",
     )
 
