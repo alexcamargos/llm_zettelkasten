@@ -51,6 +51,33 @@ def test_parse_frontmatter_and_body() -> None:
     assert body == "Este é o corpo da nota.\nEle contém várias linhas."
 
 
+def test_parse_frontmatter_and_body_supports_indented_yaml_lists() -> None:
+    """Garante suporte a listas YAML convencionais com hífens recuados."""
+    content = (
+        "---\n"
+        "type: permanent\n"
+        "id: 202606060801\n"
+        "tags:\n"
+        "  - risco\n"
+        "  - credito\n"
+        "sources:\n"
+        "  - \"[[nota-literatura-1]]\"\n"
+        "  - \"[[nota-literatura-2]]\"\n"
+        "deprecated: false\n"
+        "---\n"
+        "Corpo com [[nota-relacionada]]."
+    )
+
+    frontmatter, body = parse_frontmatter_and_body(content)
+
+    assert frontmatter["type"] == "permanent"
+    assert frontmatter["id"] == "202606060801"
+    assert frontmatter["tags"] == ["risco", "credito"]
+    assert frontmatter["sources"] == ["[[nota-literatura-1]]", "[[nota-literatura-2]]"]
+    assert frontmatter["deprecated"] is False
+    assert body == "Corpo com [[nota-relacionada]]."
+
+
 @pytest.fixture
 def mock_zettel_vault(tmp_path: Path) -> Generator[Path, None, None]:
     """Fixture que cria uma estrutura temporária de ZettelBrain populada para testes.
@@ -88,7 +115,8 @@ def mock_zettel_vault(tmp_path: Path) -> Generator[Path, None, None]:
         "---\n"
         "type: permanent\n"
         "id: 202606060002\n"
-        "sources: [[lit-linear-regression]]\n"
+        "sources:\n"
+        "  - \"[[lit-linear-regression]]\"\n"
         "---\n"
         "Regressão linear é uma técnica estatística.\n"
         "Ela busca encontrar a relação de **Regressão Linear** entre variáveis.\n"
