@@ -136,14 +136,14 @@ flowchart TD
 *   **Arquivo de Regras:** [ingest-youtube.md](.gemini/skills/ingest-youtube.md)
 *   **Objetivo:** Ingerir arquivos contendo transcrições estruturadas geradas pelo pipeline autônomo do YouTube.
 *   **Caso de Uso:** Extrair conhecimento científico compartilhado em palestras, vídeo-aulas ou seminários corporativos de finanças.
-*   **Gatilho:** `/ingest-youtube raw/articles/[nome-do-video].md`
+*   **Gatilho:** `/ingest-youtube raw/youtube/[nome-do-video].md`
 *   **Frontmatter Padrão:** O YAML gerado deve mapear `source_kind: youtube_transcript` e incluir o `video_id`. No corpo do texto, o agente é instruído a explicitar o risco inerente da oralidade da fonte.
 
 ---
 
 ### Pipeline de Ingestão Autônoma (YouTube ETL)
 *   **Script do Sistema:** [youtube_etl.py](src/ingestion/youtube_etl.py)
-*   **Funcionamento:** Um script Python executado em background que lê um feed RSS XML de uma playlist do YouTube configurada no `.env`, baixa e extrai legendas via `youtube-transcript-api` de novos vídeos e gera arquivos brutos em `raw/articles/`, registrando-os no histórico para evitar duplicações.
+*   **Funcionamento:** Um script Python executado em background que lê um feed RSS XML de uma playlist do YouTube configurada no `.env`, baixa e extrai legendas via `youtube-transcript-api` de novos vídeos e gera arquivos brutos em `raw/youtube/`, registrando-os no histórico para evitar duplicações.
 
 ---
 
