@@ -54,6 +54,7 @@ def health() -> dict[str, Any]:
         "vault_path": str(settings.vault_path),
         "zettelkasten_path": str(settings.zettelkasten_path),
         "raw_articles_path": str(settings.raw_articles_path),
+        "raw_youtube_path": str(settings.raw_youtube_path),
         "youtube_playlist_configured": bool(settings.youtube_playlist_id),
         "qmd_command": settings.qmd_command,
         "pageindex_command_configured": bool(settings.pageindex_command),
