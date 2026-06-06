@@ -34,6 +34,7 @@ Substituir `nome-do-arquivo.pdf` pelo PDF real. Utilizar sempre **`-LiteralPath`
 * **Integridade de Dados:** O frontmatter das notas deve ser sempre um YAML válido entre `---`. Nunca altere ou apague o conteúdo da pasta `raw/`.
 * **Vida útil das notas em `zettelkasten/`:** **Não apague** arquivos do cofre salvo instrução **explícita** do usuário. Para retirar uma nota de circulação, marque-a como deprecada no YAML: `deprecated: true`, opcionalmente `deprecated_at: AAAA-MM-DD`, `deprecated_reason: "..."` e `superseded_by: [[nota-substituta]]` quando existir sucessor. No **corpo**, explique o estado de deprecação já no primeiro parágrafo, sem usar rótulos literais de seção, em conformidade com as regras de estilo.
 * **Ligação ao grafo:** Ao criar **nota permanente nova**, se existirem pelo menos **duas** notas existentes claramente relacionadas, o **corpo** deve incluir **no mínimo dois** wikilinks `[[...]]` a essas notas (além do campo `sources:` no frontmatter). Se o cofre ainda não oferecer candidatos, registre essa limitação no `.state/log.md` nessa operação.
+* **Protocolo de Reconciliação e Auto-Refatoração:** Antes de criar qualquer nota permanente em `zettelkasten/permanent/`, é mandatório realizar uma busca semântica ou lexical para verificar sobreposição com conceitos já catalogados. Se uma nota existente cobrir o mesmo conceito ou variável de risco, o agente deve refatorar e enriquecer incrementalmente a nota existente em vez de criar uma duplicada, atualizando e agregando as fontes no frontmatter (`sources:` e `abnt_reference`).
 
 ## 3. Regras de Estilo e Qualidade de Escrita (Writing Rules)
 * **Audiência e Tom:** Aplique a _Técnica Feynman_ para desconstruir a complexidade, ajustando o tom para um estudante de MBA de alto nível com vasta experiência corporativa e em análise de dados. Evite explicações simplistas e mantenha a sofisticação intelectual e o rigor técnico.
@@ -42,6 +43,7 @@ Substituir `nome-do-arquivo.pdf` pelo PDF real. Utilizar sempre **`-LiteralPath`
 * **Estrutura em prosa, sem rótulos:** Não utilize marcadores (bullet points) no corpo das notas (permanentes, literatura, sínteses, etc). O único arquivo imune a esta proibição — e no qual o uso de hífens `-` para formar listas é mandatório — é o `zettelkasten/index.md`. A redação das notas deve seguir a progressão lógica em parágrafos contínuos, sem escrever rótulos literais como `Introdução.`, `Contexto.` ou `Fechamento.` no texto.
 * **Destaque de Informação:** Utilize **negrito** exclusivamente para destacar conceitos-chave, variáveis estatísticas e termos técnicos cruciais, facilitando a recuperação rápida da informação.
 * **Restrições de Pontuação e Visual:** É proibido o uso de travessões para intercalar explicações; utilize vírgulas ou períodos curtos e diretos. É terminantemente proibido o uso de emojis ou qualquer elemento visual informal em qualquer arquivo.
+
 
 ## 4. Mapeamento de Skills (Slash Commands)
 Para executar operações na base, você deve carregar e seguir rigorosamente as instruções contidas nos arquivos modulares localizados em `.gemini/skills/`.
