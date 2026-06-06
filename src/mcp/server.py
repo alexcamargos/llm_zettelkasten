@@ -23,6 +23,7 @@ if str(MCP_TOOLS_ROOT) not in sys.path:
 from tools_embeddings import build_embedding_index, embedding_status, find_semantic_bridge, semantic_search
 from tools_file import list_markdown_files, read_markdown_file
 from tools_pdf import (
+    estimate_document_processing,
     find_pageindex_manifest,
     index_pdf_with_command,
     list_pageindex_manifests,
@@ -373,6 +374,24 @@ def compute_pdf_sha256(relative_path: str) -> dict[str, str]:
     return {"source_path": relative_path, "document_id": sha256_file(pdf_path)}
 
 
+@log_skill_execution
+def estimate_pdf_processing(relative_path: str) -> dict[str, Any]:
+    """Estimate the cost, tokens, and time required to process a PDF.
+
+    Args:
+        relative_path: The relative path of the PDF inside raw/papers.
+
+    Returns:
+        dict[str, Any]: Cost, token, and duration estimation details.
+    """
+    return estimate_document_processing(
+        settings.vault_path,
+        settings.raw_papers_path,
+        settings.vault_path / ".pageindex",
+        relative_path,
+    )
+
+
 def build_server() -> Any:
     """Build and configure the FastMCP server instance.
 
@@ -405,6 +424,7 @@ def build_server() -> Any:
     server.tool()(persist_pdf_cache)
     server.tool()(index_pdf_cache)
     server.tool()(compute_pdf_sha256)
+    server.tool()(estimate_pdf_processing)
     return server
 
 
