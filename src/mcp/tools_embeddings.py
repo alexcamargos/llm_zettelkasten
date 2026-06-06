@@ -666,11 +666,7 @@ def _tokenize(text: str) -> list[str]:
     Returns:
         list[str]: Normalized token word list.
     """
-    return [
-        token.lower()
-        for token in re.findall(r"\w+", text)
-        if len(token) >= MIN_TOKEN_LENGTH
-    ]
+    return [token.lower() for token in re.findall(r"\w+", text) if len(token) >= MIN_TOKEN_LENGTH]
 
 
 def _extract_title(path: Path) -> str:
@@ -709,12 +705,13 @@ def find_semantic_bridge(
         index_path: The absolute path to the local embedding index JSON file.
         min_similarity: Minimum cosine similarity threshold (to avoid completely unrelated docs).
             Defaults to 0.05.
-        max_similarity: Maximum cosine similarity threshold (to ensure they are semantically distant).
-            Defaults to 0.4.
+        max_similarity: Maximum cosine similarity threshold (to ensure they are
+            semantically distant). Defaults to 0.4.
 
     Returns:
-        dict[str, Any]: A dictionary containing details of the two bridge notes, their similarity score,
-            and excerpts, or an error/status message if no bridge could be found.
+        dict[str, Any]: A dictionary containing details of the two bridge notes,
+            their similarity score, and excerpts, or an error/status message
+            if no bridge could be found.
 
     Raises:
         FileNotFoundError: If the index file does not exist.
@@ -735,9 +732,7 @@ def find_semantic_bridge(
     pairs = []
     for i in range(len(documents)):
         for j in range(i + 1, len(documents)):
-            similarity = cosine_similarity(
-                documents[i]["embedding"], documents[j]["embedding"]
-            )
+            similarity = cosine_similarity(documents[i]["embedding"], documents[j]["embedding"])
             if min_similarity <= similarity <= max_similarity:
                 pairs.append((documents[i], documents[j], similarity))
 
@@ -766,4 +761,3 @@ def find_semantic_bridge(
             "title": _extract_title(path_b),
         },
     }
-
