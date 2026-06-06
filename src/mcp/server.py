@@ -240,13 +240,13 @@ def read_zettelbrain_markdown(relative_path: str) -> str:
 
 @log_skill_execution
 def lint_zettelbrain() -> dict[str, Any]:
-    """Executa a auditoria e validacao estatica (linter) do ZettelBrain.
+    """Run the static audit and validation linter for ZettelBrain.
 
-    Identifica links mortos, notas orfas, ligacao minima ao grafo e padroes
-    emergentes de termos destacados em negrito.
+    Identifies dead links, orphan notes, minimal graph connections, and
+    emergent patterns from bolded terms.
 
     Returns:
-        dict[str, Any]: Estrutura com os resultados do linting.
+        dict[str, Any]: Linting result structure.
     """
     from zettelbrain_lint import run_lint_logic
 
@@ -389,10 +389,10 @@ def compute_pdf_sha256(relative_path: str) -> dict[str, str]:
     pdf_path = (settings.vault_path / relative_path).resolve()
     if settings.raw_papers_path.resolve() not in pdf_path.parents:
         raise ValueError(
-            "Apenas PDFs dentro de raw/papers podem ser hasheados por esta ferramenta."
+            "Only PDFs inside raw/papers can be hashed by this tool."
         )
     if pdf_path.suffix.lower() != ".pdf":
-        raise ValueError("O arquivo informado nao e PDF.")
+        raise ValueError("The provided file is not a PDF.")
     return {"source_path": relative_path, "document_id": sha256_file(pdf_path)}
 
 
@@ -439,7 +439,7 @@ def ingest_web_article(url: str, filename: str | None = None) -> dict[str, Any]:
             }
         return {
             "status": "error",
-            "error": "Falha na extração de conteúdo do artigo.",
+            "error": "Failed to extract article content.",
         }
     except Exception as exc:
         return {
