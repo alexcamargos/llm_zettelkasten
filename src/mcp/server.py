@@ -20,7 +20,12 @@ if str(SRC_ROOT) not in sys.path:
 if str(MCP_TOOLS_ROOT) not in sys.path:
     sys.path.insert(0, str(MCP_TOOLS_ROOT))
 
-from tools_embeddings import build_embedding_index, embedding_status, find_semantic_bridge, semantic_search
+from tools_embeddings import (
+    build_embedding_index,
+    embedding_status,
+    find_semantic_bridge,
+    semantic_search,
+)
 from tools_file import list_markdown_files, read_markdown_file
 from tools_pdf import (
     estimate_document_processing,
@@ -243,6 +248,7 @@ def lint_zettelbrain() -> dict[str, Any]:
         dict[str, Any]: Estrutura com os resultados do linting.
     """
     from zettelbrain_lint import run_lint_logic
+
     return run_lint_logic()
 
 
