@@ -128,7 +128,7 @@ def index_pdf_with_command(
         if not HAS_DOCLING:
             return {
                 "indexed": False,
-                "reason": "Pacote docling nao instalado no ambiente virtual.",
+                "reason": "The docling package is not installed in the virtual environment.",
                 "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
                 "document_id": sha256_file(pdf_path),
             }
@@ -170,7 +170,7 @@ def index_pdf_with_command(
     if not pageindex_command:
         return {
             "indexed": False,
-            "reason": "PAGEINDEX_COMMAND nao configurado.",
+            "reason": "PAGEINDEX_COMMAND is not configured.",
             "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
             "document_id": sha256_file(pdf_path),
         }
@@ -198,7 +198,7 @@ def index_pdf_with_command(
     except (OSError, subprocess.TimeoutExpired) as exc:
         return {
             "indexed": False,
-            "reason": f"Falha ao executar PageIndex: {exc}",
+            "reason": f"Failed to execute PageIndex: {exc}",
             "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
             "document_id": sha256_file(pdf_path),
         }
@@ -206,7 +206,7 @@ def index_pdf_with_command(
     if completed.returncode != 0:
         return {
             "indexed": False,
-            "reason": completed.stderr.strip() or "PageIndex retornou codigo diferente de zero.",
+            "reason": completed.stderr.strip() or "PageIndex returned a non-zero status code.",
             "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
             "document_id": sha256_file(pdf_path),
         }
@@ -343,12 +343,12 @@ def read_pageindex_cache(
         ValueError: If document_id is not a valid SHA-256 identifier or escapes boundaries.
     """
     if not _is_document_id(document_id):
-        raise ValueError("document_id deve ser um SHA-256 hexadecimal em minusculas.")
+        raise ValueError("document_id must be a lowercase hexadecimal SHA-256 value.")
 
     resolved_root = pageindex_root.resolve()
     document_root = (resolved_root / document_id).resolve()
     if resolved_root not in document_root.parents:
-        raise ValueError("document_id invalido.")
+        raise ValueError("Invalid document_id.")
 
     manifest_path = document_root / "manifest.json"
     tree_path = document_root / "tree.json"
@@ -381,14 +381,14 @@ def read_pageindex_page(pageindex_root: Path, document_id: str, page: int) -> di
         ValueError: If page is less than 1 or if document_id is invalid.
     """
     if page < 1:
-        raise ValueError("page deve ser maior ou igual a 1.")
+        raise ValueError("page must be greater than or equal to 1.")
     if not _is_document_id(document_id):
-        raise ValueError("document_id deve ser um SHA-256 hexadecimal em minusculas.")
+        raise ValueError("document_id must be a lowercase hexadecimal SHA-256 value.")
 
     resolved_root = pageindex_root.resolve()
     document_root = (resolved_root / document_id).resolve()
     if resolved_root not in document_root.parents:
-        raise ValueError("document_id invalido.")
+        raise ValueError("Invalid document_id.")
 
     manifest_path = document_root / "manifest.json"
     tree_path = document_root / "tree.json"
@@ -443,13 +443,14 @@ def _find_tree_matches(value: Any, *, query: str | None, limit: int) -> list[dic
 
 
 def _walk_json(value: Any) -> list[Any]:
-    """Recursively traverse a JSON object hierarchy to collect nested nodes.
+    """Recursively flatten a JSON-like object hierarchy.
 
     Args:
-        value: JSON-like structure (dict, list, string, etc.).
+        value: Root JSON-like value. Dictionaries and lists are traversed
+            recursively; scalar values are included as-is.
 
     Returns:
-        list[Any]: Flat list of all child nodes and structures found.
+        Flat list containing the root value and every nested child value.
     """
     nodes = [value]
     if isinstance(value, dict):
@@ -462,13 +463,15 @@ def _walk_json(value: Any) -> list[Any]:
 
 
 def _node_text(node: Any) -> str:
-    """Extract string content out of a layout tree node.
+    """Extract searchable text content from a layout tree node.
 
     Args:
-        node: A node from the layout tree.
+        node: A layout tree node. Strings are returned directly. Dictionaries
+            contribute values from text-like keys such as "text", "content",
+            "title", "heading", and "summary".
 
     Returns:
-        str: Textual description/content of the node.
+        Extracted text, or an empty string when the node has no textual content.
     """
     if isinstance(node, str):
         return node
@@ -567,9 +570,9 @@ def _safe_pdf_path(vault_path: Path, raw_papers_path: Path, relative_path: str) 
     resolved_raw_papers = raw_papers_path.resolve()
     pdf_path = (resolved_vault / relative_path).resolve()
     if resolved_raw_papers != pdf_path.parent and resolved_raw_papers not in pdf_path.parents:
-        raise ValueError("Apenas PDFs dentro de raw/papers podem ser acessados.")
+        raise ValueError("Only PDFs inside raw/papers can be accessed.")
     if pdf_path.suffix.lower() != ".pdf":
-        raise ValueError("O arquivo informado nao e PDF.")
+        raise ValueError("The provided file is not a PDF.")
     if not pdf_path.exists() or not pdf_path.is_file():
         raise FileNotFoundError(relative_path)
     return pdf_path
@@ -607,9 +610,9 @@ def _parse_tree_payload(tree: dict[str, Any] | list[Any] | str) -> dict[str, Any
     try:
         parsed = json.loads(tree)
     except json.JSONDecodeError as exc:
-        raise ValueError("tree_json deve ser JSON valido.") from exc
+        raise ValueError("tree_json must be valid JSON.") from exc
     if not isinstance(parsed, dict | list):
-        raise ValueError("tree_json deve representar um objeto ou lista JSON.")
+        raise ValueError("tree_json must represent a JSON object or list.")
     return parsed
 
 
@@ -620,7 +623,7 @@ def _infer_tree_metadata(tree: dict[str, Any] | list[Any]) -> dict[str, Any]:
         tree: The layout tree payload.
 
     Returns:
-        dict[str, Any]: Metdata dict containing page count estimate if found.
+        dict[str, Any]: Metadata dict containing page count estimate if found.
     """
     pages = sorted({page for node in _walk_json(tree) if (page := _node_page(node)) is not None})
     if not pages:
