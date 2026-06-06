@@ -1,10 +1,10 @@
 # /ingest-youtube (Ingestão de transcrições do YouTube)
 
 ## Objetivo
-Processar **apenas** arquivos Markdown em `raw/articles/` gerados pelo ETL de YouTube (`src/ingestion/youtube_etl.py`) com `source_kind: youtube_transcript`. Este fluxo não substitui `/ingest-article`: transcrições de vídeo têm temporalidade, oralidade, risco de erro automático e autoria/publicação próprias, portanto exigem avaliação específica antes de entrar no cofre.
+Processar **apenas** arquivos Markdown em `raw/youtube/` gerados pelo ETL de YouTube (`src/ingestion/youtube_etl.py`) com `source_kind: youtube_transcript`. Este fluxo não substitui `/ingest-article`: transcrições de vídeo têm temporalidade, oralidade, risco de erro automático e autoria/publicação próprias, portanto exigem avaliação específica antes de entrar no cofre.
 
 ## Gatilho
-Acionado quando o usuário disser `gemini "Execute a skill /ingest-youtube no arquivo raw/articles/[nome].md"` ou `/ingest-youtube raw/articles/[nome].md`.
+Acionado quando o usuário disser `gemini "Execute a skill /ingest-youtube no arquivo raw/youtube/[nome].md"` ou `/ingest-youtube raw/youtube/[nome].md`.
 
 **Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/ingest-youtube`** e liste todos os arquivos tocados ou criados.
 
@@ -14,7 +14,7 @@ Acionado quando o usuário disser `gemini "Execute a skill /ingest-youtube no ar
 Trate cada transcrição como uma fonte oral informal e potencialmente útil, mas epistemicamente inferior a paper, relatório técnico ou documentação oficial. A meta orientadora continua sendo reforçar a rede com nota de literatura, permanentes aprovadas, índice e revisões cruzadas quando a base permitir; se o cofre estiver vazio ou o vídeo for fraco, documente a limitação no log.
 
 ### Etapa 1: Validação do artefato bruto
-1. Confirme que o arquivo está em `raw/articles/`, possui extensão `.md` e traz frontmatter com `source_kind: youtube_transcript`.
+1. Confirme que o arquivo está em `raw/youtube/`, possui extensão `.md` e traz frontmatter com `source_kind: youtube_transcript`.
 2. Extraia do frontmatter `title`, `video_id`, `url`, `published_at` e `retrieved_at`. Se `video_id`, `url` ou `retrieved_at` estiverem ausentes, trate a confiança como no máximo `medium` e registre a lacuna no corpo da nota de literatura.
 3. Leia a transcrição integralmente, observando marcas de oralidade, trechos repetitivos, lacunas de contexto, possíveis erros de transcrição automática e afirmações que exigiriam fonte mais autoritativa.
 
@@ -29,7 +29,7 @@ Na conversa com o usuário pode usar listas para clareza; isso **não** se aplic
 ### Etapa 3: Gravação no cofre
 Aplicando as **Regras Globais de Estilo** do `ZETTELBRAIN.md`, sem bullet points no corpo das notas e com título obrigatório após o YAML.
 
-1. **Nota de literatura:** Crie em `zettelkasten/literature/` com `type: literature`, `source_kind: youtube_transcript`, `source_file` apontando para `raw/articles/...`, `video_id`, `url`, `retrieved_at`, `published_at` quando disponível, `publisher_kind: youtube_channel`, `abnt_reference` em melhor forma recuperável para vídeo online e `confidence` obrigatório (`high`, `medium` ou `low`). O corpo deve começar com `# Título da nota`, explicar que a fonte é uma transcrição de vídeo e registrar limitações de evidência.
+1. **Nota de literatura:** Crie em `zettelkasten/literature/` com `type: literature`, `source_kind: youtube_transcript`, `source_file` apontando para `raw/youtube/...`, `video_id`, `url`, `retrieved_at`, `published_at` quando disponível, `publisher_kind: youtube_channel`, `abnt_reference` em melhor forma recuperável para vídeo online e `confidence` obrigatório (`high`, `medium` ou `low`). O corpo deve começar com `# Título da nota`, explicar que a fonte é uma transcrição de vídeo e registrar limitações de evidência.
 2. **Notas permanentes:** Somente para tópicos aprovados pelo usuário. Use `sources` apontando para a nota de literatura criada e conecte com `[[wikilinks]]` para notas relacionadas quando existirem candidatas claras.
 3. **Revisão cruzada:** Se a transcrição reforçar ou tensionar notas existentes, atualize com cautela e deixe claro que a evidência vem de fonte oral informal.
 
