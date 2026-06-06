@@ -256,7 +256,7 @@ flowchart TD
 ## CAPÍTULO 7: Diretrizes Normativas e Protocolos
 
 ### 7.1. Protocolo de Reconciliação e Auto-Refatoração
-*   **Diretriz Normativa:** [GEMINI.md](GEMINI.md) (Seção 2)
+*   **Diretriz Normativa:** [ZETTELBRAIN.md](ZETTELBRAIN.md) (Seção 2)
 *   **Regra de Ouro:** Antes de criar qualquer nova nota permanente, o agente **deve** pesquisar a base (lexical e semântica). Se já houver nota tratando do conceito, o agente deve **acrescentar** as informações na nota permanente antiga, atualizando o frontmatter com as novas referências. Duplicações conceituais são proibidas.
 
 ### 7.2. Regras de Escrita e Estilo Feynman
