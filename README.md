@@ -1,4 +1,4 @@
-# ZettelBrain: Zettelkasten Modular via Gemini CLI
+# ZettelBrain: Base de Conhecimento Modular via Gemini CLI
 
 ## Visão Geral do Sistema
 Este repositório estabelece a arquitetura oficial para o ecossistema de gestão de conhecimento pessoal e pesquisa acadêmica operado via interface de linha de comando. Adotando o paradigma de **Notas Atômicas em Arquitetura Dissertativa**, o projeto foi desenhado especificamente para suportar o rigor metodológico exigido em modelagem preditiva de risco e análise de indicadores financeiros.
@@ -46,7 +46,7 @@ zettelbrain/
 │   ├── articles/
 │   ├── youtube/
 │   └── assets/
-└── zettelkasten/
+└── zettelbrain/
     ├── index.md
     ├── overview.md
     ├── literature/
@@ -66,18 +66,18 @@ Pastas sem notas ainda usam um arquivo **`.gitkeep`** (vazio) para o Git version
 A inicialização em um novo ambiente resume-se a clonar o repositório, instalar o Gemini CLI conforme a documentação oficial e passar a operar na raiz do projeto. As pastas necessárias já vêm no clone; o foco segue sendo a mineração de dados acadêmicos com o agente.
 
 ### Clonagem e Versionamento
-O usuário deve clonar o repositório para o disco local utilizando um cliente de controle de versão. A árvore de pastas versionada (`raw/`, `zettelkasten/`, `.state/`) já vem preparada para uso imediato; adicione PDFs formais em `raw/papers/` (skills `/ingest-paper` e `/ingest-paper-intro`), recortes informais da web em Markdown em `raw/articles/` (skill `/ingest-article`) e transcrições geradas pelo ETL de YouTube em `raw/youtube/` (skill `/ingest-youtube`).
+O usuário deve clonar o repositório para o disco local utilizando um cliente de controle de versão. A árvore de pastas versionada (`raw/`, `zettelbrain/`, `.state/`) já vem preparada para uso imediato; adicione PDFs formais em `raw/papers/` (skills `/ingest-paper` e `/ingest-paper-intro`), recortes informais da web em Markdown em `raw/articles/` (skill `/ingest-article`) e transcrições geradas pelo ETL de YouTube em `raw/youtube/` (skill `/ingest-youtube`).
 
 ### Gemini CLI
-Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `ZETTELBRAIN.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
+Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `ZETTELBRAIN.md`, `raw/`, `zettelbrain/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
 
 ### Motor Python Local
 O repositório agora inclui a camada do motor Python previsto na arquitetura: `pyproject.toml`, configuração centralizada em `src/config.py`, logs em `src/logger.py`, ETL de YouTube em `src/ingestion/youtube_etl.py`, linter de integridade estática em `src/zettelbrain_lint.py` e o servidor MCP em `src/mcp/server.py`. As dependências são gerenciadas por `uv`; para preparar o ambiente, execute `uv sync` na raiz do projeto.
 
-O linter de integridade do cofre pode ser executado diretamente pelo terminal via `uv run zettelbrain-lint` ou pelo alias curto `uv run zb-lint` (ou `uv run zettelbrain-lint --json` para saídas estruturadas) para validar a saúde de links mortos, órfãos, ligação mínima ao grafo, referências a deprecados e padrões de conhecimento emergentes no Zettelkasten. Para validar o servidor sem iniciar o transporte MCP, rode `uv run python src/mcp/server.py --health-json`.
+O linter de integridade do cofre pode ser executado diretamente pelo terminal via `uv run zettelbrain-lint` ou pelo alias curto `uv run zb-lint` (ou `uv run zettelbrain-lint --json` para saídas estruturadas) para validar a saúde de links mortos, órfãos, ligação mínima ao grafo, referências a deprecados e padrões de conhecimento emergentes no ZettelBrain. Para validar o servidor sem iniciar o transporte MCP, rode `uv run python src/mcp/server.py --health-json`.
 
 ### Embeddings Locais
-O servidor MCP expõe `embedding_health`, `index_zettelkasten_embeddings` e `semantic_search_zettelkasten`. A implementação aceita `EMBEDDING_PROVIDER=hashing` para fallback offline determinístico ou `EMBEDDING_PROVIDER=ollama` para consultar um endpoint local compatível com Ollama, usando `EMBEDDING_MODEL_NAME=nomic-embed-text`.
+O servidor MCP expõe `embedding_health`, `index_zettelbrain_embeddings` e `semantic_search_zettelbrain`. A implementação aceita `EMBEDDING_PROVIDER=hashing` para fallback offline determinístico ou `EMBEDDING_PROVIDER=ollama` para consultar um endpoint local compatível com Ollama, usando `EMBEDDING_MODEL_NAME=nomic-embed-text`.
 
 ### Novas Funcionalidades Agênticas
 O projeto agora suporta recursos avançados de atrito semântico, reconciliação e colheita:
