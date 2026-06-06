@@ -49,7 +49,6 @@ def test_configure_gemini_success(mocker: MockerFixture) -> None:
 
     mocker.patch.object(Path, "exists", exists_mock)
 
-
     # Mock files inside skills/ to sync
     fake_skill_a = Path("/fake/root/skills/skill_a.md")
     fake_skill_b = Path("/fake/root/skills/skill_b.md")
@@ -90,7 +89,6 @@ def test_configure_gemini_orphan_cleanup(mocker: MockerFixture) -> None:
         return self.name in ("settings.json", "skills")
 
     mocker.patch.object(Path, "exists", exists_mock)
-
 
     # Glob mock
     fake_source_skill = Path("/fake/root/skills/active.md")
@@ -136,7 +134,6 @@ def test_configure_cursor_success(mocker: MockerFixture) -> None:
         return self.name in ("ZETTELBRAIN.md", "skills")
 
     mocker.patch.object(Path, "exists", exists_mock)
-
 
     # Mock skills files
     fake_skill_1 = Path("/fake/root/skills/1_start.md")
@@ -399,4 +396,3 @@ def test_main_uninstall_argument(mocker: MockerFixture) -> None:
 
     mock_clean.assert_called_once()
     assert excinfo.value.code == 0
-
