@@ -3,7 +3,7 @@
 ## Objetivo
 Processar **apenas** arquivos Markdown em **`raw/articles/`** que representem conteúdo informal da internet (blog, wiki, documentação de produto, newsletter, fórum exportado, notícia, etc.). Estes materiais **não** são tratados como papers formais: não se assume revisão por pares, estrutura IMRaD nem metadados acadêmicos completos. O fluxo prioriza **rastreabilidade** (URL, data de recuperação), **avaliação crítica da fonte** (viés, patrocínio, desatualização, link quebrável) e extração de ideias úteis ao cofre, com linguagem explícita sobre **limites de evidência**.
 
-**Exclusão explícita:** arquivos com `source_kind: youtube_transcript` devem ser processados por `/ingest-youtube`, não por `/ingest-article`.
+**Exclusão explícita:** arquivos com `source_kind: youtube_transcript` (armazenados em `raw/youtube/`) devem ser processados por `/ingest-youtube`, não por `/ingest-article`.
 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ingest-article no arquivo raw/articles/[nome].md"` ou `/ingest-article raw/articles/[nome].md`.
