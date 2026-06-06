@@ -130,13 +130,13 @@ def parse_frontmatter_and_body(content: str) -> tuple[dict[str, Any], str]:
 
 
 class ZettelLinter:
-    """Implementa o motor de linter e validação estática do Zettelkasten."""
+    """Implementa o motor de linter e validação estática do ZettelBrain."""
 
     def __init__(self, zettelkasten_path: Path) -> None:
-        """Inicializa o linter com o caminho do cofre Zettelkasten.
+        """Inicializa o linter com o caminho do cofre ZettelBrain.
 
         Args:
-            zettelkasten_path: Caminho da pasta raiz zettelkasten/.
+            zettelkasten_path: Caminho da pasta raiz zettelbrain/.
         """
         self.zettelkasten_path = zettelkasten_path
         self.existing_files: dict[str, Path] = {}
@@ -144,7 +144,7 @@ class ZettelLinter:
 
     def scan_vault(self) -> None:
         """Varre o cofre para mapear arquivos existentes e ler metadados das notas."""
-        # 1. Mapeia todos os arquivos .md no Zettelkasten
+        # 1. Mapeia todos os arquivos .md no ZettelBrain
         for file in self.zettelkasten_path.rglob("*.md"):
             slug = file.stem
             self.existing_files[slug] = file
@@ -400,7 +400,7 @@ def print_text_report(result: LintResult) -> None:
         result: Estrutura consolidada de resultados.
     """
     print("=" * 60)
-    print("RELATÓRIO DE SAÚDE E INTEGRIDADE DO ZETTELKASTEN")
+    print("RELATÓRIO DE SAÚDE E INTEGRIDADE DO ZETTELBRAIN")
     print("=" * 60)
     print(f"Total de notas catalogadas: {result.total_notes}")
     print(f"  - Notas de Literatura: {result.literature_count}")
