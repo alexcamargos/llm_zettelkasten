@@ -263,10 +263,7 @@ class ZettelLinter:
             for target_slug in info["wikilinks"]:
                 if target_slug not in self.existing_files:
                     # Link Morto
-                    msg = (
-                        f"Link morto detectado: [[{target_slug}]] "
-                        "aponta para nota inexistente."
-                    )
+                    msg = f"Link morto detectado: [[{target_slug}]] aponta para nota inexistente."
                     result.errors.append(
                         LintError(
                             type="dead_link",
@@ -299,8 +296,7 @@ class ZettelLinter:
             # Uma nota de literatura ou permanente é órfã se não receber nenhum link conceitual
             # (links vindos apenas de permanent/ ou literature/).
             conceptual_incoming = [
-                src for src in incoming_links.get(slug, [])
-                if src in self.notes and src != slug
+                src for src in incoming_links.get(slug, []) if src in self.notes and src != slug
             ]
             if not conceptual_incoming and slug not in {"index", "overview"}:
                 msg = (
@@ -351,8 +347,7 @@ class ZettelLinter:
                     )
                     if not superseded:
                         message += (
-                            " Nenhuma nota substituta (superseded_by) "
-                            "foi informada no frontmatter."
+                            " Nenhuma nota substituta (superseded_by) foi informada no frontmatter."
                         )
 
                     result.warnings.append(
@@ -426,8 +421,7 @@ def print_text_report(result: LintResult) -> None:
 
     if result.emergent_patterns:
         print(
-            "\n[PADRÕES EMERGENTES] Candidatos a Nota Permanente "
-            "(presente em 3+ notas distintas):"
+            "\n[PADRÕES EMERGENTES] Candidatos a Nota Permanente (presente em 3+ notas distintas):"
         )
         for pattern in result.emergent_patterns:
             print(f"  - **{pattern}**")
@@ -466,9 +460,7 @@ def main() -> None:
     Executa o linting, formata a saída conforme argumentos e define o código de
     retorno do sistema operacional apropriado (não-zero em caso de erros críticos).
     """
-    parser = argparse.ArgumentParser(
-        description="Linter de integridade estática do ZettelBrain."
-    )
+    parser = argparse.ArgumentParser(description="Linter de integridade estática do ZettelBrain.")
     parser.add_argument(
         "--json",
         action="store_true",
