@@ -18,6 +18,7 @@ from typing import Any
 
 try:
     from docling.document_converter import DocumentConverter  # type: ignore
+
     HAS_DOCLING = True
 except ImportError:
     HAS_DOCLING = False
@@ -133,18 +134,19 @@ def index_pdf_with_command(
         try:
             converter = DocumentConverter()
             conversion_result = converter.convert(str(pdf_path))
-            
+
             nodes = []
             for element in conversion_result.document.elements:
                 page_no = 1
                 if hasattr(element, "prov") and element.prov:
                     page_no = getattr(element.prov[0], "page_no", 1)
-                text = conversion_result.document.export_element_to_markdown(element) if hasattr(conversion_result.document, "export_element_to_markdown") else str(element)
-                nodes.append({
-                    "page": page_no,
-                    "text": text
-                })
-            
+                text = (
+                    conversion_result.document.export_element_to_markdown(element)
+                    if hasattr(conversion_result.document, "export_element_to_markdown")
+                    else str(element)
+                )
+                nodes.append({"page": page_no, "text": text})
+
             tree_data = {"nodes": nodes}
             persisted = persist_pageindex_cache(
                 vault_path,
@@ -656,7 +658,9 @@ def estimate_document_processing(
 
     if cache_manifest is not None:
         cache_found = True
-        page_count = cache_manifest.get("page_count") or cache_manifest.get("page_count_estimate") or 0
+        page_count = (
+            cache_manifest.get("page_count") or cache_manifest.get("page_count_estimate") or 0
+        )
         try:
             tree_path = pageindex_root / document_id / "tree.json"
             if tree_path.exists():
@@ -676,7 +680,8 @@ def estimate_document_processing(
                     page_count = count
                 else:
                     import re
-                    matches = re.findall(br"/Count\s+(\d+)", content)
+
+                    matches = re.findall(rb"/Count\s+(\d+)", content)
                     if matches:
                         page_count = max(int(m) for m in matches)
         except Exception:
@@ -687,10 +692,7 @@ def estimate_document_processing(
         page_count = max(1, int(byte_size / 50000))
 
     # 3. Token estimation
-    if actual_chars > 0:
-        estimated_input_tokens = int(actual_chars / 4)
-    else:
-        estimated_input_tokens = page_count * 700
+    estimated_input_tokens = int(actual_chars / 4) if actual_chars > 0 else page_count * 700
 
     estimated_output_tokens = 3000
 
@@ -727,10 +729,10 @@ def estimate_document_processing(
                 "input_usd": round(pro_input_cost, 6),
                 "output_usd": round(pro_output_cost, 6),
                 "total_usd": round(pro_total_cost, 6),
-            }
+            },
         },
         "time_estimates": {
             "docling_seconds": round(time_docling_sec, 1),
             "fast_seconds": round(time_fast_sec, 1),
-        }
+        },
     }
