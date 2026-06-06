@@ -147,6 +147,16 @@ flowchart TD
 
 ---
 
+### Pipeline de Ingestão de Artigos Web (Web Article ETL)
+*   **Script do Sistema:** [article_etl.py](src/ingestion/article_etl.py)
+*   **Funcionamento:** Módulo que automatiza o download de artigos informais da web a partir de URLs (links). Ele limpa o HTML utilizando a biblioteca `trafilatura` (removendo anúncios, cabeçalhos, rodapés, etc.), extrai metadados estruturados (título, autor, data) e salva o conteúdo no formato Markdown limpo em `raw/articles/` com YAML front matter.
+*   **Gatilhos de Execução:**
+    - **CLI (Script registrado):** `uv run zb-article-etl --url "<URL_DO_ARTIGO>"` (ou `uv run zettelbrain-article-etl`). Aceita também `--filename` personalizado para salvar o arquivo de destino.
+    - **MCP Tool:** Ferramenta `ingest_web_article(url, filename)` disponível no servidor MCP para os agentes do ecossistema.
+
+
+---
+
 ## CAPÍTULO 3: Recuperação e Rastreamento
 
 ### 3.1. Busca Híbrida e Semântica (`/recall`)
