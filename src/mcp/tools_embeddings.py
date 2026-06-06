@@ -327,12 +327,12 @@ def ollama_embedding(
         with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             raw_body = response.read().decode("utf-8")
     except (OSError, urllib.error.URLError) as exc:
-        raise RuntimeError("Nao foi possivel consultar o endpoint local de embeddings.") from exc
+        raise RuntimeError("Could not query the local embeddings endpoint.") from exc
 
     body = json.loads(raw_body)
     embedding = body.get("embedding")
     if not isinstance(embedding, list) or not embedding:
-        raise RuntimeError("Resposta de embeddings sem vetor valido.")
+        raise RuntimeError("Embedding response did not include a valid vector.")
     return [float(value) for value in embedding]
 
 
@@ -361,7 +361,7 @@ def embed_text(
     """
     if provider == "ollama":
         if not endpoint:
-            raise RuntimeError("EMBEDDING_ENDPOINT nao configurado para provider ollama.")
+            raise RuntimeError("EMBEDDING_ENDPOINT is not configured for the ollama provider.")
         return _normalize(ollama_embedding(text, endpoint=endpoint, model_name=model_name))
     return hashing_embedding(text, dimensions=dimensions)
 
@@ -736,13 +736,13 @@ def find_semantic_bridge(
     """
     index = _load_index(index_path)
     if index is None:
-        raise FileNotFoundError(f"Arquivo de índice não encontrado em: {index_path}")
+        raise FileNotFoundError(f"Index file not found at: {index_path}")
 
     documents = index.get("documents", [])
     if len(documents) < 2:
         return {
             "status": "error",
-            "message": "Documentos insuficientes no índice para estabelecer uma ponte semântica.",
+            "message": "Not enough documents in the index to establish a semantic bridge.",
         }
 
     root = Path(index.get("root", ""))
@@ -758,7 +758,7 @@ def find_semantic_bridge(
         return {
             "status": "no_bridge_found",
             "message": (
-                f"Não foram encontradas notas no intervalo de similaridade "
+                f"No notes were found in the similarity range "
                 f"[{min_similarity}, {max_similarity}]."
             ),
         }
