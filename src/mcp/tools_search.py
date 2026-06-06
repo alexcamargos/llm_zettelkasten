@@ -1,4 +1,4 @@
-"""Search utilities for finding relevant documents inside the Obsidian Zettelkasten.
+"""Search utilities for finding relevant documents inside the Obsidian ZettelBrain.
 
 Provides hybrid search functions merging deterministic lexical word-count matching
 with semantic index querying using the external `qmd` tool.
@@ -50,7 +50,7 @@ def hybrid_search(
     """Execute hybrid search using qmd when available, with a lexical fallback.
 
     Args:
-        root: Base Path directory of the Zettelkasten vault.
+        root: Base Path directory of the ZettelBrain vault.
         query: Space-separated search terms to query.
         limit: Max search hits to return. Defaults to 8.
         qmd_command: Path/name of the qmd executable. Defaults to "qmd".
@@ -123,7 +123,7 @@ def lexical_search(root: Path, query: str, *, limit: int = 8) -> list[SearchResu
     """Scan files using local BM25 ranking.
 
     Args:
-        root: Base Path directory of the Zettelkasten vault.
+        root: Base Path directory of the ZettelBrain vault.
         query: Search query text.
         limit: Maximum results to return. Defaults to 8.
 
@@ -181,7 +181,7 @@ def qmd_search(
     """Invoke the external `qmd` CLI tool for semantic vector-based search.
 
     Args:
-        root: Base Path directory of the Zettelkasten vault.
+        root: Base Path directory of the ZettelBrain vault.
         query: Search query text.
         limit: Maximum results to return. Defaults to 8.
         qmd_command: Command prefix to execute qmd. Defaults to "qmd".
@@ -243,7 +243,7 @@ def _parse_qmd_output(output: str, *, root: Path, limit: int) -> list[SearchResu
 
     Args:
         output: Raw stdout text from qmd executable process.
-        root: Zettelkasten root directory Path.
+        root: ZettelBrain root directory Path.
         limit: Maximum results to parse.
 
     Returns:
