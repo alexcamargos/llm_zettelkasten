@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import pytest
 from tools_embeddings import build_embedding_index, find_semantic_bridge
@@ -28,13 +27,13 @@ def test_find_semantic_bridge_insufficient_documents(tmp_path: Path) -> None:
     Returns:
         None
     """
-    zettelkasten = tmp_path / "zettelkasten"
-    zettelkasten.mkdir()
-    (zettelkasten / "note1.md").write_text("credito cooperativo risco", encoding="utf-8")
+    zettelbrain = tmp_path / "zettelbrain"
+    zettelbrain.mkdir()
+    (zettelbrain / "note1.md").write_text("credito cooperativo risco", encoding="utf-8")
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
     build_embedding_index(
-        zettelkasten,
+        zettelbrain,
         index_path,
         provider="hashing",
         dimensions=32,
@@ -56,16 +55,21 @@ def test_find_semantic_bridge_success(tmp_path: Path) -> None:
     Returns:
         None
     """
-    zettelkasten = tmp_path / "zettelkasten"
-    zettelkasten.mkdir()
+    zettelbrain = tmp_path / "zettelbrain"
+    zettelbrain.mkdir()
 
-    # Create two files. To control similarity with deterministic hashing, we use distinct vocabulary.
-    (zettelkasten / "note1.md").write_text("# Crédito Cooperativo\nAnálise de risco de cooperativas.", encoding="utf-8")
-    (zettelkasten / "note2.md").write_text("# Redes GAN\nPrevisão sintética de imagens adversariais.", encoding="utf-8")
+    # Create two files. To control similarity with deterministic hashing,
+    # we use distinct vocabulary.
+    (zettelbrain / "note1.md").write_text(
+        "# Crédito Cooperativo\nAnálise de risco de cooperativas.", encoding="utf-8"
+    )
+    (zettelbrain / "note2.md").write_text(
+        "# Redes GAN\nPrevisão sintética de imagens adversariais.", encoding="utf-8"
+    )
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
     build_embedding_index(
-        zettelkasten,
+        zettelbrain,
         index_path,
         provider="hashing",
         dimensions=64,
@@ -89,14 +93,14 @@ def test_find_semantic_bridge_no_match(tmp_path: Path) -> None:
     Returns:
         None
     """
-    zettelkasten = tmp_path / "zettelkasten"
-    zettelkasten.mkdir()
-    (zettelkasten / "note1.md").write_text("credito cooperativo", encoding="utf-8")
-    (zettelkasten / "note2.md").write_text("credito cooperativo", encoding="utf-8")
+    zettelbrain = tmp_path / "zettelbrain"
+    zettelbrain.mkdir()
+    (zettelbrain / "note1.md").write_text("credito cooperativo", encoding="utf-8")
+    (zettelbrain / "note2.md").write_text("credito cooperativo", encoding="utf-8")
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
     build_embedding_index(
-        zettelkasten,
+        zettelbrain,
         index_path,
         provider="hashing",
         dimensions=32,
@@ -104,7 +108,8 @@ def test_find_semantic_bridge_no_match(tmp_path: Path) -> None:
         endpoint=None,
     )
 
-    # Note 1 and Note 2 will be identical, so similarity is 1.0. Range [0.0, 0.5] should yield no results.
+    # Note 1 and Note 2 will be identical, so similarity is 1.0.
+    # Range [0.0, 0.5] should yield no results.
     result = find_semantic_bridge(index_path, min_similarity=0.0, max_similarity=0.5)
     assert result["status"] == "no_bridge_found"
     assert "Não foram encontradas notas" in result["message"]
