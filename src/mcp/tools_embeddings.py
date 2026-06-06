@@ -16,6 +16,7 @@ import re
 import urllib.error
 import urllib.request
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -26,6 +27,7 @@ DEFAULT_PROVIDER = "hashing"
 FALLBACK_PROVIDER = "hashing"
 MIN_TOKEN_LENGTH = 2
 DEFAULT_TIMEOUT_SECONDS = 20
+INDEXABLE_EMBEDDING_DIRS = ("literature", "permanent")
 
 
 @dataclass(frozen=True)
@@ -137,7 +139,7 @@ def build_embedding_index(
         dimensions=dimensions,
     )
     documents: list[dict[str, Any]] = []
-    for path in sorted(root.rglob("*.md")):
+    for path in _iter_indexable_markdown(root):
         text = path.read_text(encoding="utf-8", errors="ignore")
         embedding = embedder.embed(text)
         if not any(embedding):
@@ -168,6 +170,22 @@ def build_embedding_index(
         encoding="utf-8",
     )
     return payload
+
+
+def _iter_indexable_markdown(root: Path) -> Iterator[Path]:
+    """Yield Markdown files from conceptual note folders only.
+
+    Args:
+        root: Root folder Path to scan for files.
+
+    Yields:
+        Path: Markdown file Paths inside active conceptual directories.
+    """
+    for directory_name in INDEXABLE_EMBEDDING_DIRS:
+        directory = root / directory_name
+        if not directory.is_dir():
+            continue
+        yield from sorted(directory.rglob("*.md"))
 
 
 def semantic_search(
