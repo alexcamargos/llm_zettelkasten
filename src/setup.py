@@ -1,4 +1,4 @@
-"""Automation utility for configuring LLM Zettelkasten for Gemini CLI or Cursor IDE.
+"""Automation utility for configuring LLM ZettelBrain for Gemini CLI or Cursor IDE.
 
 Allows switching configuration profiles seamlessly by managing .cursorrules and client settings
 for Model Context Protocol (MCP) servers.
