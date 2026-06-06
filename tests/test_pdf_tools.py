@@ -327,9 +327,11 @@ def test_estimate_document_processing(tmp_path: Path) -> None:
     pageindex_root.mkdir()
     pdf_path = raw_papers / "teste.pdf"
     pdf_path.write_bytes(b"abc")
-    
-    estimate = estimate_document_processing(vault, raw_papers, pageindex_root, "raw/papers/teste.pdf")
-    
+
+    estimate = estimate_document_processing(
+        vault, raw_papers, pageindex_root, "raw/papers/teste.pdf"
+    )
+
     assert estimate["source_filename"] == "teste.pdf"
     assert estimate["cache_found"] is False
     assert estimate["page_count"] >= 1
@@ -363,8 +365,10 @@ def test_index_pdf_with_command_using_docling(
     class DummyElement:
         def __init__(self, text: str):
             self.text = text
+
             class DummyProv:
                 page_no = 2
+
             self.prov = [DummyProv()]
 
     class DummyDocument:

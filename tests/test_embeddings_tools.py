@@ -38,20 +38,20 @@ def test_build_embedding_index_and_semantic_search_rank_relevant_doc(tmp_path: P
     Returns:
         None
     """
-    zettelkasten = tmp_path / "zettelkasten"
-    zettelkasten.mkdir()
-    (zettelkasten / "credito.md").write_text(
+    zettelbrain = tmp_path / "zettelbrain"
+    zettelbrain.mkdir()
+    (zettelbrain / "credito.md").write_text(
         "credito cooperativo risco insolvencia capital",
         encoding="utf-8",
     )
-    (zettelkasten / "gan.md").write_text(
+    (zettelbrain / "gan.md").write_text(
         "redes generativas adversariais imagem sintetica",
         encoding="utf-8",
     )
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
     index = build_embedding_index(
-        zettelkasten,
+        zettelbrain,
         index_path,
         provider="hashing",
         dimensions=64,
@@ -59,7 +59,7 @@ def test_build_embedding_index_and_semantic_search_rank_relevant_doc(tmp_path: P
         endpoint=None,
     )
     results = semantic_search(
-        zettelkasten,
+        zettelbrain,
         index_path,
         "risco de credito",
         limit=2,
@@ -85,12 +85,12 @@ def test_embedding_status_reports_existing_index(tmp_path: Path) -> None:
     Returns:
         None
     """
-    zettelkasten = tmp_path / "zettelkasten"
-    zettelkasten.mkdir()
-    (zettelkasten / "note.md").write_text("indicador pearls", encoding="utf-8")
+    zettelbrain = tmp_path / "zettelbrain"
+    zettelbrain.mkdir()
+    (zettelbrain / "note.md").write_text("indicador pearls", encoding="utf-8")
     index_path = tmp_path / ".state" / "embeddings_index.json"
     build_embedding_index(
-        zettelkasten,
+        zettelbrain,
         index_path,
         provider="hashing",
         dimensions=16,
@@ -121,13 +121,13 @@ def test_ollama_provider_falls_back_to_hashing_when_endpoint_fails(tmp_path: Pat
     Returns:
         None
     """
-    zettelkasten = tmp_path / "zettelkasten"
-    zettelkasten.mkdir()
-    (zettelkasten / "note.md").write_text("credito cooperativo", encoding="utf-8")
+    zettelbrain = tmp_path / "zettelbrain"
+    zettelbrain.mkdir()
+    (zettelbrain / "note.md").write_text("credito cooperativo", encoding="utf-8")
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
     index = build_embedding_index(
-        zettelkasten,
+        zettelbrain,
         index_path,
         provider="ollama",
         dimensions=16,
@@ -167,6 +167,7 @@ def test_embed_text_uses_ollama_provider(monkeypatch: pytest.MonkeyPatch) -> Non
     Returns:
         None
     """
+
     class FakeResponse:
         def __enter__(self) -> FakeResponse:
             return self
@@ -211,9 +212,9 @@ def test_semantic_search_labels_ollama_index_engine(
     Returns:
         None
     """
-    zettelkasten = tmp_path / "zettelkasten"
-    zettelkasten.mkdir()
-    (zettelkasten / "note.md").write_text("credito cooperativo", encoding="utf-8")
+    zettelbrain = tmp_path / "zettelbrain"
+    zettelbrain.mkdir()
+    (zettelbrain / "note.md").write_text("credito cooperativo", encoding="utf-8")
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
     monkeypatch.setattr(
@@ -222,7 +223,7 @@ def test_semantic_search_labels_ollama_index_engine(
     )
 
     build_embedding_index(
-        zettelkasten,
+        zettelbrain,
         index_path,
         provider="ollama",
         dimensions=2,
@@ -230,7 +231,7 @@ def test_semantic_search_labels_ollama_index_engine(
         endpoint="http://localhost:11434/api/embeddings",
     )
     results = semantic_search(
-        zettelkasten,
+        zettelbrain,
         index_path,
         "credito",
         limit=1,
