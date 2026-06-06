@@ -11,11 +11,14 @@ Acionado quando o usuário disser `gemini "Execute a skill /lint no diretório z
 ## Fluxo de Execução (Workflow)
 
 ### Etapa 1: Varredura de Integridade (Links e Estrutura)
-1. Mapeie todas as notas em `zettelkasten/permanent/` e `zettelkasten/literature/`.
-2. Identifique Notas Órfãs (arquivos sem links de entrada apontando para eles).
-3. Identifique Links Mortos (referências no texto que apontam para arquivos inexistentes).
-4. Identifique Padrões Emergentes (termos técnicos, algoritmos ou variáveis estatísticas citadas em três ou mais notas distintas, mas que ainda não possuem uma Nota Permanente própria).
-5. **Ligação mínima ao grafo:** Para notas em `zettelkasten/permanent/` com `deprecated` ausente ou `false`, verifique o **corpo** (excluindo frontmatter). Se existirem **menos de dois** wikilinks `[[...]]` no corpo **e** o índice ou notas vizinhas sugerirem **pelo menos duas** notas relacionadas óbvias, inclua essa constatação no relatório da Etapa 4 como **sugestão de melhoria**, não como falha bloqueante.
+1. Execute a ferramenta MCP local `lint_zettelkasten` para realizar a auditoria estática e estrutural do cofre de forma determinística e rápida.
+2. Utilize o payload JSON de saída da ferramenta (contendo `errors`, `warnings` e `emergent_patterns`) para fundamentar as análises estruturais de:
+   - **Links Mortos** (`errors` do tipo `dead_link`)
+   - **Notas Órfãs** (`warnings` do tipo `orphan_note`)
+   - **Ligação Mínima ao Grafo** (`warnings` do tipo `minimal_connection`)
+   - **Referências a notas deprecadas** (`warnings` do tipo `deprecated_reference`)
+   - **Padrões Emergentes** (lista em `emergent_patterns`)
+3. **Evite ler todas as notas em profundidade** no contexto apenas para verificar ligações estruturais ou listar negritos, reduzindo drasticamente o consumo de tokens de contexto do LLM.
 
 ### Etapa 2: Auditoria Teórica (Contradições e Obsolescência)
 1. Cruze as afirmações das notas mais antigas com as fontes mais recentes recém-ingestadas.
