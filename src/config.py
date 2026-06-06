@@ -1,4 +1,4 @@
-"""Configuration manager for the LLM Zettelkasten automation engine.
+"""Configuration manager for the LLM ZettelBrain automation engine.
 
 This module loads, resolves, and validates configuration paths and environment
 settings from local system variables and `.env` files.
@@ -30,7 +30,7 @@ class Settings:
         raw_articles_path: Path to raw Markdown articles.
         raw_youtube_path: Path to raw YouTube transcripts.
         raw_papers_path: Path to raw academic papers (PDFs).
-        zettelkasten_path: Path to the Zettelkasten folder.
+        zettelkasten_path: Path to the ZettelBrain folder.
         logs_path: Path where log files are written.
         youtube_playlist_id: ID of the YouTube playlist for the ETL pipeline.
         qmd_command: Name of/path to the qmd CLI executable.
@@ -89,7 +89,7 @@ def load_settings(env_path: Path | str | None = None, *, require_youtube: bool =
         raw_articles_path=_resolve_path(os.getenv("RAW_ARTICLES_PATH", "raw/articles"), vault_path),
         raw_youtube_path=_resolve_path(os.getenv("RAW_YOUTUBE_PATH", "raw/youtube"), vault_path),
         raw_papers_path=_resolve_path(os.getenv("RAW_PAPERS_PATH", "raw/papers"), vault_path),
-        zettelkasten_path=_resolve_path(os.getenv("ZETTELKASTEN_PATH", "zettelkasten"), vault_path),
+        zettelkasten_path=_resolve_path(os.getenv("ZETTELKASTEN_PATH", "zettelbrain"), vault_path),
         logs_path=_resolve_path(os.getenv("LOGS_PATH", "logs"), vault_path),
         youtube_playlist_id=_empty_to_none(os.getenv("YOUTUBE_PLAYLIST_ID")),
         qmd_command=_empty_to_none(os.getenv("QMD_COMMAND", "qmd")),
