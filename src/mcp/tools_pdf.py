@@ -16,6 +16,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+try:
+    from docling.document_converter import DocumentConverter  # type: ignore
+    HAS_DOCLING = True
+except ImportError:
+    HAS_DOCLING = False
+
 
 def sha256_file(path: Path) -> str:
     """Compute the SHA-256 hexadecimal hash of a file's entire binary content.
@@ -96,12 +102,9 @@ def index_pdf_with_command(
     *,
     pageindex_command: str | None,
     timeout_seconds: int = 120,
+    engine: str | None = None,
 ) -> dict[str, Any]:
-    """Index a PDF using an external command that emits PageIndex tree JSON.
-
-    The command is configured without the target PDF path; this function appends
-    the validated absolute PDF path as the final argument and expects stdout to
-    be a JSON object/list compatible with `persist_pageindex_cache`.
+    """Index a PDF using an external command or Docling, then emit/save layout tree JSON.
 
     Args:
         vault_path: Root Path of the vault.
@@ -110,12 +113,57 @@ def index_pdf_with_command(
         relative_path: The relative path of the PDF document.
         pageindex_command: Optional external command executable string.
         timeout_seconds: Timeout threshold for running the index process. Defaults to 120.
+        engine: Optional parser engine choice ('docling' or 'command').
 
     Returns:
         dict[str, Any]: Resolution status map containing source path, document ID,
             cache presence, and loaded manifest (if available).
     """
     pdf_path = _safe_pdf_path(vault_path, raw_papers_path, relative_path)
+
+    # Use Docling if selected or available and configured as such
+    if engine == "docling" or (not engine and pageindex_command == "docling"):
+        if not HAS_DOCLING:
+            return {
+                "indexed": False,
+                "reason": "Pacote docling nao instalado no ambiente virtual.",
+                "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
+                "document_id": sha256_file(pdf_path),
+            }
+        try:
+            converter = DocumentConverter()
+            conversion_result = converter.convert(str(pdf_path))
+            
+            nodes = []
+            for element in conversion_result.document.elements:
+                page_no = 1
+                if hasattr(element, "prov") and element.prov:
+                    page_no = getattr(element.prov[0], "page_no", 1)
+                text = conversion_result.document.export_element_to_markdown(element) if hasattr(conversion_result.document, "export_element_to_markdown") else str(element)
+                nodes.append({
+                    "page": page_no,
+                    "text": text
+                })
+            
+            tree_data = {"nodes": nodes}
+            persisted = persist_pageindex_cache(
+                vault_path,
+                raw_papers_path,
+                pageindex_root,
+                relative_path,
+                tree_data,
+                index_source="docling_parser",
+                mcp_transport="docling",
+            )
+            return {"indexed": True, **persisted}
+        except Exception as exc:
+            return {
+                "indexed": False,
+                "reason": f"Erro na extracao via Docling: {exc}",
+                "source_path": _normalize_relative_path(str(pdf_path.relative_to(vault_path))),
+                "document_id": sha256_file(pdf_path),
+            }
+
     if not pageindex_command:
         return {
             "indexed": False,
@@ -572,3 +620,117 @@ def _infer_tree_metadata(tree: dict[str, Any] | list[Any]) -> dict[str, Any]:
     if not pages:
         return {}
     return {"page_count_estimate": max(pages)}
+
+
+def estimate_document_processing(
+    vault_path: Path,
+    raw_papers_path: Path,
+    pageindex_root: Path,
+    relative_path: str,
+) -> dict[str, Any]:
+    """Estimate the cost, tokens, and time required to process a document.
+
+    Args:
+        vault_path: Root Path of the vault.
+        raw_papers_path: Root Path of the raw papers folder.
+        pageindex_root: Base Path to the .pageindex folder.
+        relative_path: The relative path of the PDF document.
+
+    Returns:
+        dict[str, Any]: Structural estimation results including page count,
+            estimated tokens, input/output cost estimates, and duration.
+
+    Raises:
+        ValueError: If the path escapes raw/papers directory or is not a PDF.
+        FileNotFoundError: If the target file does not exist.
+    """
+    pdf_path = _safe_pdf_path(vault_path, raw_papers_path, relative_path)
+    byte_size = pdf_path.stat().st_size
+    document_id = sha256_file(pdf_path)
+
+    # 1. Resolve page count and actual tokens if cache exists
+    cache_manifest = find_pageindex_manifest(pageindex_root, relative_path)
+    page_count = 0
+    actual_chars = 0
+    cache_found = False
+
+    if cache_manifest is not None:
+        cache_found = True
+        page_count = cache_manifest.get("page_count") or cache_manifest.get("page_count_estimate") or 0
+        try:
+            tree_path = pageindex_root / document_id / "tree.json"
+            if tree_path.exists():
+                tree_data = json.loads(tree_path.read_text(encoding="utf-8"))
+                for node in _walk_json(tree_data):
+                    actual_chars += len(_node_text(node))
+        except Exception:
+            pass
+
+    # 2. Page count estimation helper if cache not found
+    if page_count == 0:
+        try:
+            with pdf_path.open("rb") as f:
+                content = f.read(1024 * 1024 * 10)  # Read first 10MB
+                count = content.count(b"/Type /Page")
+                if count > 0:
+                    page_count = count
+                else:
+                    import re
+                    matches = re.findall(br"/Count\s+(\d+)", content)
+                    if matches:
+                        page_count = max(int(m) for m in matches)
+        except Exception:
+            pass
+
+    if page_count == 0:
+        # Fallback page estimate based on file size (approx. 50KB per technical page)
+        page_count = max(1, int(byte_size / 50000))
+
+    # 3. Token estimation
+    if actual_chars > 0:
+        estimated_input_tokens = int(actual_chars / 4)
+    else:
+        estimated_input_tokens = page_count * 700
+
+    estimated_output_tokens = 3000
+
+    # 4. Costs in USD
+    # Gemini 1.5 Flash (pricing: $0.075 / MTok input, $0.30 / MTok output)
+    flash_input_cost = (estimated_input_tokens / 1000000) * 0.075
+    flash_output_cost = (estimated_output_tokens / 1000000) * 0.30
+    flash_total_cost = flash_input_cost + flash_output_cost
+
+    # Gemini 1.5 Pro (pricing: $1.25 / MTok input, $5.00 / MTok output)
+    pro_input_cost = (estimated_input_tokens / 1000000) * 1.25
+    pro_output_cost = (estimated_output_tokens / 1000000) * 5.00
+    pro_total_cost = pro_input_cost + pro_output_cost
+
+    # 5. Processing time estimate
+    time_docling_sec = page_count * 1.5
+    time_fast_sec = page_count * 0.1
+
+    return {
+        "source_filename": pdf_path.name,
+        "byte_size": byte_size,
+        "document_id": document_id,
+        "cache_found": cache_found,
+        "page_count": page_count,
+        "estimated_input_tokens": estimated_input_tokens,
+        "estimated_output_tokens": estimated_output_tokens,
+        "cost_projections": {
+            "gemini_1_5_flash": {
+                "input_usd": round(flash_input_cost, 6),
+                "output_usd": round(flash_output_cost, 6),
+                "total_usd": round(flash_total_cost, 6),
+            },
+            "gemini_1_5_pro": {
+                "input_usd": round(pro_input_cost, 6),
+                "output_usd": round(pro_output_cost, 6),
+                "total_usd": round(pro_total_cost, 6),
+            }
+        },
+        "time_estimates": {
+            "docling_seconds": round(time_docling_sec, 1),
+            "fast_seconds": round(time_fast_sec, 1),
+        }
+    }
