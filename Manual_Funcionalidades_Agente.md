@@ -204,9 +204,12 @@ flowchart TD
 
 ### 5.1. Auditoria e Saúde do Zettelkasten (`/lint`)
 *   **Arquivo de Regras:** [lint.md](.gemini/skills/lint.md)
-*   **Objetivo:** Auditar a integridade das notas, encontrar links mortos, notas órfãs, e **regenerar a síntese viva** em [overview.md](zettelkasten/overview.md).
+*   **Objetivo:** Auditar a integridade estrutural das notas, encontrar links mortos, notas órfãs, e **regenerar a síntese viva** em [overview.md](zettelkasten/overview.md).
 *   **Caso de Uso:** Executar periodicamente para auditar a qualidade técnica da base e documentar anomalias.
-*   **Gatilho:** `/lint zettelkasten/`
+*   **Gatilho:** `/lint zettelkasten/` ou via terminal direta `uv run zettel-lint`.
+*   **Funcionamento Híbrido Determinístico:**
+    - A varredura de integridade estrutural e busca por links mortos, órfãos conceituais, ligação mínima e padrões emergentes é realizada localmente pelo script Python nativo `zettel_lint.py` (via ferramenta MCP `lint_zettelkasten()`), evitando ler todos os arquivos da base na chamada de LLM.
+    - A IA atua de forma focada apenas para a auditoria conceitual qualitativa (Etapa 2) e para a redação formal do relatório acadêmico final e do `overview.md`.
 *   **Saídas:**
     *   Regenera o arquivo [overview.md](zettelkasten/overview.md).
     *   Adiciona o link semântico no [index.md](zettelkasten/index.md).
