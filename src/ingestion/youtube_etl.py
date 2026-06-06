@@ -481,7 +481,7 @@ def ingest_youtube_playlist(
 
     reader = YouTubeFeedReader(settings.youtube_playlist_id)
     fetcher = YouTubeTranscriptFetcher()
-    writer = TranscriptWriter(settings.raw_articles_path, settings.ingestion_history_path)
+    writer = TranscriptWriter(settings.raw_youtube_path, settings.ingestion_history_path)
     pipeline = YouTubeETLPipeline(reader, fetcher, writer)
     return pipeline.run(dry_run=dry_run, limit=limit)
 
