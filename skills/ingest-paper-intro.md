@@ -37,10 +37,10 @@ Se o usuário aprovar a criação das notas preliminares, gere os arquivos aplic
 - Não utilize travessões. Empregue vírgulas ou construa períodos curtos e diretos para explicações.
 - Não utilize emojis.
 
-1. **Nota de Literatura:** Crie o arquivo em `zettelkasten/literature/` com frontmatter do `ZETTELBRAIN.md`, `confidence` adequado, `source_file` sob `raw/papers/`, referência ABNT e resumo da introdução.
-2. **Notas Permanentes:** Crie notas atômicas em `zettelkasten/permanent/` apenas para os conceitos validados. Para cada permanente **nova**, pesquise notas relacionadas por tema e conecte o corpo com wikilinks relevantes. Aplique a **ligação mínima ao grafo** do `ZETTELBRAIN.md` (dois wikilinks no corpo quando existirem candidatos); caso impossível, registre no log.
+1. **Nota de Literatura:** Crie o arquivo em `zettelbrain/literature/` com frontmatter do `ZETTELBRAIN.md`, `confidence` adequado, `source_file` sob `raw/papers/`, referência ABNT e resumo da introdução.
+2. **Notas Permanentes:** Crie notas atômicas em `zettelbrain/permanent/` apenas para os conceitos validados. Para cada permanente **nova**, pesquise notas relacionadas por tema e conecte o corpo com wikilinks relevantes. Aplique a **ligação mínima ao grafo** do `ZETTELBRAIN.md` (dois wikilinks no corpo quando existirem candidatos); caso impossível, registre no log.
 
 ### Etapa 4: Catalogação
-1. Acesse `zettelkasten/index.md` e adicione os links semânticos (textuais) das novas notas em suas respectivas seções.
+1. Acesse `zettelbrain/index.md` e adicione os links semânticos (textuais) das novas notas em suas respectivas seções.
 2. Atualize o `.state/log.md` com cabeçalho **`/ingest-paper-intro`** e **lista explícita** de todos os caminhos relativos criados ou alterados (literatura, permanentes, `index.md`, `hot.md` se tocado).
 3. Atualize o `.state/hot.md` refletindo a nova adição ao foco da pesquisa.

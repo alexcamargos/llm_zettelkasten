@@ -11,7 +11,7 @@ Acionado quando o usuário digitar `/research-deep [termo]` ou disser `gemini "E
 ## Fluxo de Execução (Workflow)
 
 ### Etapa 1: Mapeamento de Tema e Formulação de Query
-1. Identifique o termo de busca acadêmica. Se o comando for executado sem termo explícito, o agente deve ler o relatório de manutenção mais recente em `zettelkasten/syntheses/` para extrair as lacunas de pesquisa listadas em aberto na conclusão do `/lint`.
+1. Identifique o termo de busca acadêmica. Se o comando for executado sem termo explícito, o agente deve ler o relatório de manutenção mais recente em `zettelbrain/syntheses/` para extrair as lacunas de pesquisa listadas em aberto na conclusão do `/lint`.
 2. Formule uma query de busca científica combinando palavras-chave em inglês e operadores lógicos (e.g., AND, OR) adequados para bases científicas.
 
 ### Etapa 2: Consulta às Bases de Dados de Impacto
@@ -43,6 +43,6 @@ Redija um relatório detalhando os resultados obtidos. O texto deve seguir rigor
    confidence: medium
    ---
    ```
-2. Adicione o link semântico do novo arquivo na seção apropriada do índice em `zettelkasten/index.md` (sob a lista de artigos em Rascunhos ou Artigos Brutos).
+2. Adicione o link semântico do novo arquivo na seção apropriada do índice em `zettelbrain/index.md` (sob a lista de artigos em Rascunhos ou Artigos Brutos).
 3. Atualize o `.state/log.md` sob a tag **`/research-deep`**, documentando o termo pesquisado, as APIs científicas acionadas, os títulos dos 3 artigos obtidos e o caminho relativo do arquivo gerado.
 4. Caso o relatório recomende o download do PDF completo, insira o lembrete de download na conclusão da sessão em `.state/hot.md`.

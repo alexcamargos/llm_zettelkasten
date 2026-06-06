@@ -1,7 +1,7 @@
 # /ghost (Redação Acadêmica e Síntese Textual)
 
 ## Objetivo
-Atuar como um assistente de redação acadêmica avançada. O foco é minerar o conhecimento validado no Zettelkasten, debater ativamente a estrutura do texto com o usuário e redigir rascunhos de alta densidade técnica para capítulos de dissertações ou artigos estruturados. Todo o material gerado deve ser salvo isoladamente no diretório `zettelkasten/drafts/`.
+Atuar como um assistente de redação acadêmica avançada. O foco é minerar o conhecimento validado no ZettelBrain, debater ativamente a estrutura do texto com o usuário e redigir rascunhos de alta densidade técnica para capítulos de dissertações ou artigos estruturados. Todo o material gerado deve ser salvo isoladamente no diretório `zettelbrain/drafts/`.
 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ghost para escrever sobre [tópico]"` ou `/ghost [tópico]`
@@ -11,9 +11,26 @@ Acionado quando o usuário disser `gemini "Execute a skill /ghost para escrever 
 ## Fluxo de Execução (Workflow)
 
 ### Etapa 1: Mineração e Escopo Inicial
-1. Priorize `ZettelBrain.search_zettelkasten` para localizar Notas Permanentes e Notas de Literatura relevantes ao tópico solicitado por busca híbrida ou fallback lexical local.
-2. Use `ZettelBrain.read_zettelkasten_markdown` para ler o conteúdo das notas candidatas retornadas. Se o MCP estiver indisponível ou insuficiente, acesse `zettelkasten/index.md` e localize manualmente todas as notas relevantes.
+1. Priorize `ZettelBrain.search_zettelbrain` para localizar Notas Permanentes e Notas de Literatura relevantes ao tópico solicitado por busca híbrida ou fallback lexical local.
+2. Use `ZettelBrain.read_zettelbrain_markdown` para ler o conteúdo das notas candidatas retornadas. Se o MCP estiver indisponível ou insuficiente, acesse `zettelbrain/index.md` e localize manualmente todas as notas relevantes.
 3. Leia o conteúdo destas notas para compreender o panorama teórico, os dados estatísticos disponíveis e as divergências entre autores. Quando houver referência a PDF e cache PageIndex, use `ZettelBrain.resolve_pdf`, `ZettelBrain.read_pdf_cache` ou `ZettelBrain.read_pdf_page` apenas como apoio de navegação e confirmação localizada, sem substituir as notas do cofre como fonte primária.
+
+### Etapa 2: Alinhamento Estratégico (Pausa Obrigatória e Interação)
+É terminantemente proibido iniciar a redação do texto antes de concluir esta etapa. Apresente ao usuário um plano de voo contendo:
+1. **Notas Selecionadas:** A lista das notas que serão utilizadas como base (com seus respectivos links).
+2. **Proposta de Tese:** Qual será o argumento central ou a conclusão lógica deste rascunho.
+3. **Esqueleto do Texto:** Um resumo de uma linha do que será abordado no primeiro (apresentação), no segundo (desenvolvimento) e no terceiro parágrafo (conclusão).
+4. **Interação Exigida:** Pergunte explicitamente ao usuário:
+   a) "Devemos incluir ou excluir alguma nota específica desta seleção?"
+   b) "A proposta de tese está alinhada com seu objetivo ou devemos focar em outro ângulo analítico?"
+   c) "Existe alguma variável, algoritmo ou métrica que exige destaque obrigatório neste texto?"
+5. Aguarde o retorno detalhado do usuário e refine o esqueleto até obter a aprovação final.
+
+### Etapa 3: Execução da Escrita (Aplicação Rigorosa de Estilo)
+Somente após a aprovação do plano pelo usuário, inicie a redação. O texto gerado DEVE obedecer de forma inegociável às **Regras Globais de Estilo**:
+- É terminantemente proibido o uso de listas ou marcadores (bullet points).
+- Estruture a redação em parágrafos contínuos e articulados, sendo terminantemente proibido gravar os rótulos literais "Introdução", "Contexto" ou "Fechamento" no corpo do texto: o primeiro apresentando o problema ou conceito acadêmico; o segundo desenvolvendo as provas, cruzando dados, citando autores e metodologias; e o terceiro focando na conclusão lógica e impacto do conceito no modelo estudado.
+- Aplique a **Técnica Feynman** adaptada para um público de nível executivo e pós-graduação. Simplifique a complexidade matemática ou estatística preservando o rigor técnico.
 
 ### Etapa 2: Alinhamento Estratégico (Pausa Obrigatória e Interação)
 É terminantemente proibido iniciar a redação do texto antes de concluir esta etapa. Apresente ao usuário um plano de voo contendo:
@@ -37,6 +54,6 @@ Somente após a aprovação do plano pelo usuário, inicie a redação. O texto 
 - Todo dado ou conceito extraído de uma nota deve ser referenciado ao longo do texto utilizando o wikilink correspondente (ex: `[[nome-da-nota]]`). Quando aplicável, inclua a citação ABNT no corpo do texto.
 
 ### Etapa 4: Salvamento e Indexação
-1. Salve o rascunho completo em um novo arquivo no diretório `zettelkasten/drafts/rascunho-[tópico].md`.
-2. Adicione o link semântico do novo rascunho ao arquivo `zettelkasten/index.md` na seção correspondente a rascunhos em andamento.
-3. Atualize o arquivo `.state/log.md` com cabeçalho **`/ghost`**, caminho do rascunho criado, alterações em `zettelkasten/index.md` se houver, e **lista explícita** de cada nota de fonte lida em profundidade.
+1. Salve o rascunho completo em um novo arquivo no diretório `zettelbrain/drafts/rascunho-[tópico].md`.
+2. Adicione o link semântico do novo rascunho ao arquivo `zettelbrain/index.md` na seção correspondente a rascunhos em andamento.
+3. Atualize o arquivo `.state/log.md` com cabeçalho **`/ghost`**, caminho do rascunho criado, alterações em `zettelbrain/index.md` se houver, e **lista explícita** de cada nota de fonte lida em profundidade.

@@ -25,21 +25,21 @@ Trate cada ingestão como oportunidade de **reforçar a rede**: literatura web, 
 2. **Não** copie tom de artigo científico se a fonte não for isso. Evite expressões como "os autores demonstram estatisticamente" salvo quando o texto original realmente fizer isso.
 
 ### Etapa 3: Síntese e conceitos (pausa obrigatória)
-Na conversa com o usuário pode usar listas para clareza; isso **não** se aplica ao texto que será gravado em `zettelkasten/`.
+Na conversa com o usuário pode usar listas para clareza; isso **não** se aplica ao texto que será gravado em `zettelbrain/`.
 
 1. Apresente ao usuário **nesta conversa** (não no cofre ainda): a referência recuperável, o resumo do argumento central ou utilidade prática, a lista de conceitos ou takeaways candidatos, e um parágrafo curto sobre **confiabilidade e riscos de uso** (marketing, desatualização, escopo limitado).
 2. Pergunte explicitamente: "Quais destes tópicos devemos transformar em Notas Permanentes e o que deve ficar apenas na nota de literatura?"
-3. Aguarde a resposta antes de gravar notas no `zettelkasten/`.
+3. Aguarde a resposta antes de gravar notas no `zettelbrain/`.
 
 ### Etapa 4: Gravação no cofre
 Aplicando as **Regras Globais de Estilo** do `ZETTELBRAIN.md` (título obrigatório no corpo, progressão Introdução, Contexto e Fechamento em prosa sem rótulos literais, sem bullet points no corpo das notas, negrito só para conceitos-chave).
 
-1. **Nota de literatura:** Crie em `zettelkasten/literature/` com `type: literature`, `source_kind: web_article` (ou valor mais específico permitido pelo `ZETTELBRAIN.md`), `source_file` apontando para `raw/articles/...`, campos opcionais `url`, `retrieved_at`, `publisher_kind` quando úteis, `abnt_reference` ou equivalente textual da Etapa 2, e **`confidence` obrigatório** (`high`, `medium` ou `low`) alinhado à avaliação de procedência. O corpo deve começar com `# Título da nota`, deixar claro que a fonte é **informal da web** e manter a estrutura em parágrafos.
+1. **Nota de literatura:** Crie em `zettelbrain/literature/` com `type: literature`, `source_kind: web_article` (ou valor mais específico permitido pelo `ZETTELBRAIN.md`), `source_file` apontando para `raw/articles/...`, campos opcionais `url`, `retrieved_at`, `publisher_kind` quando úteis, `abnt_reference` ou equivalente textual da Etapa 2, e **`confidence` obrigatório** (`high`, `medium` ou `low`) alinhado à avaliação de procedência. O corpo deve começar com `# Título da nota`, deixar claro que a fonte é **informal da web** e manter a estrutura em parágrafos.
 2. **Notas permanentes:** Somente para os tópicos aprovados, com `sources` apontando para a nota de literatura criada e `# Título da nota` no início do corpo. Antes de concluir cada permanente **nova**, busque notas relacionadas por conceito e adicione wikilinks úteis no texto. Aplique **ligação mínima ao grafo** do `ZETTELBRAIN.md`; se não houver duas notas relacionadas no cofre, registre no log.
 3. **Revisão cruzada:** Se alguma nota permanente existente depender de afirmações fortes sustentadas só por esta fonte informal, atualize com cautela ou sinalize tensão epistêmica em prosa.
 
 ### Etapa 5: Catalogação e estado
-1. Atualize `zettelkasten/index.md` (seção **Fontes web informais** ou equivalente já existente no índice).
+1. Atualize `zettelbrain/index.md` (seção **Fontes web informais** ou equivalente já existente no índice).
 2. Atualize o `.state/log.md` com cabeçalho **`/ingest-article`** e **lista explícita** de todos os caminhos relativos criados ou alterados (literatura, permanentes, `index.md`, e notas atualizadas na revisão cruzada).
 3. Atualize o `.state/hot.md` como nas demais skills de ingestão.
 

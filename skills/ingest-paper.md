@@ -1,7 +1,7 @@
 # /ingest-paper (Ingestão de documentos formais em papers)
 
 ## Objetivo
-Processar **documentos formais** em **`raw/papers/`** (PDF ou equivalente típico de artigos, capítulos ou relatórios acadêmicos densos), extrair referência no padrão **ABNT**, mapear argumentos centrais e aguardar a validação humana antes de popular o Zettelkasten. Conteúdo informal da internet em Markdown fica em **`raw/articles/`** e usa o skill **`/ingest-article`**; transcrições do YouTube geradas pelo ETL ficam em **`raw/youtube/`** e usam **`/ingest-youtube`**.
+Processar **documentos formais** em **`raw/papers/`** (PDF ou equivalente típico de artigos, capítulos ou relatórios acadêmicos densos), extrair referência no padrão **ABNT**, mapear argumentos centrais e aguardar a validação humana antes de popular o ZettelBrain. Conteúdo informal da internet em Markdown fica em **`raw/articles/`** e usa o skill **`/ingest-article`**; transcrições do YouTube geradas pelo ETL ficam em **`raw/youtube/`** e usam **`/ingest-youtube`**.
 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ingest-paper no arquivo raw/papers/[nome_do_arquivo]"` ou `/ingest-paper raw/papers/[nome_do_arquivo]`.
@@ -26,7 +26,7 @@ Use este ramo conforme os seguintes critérios de tamanho e complexidade do PDF.
 **Log e cache quente:** ao criar ou atualizar o cache, a entrada em `.state/log.md` deve listar **obrigatoriamente** o PDF, `tree.json` e `manifest.json`. Ao atualizar `.state/hot.md` na Etapa 4, mencione em prosa o nome do PDF e o `document_id` quando esta ingestão tiver usado PageIndex, conforme o `ZETTELBRAIN.md`.
 
 ### Meta de amplitude (ingestão em rede)
-Numa única execução bem-sucedida, **planeje tocar vários arquivos** quando a fonte o justificar: literatura nova, notas permanentes novas ou atualizadas, `index.md`, cruzamentos com `[[wikilinks]]`. **Não** edite `zettelkasten/overview.md` nesta skill; a regeneração fica a cargo do **`/lint`**. A meta orientadora é **entre três e dez** arquivos; bases muito pequenas ficam isentas de volume mínimo, mas não de **intenção** de integrar a rede.
+Numa única execução bem-sucedida, **planeje tocar vários arquivos** quando a fonte o justificar: literatura nova, notas permanentes novas ou atualizadas, `index.md`, cruzamentos com `[[wikilinks]]`. **Não** edite `zettelbrain/overview.md` nesta skill; a regeneração fica a cargo do **`/lint`**. A meta orientadora é **entre três e dez** arquivos; bases muito pequenas ficam isentas de volume mínimo, mas não de **intenção** de integrar a rede.
 
 ### Etapa 1: Leitura e Mapeamento Preliminar
 1. Acesse o documento em `raw/papers/`. Se o fluxo **PageIndex (MCP local)** se aplicar, siga a subseção acima antes de sintetizar; caso contrário, leia integralmente o documento (formato suportado pelo ambiente, em geral PDF).
@@ -45,11 +45,11 @@ Numa única execução bem-sucedida, **planeje tocar vários arquivos** quando a
 ### Etapa 3: Geração das Notas e Evolução da Base
 A partir da resposta do usuário, crie os arquivos aplicando rigorosamente as **Regras Globais de Estilo** (sem uso de listas/bullet points, com título obrigatório no corpo da nota e progressão lógica de Introdução, Contexto e Fechamento em parágrafos, sem rótulos literais desses blocos).
 
-1. **Nota de Literatura:** Crie o arquivo em `zettelkasten/literature/` com o frontmatter do `ZETTELBRAIN.md`, incluindo `confidence` (`high`, `medium` ou `low`) conforme a qualidade dos metadados e da leitura. No corpo, inclua `# Título da nota` logo após o YAML e redija em prosa contínua.
-2. **Notas Permanentes:** Crie notas atômicas em `zettelkasten/permanent/` apenas para os conceitos selecionados pelo usuário. Cada nota deve começar com `# Título da nota` após o YAML. Antes de finalizar o corpo, pesquise no cofre por notas relacionadas por tema, variável, método ou causalidade e conecte com `[[wikilinks]]`. Em cada permanente **nova**, se existirem **duas ou mais** notas claramente relacionadas, o corpo deve conter **pelo menos dois** wikilinks `[[...]]` além de `sources:`. Se não houver candidatos, registre no `.state/log.md` que a ligação mínima ao grafo ficou adiada.
+1. **Nota de Literatura:** Crie o arquivo em `zettelbrain/literature/` com o frontmatter do `ZETTELBRAIN.md`, including `confidence` (`high`, `medium` ou `low`) conforme a qualidade dos metadados e da leitura. No corpo, inclua `# Título da nota` logo após o YAML e redija em prosa contínua.
+2. **Notas Permanentes:** Crie notas atômicas em `zettelbrain/permanent/` apenas para os conceitos selecionados pelo usuário. Cada nota deve começar com `# Título da nota` após o YAML. Antes de finalizar o corpo, pesquise no cofre por notas relacionadas por tema, variável, método ou causalidade e conecte com `[[wikilinks]]`. Em cada permanente **nova**, se existirem **duas ou mais** notas claramente relacionadas, o corpo deve conter **pelo menos dois** wikilinks `[[...]]` além de `sources:`. Se não houver candidatos, registre no `.state/log.md` que a ligação mínima ao grafo ficou adiada.
 3. **Revisão Teórica:** Busque notas permanentes antigas que tratem dos mesmos conceitos e atualize-as, cruzando os dados da nova fonte. Sinalize divergências acadêmicas caso existam.
 
 ### Etapa 4: Catalogação e Encerramento
-1. **Indexação Dupla:** Acesse `zettelkasten/index.md` e adicione os links semânticos (ex: `[[nome-do-arquivo]]`) das novas notas em suas respectivas seções (Literatura e Permanentes).
+1. **Indexação Dupla:** Acesse `zettelbrain/index.md` e adicione os links semânticos (ex: `[[nome-do-arquivo]]`) das novas notas em suas respectivas seções (Literatura e Permanentes).
 2. Atualize o `.state/log.md` registrando a ingestão, **listando explicitamente** cada caminho relativo criado ou alterado nesta execução.
 3. Atualize o `.state/hot.md` refletindo a nova adição ao foco da pesquisa.

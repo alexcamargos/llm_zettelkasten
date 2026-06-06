@@ -31,7 +31,7 @@ O histórico do chat pode estar incompleto ou ter sido reiniciado. **Não confie
    - Não utilize emojis.
    - O tom deve permanecer estritamente analítico e compatível com a gestão de projetos de Data Science e pesquisa acadêmica avançada.
 
-2. **Colheita de Sessão (Session Harvesting):** Escaneie o diálogo da sessão para extrair conceitos estruturados, algoritmos, decisões de parametrização ou hipóteses científicas debatidas. Se identificar conhecimento maduro não consolidado, salve tais formulações como arquivos de rascunho em `zettelkasten/drafts/` no formato de prosa dissertativa com frontmatter contendo `type: draft` e `id: YYYYMMDDHHMM`, citando o rascunho como pendência de refinamento acadêmico no último parágrafo de `.state/hot.md`.
+2. **Colheita de Sessão (Session Harvesting):** Escaneie o diálogo da sessão para extrair conceitos estruturados, algoritmos, decisões de parametrização ou hipóteses científicas debatidas. Se identificar conhecimento maduro não consolidado, salve tais formulações como arquivos de rascunho em `zettelbrain/drafts/` no formato de prosa dissertativa com frontmatter contendo `type: draft` e `id: YYYYMMDDHHMM`, citando o rascunho como pendência de refinamento acadêmico no último parágrafo de `.state/hot.md`.
 
 ### Etapa 3: Auditoria Final e Log
 1. Releia o intervalo da sessão em `.state/log.md` (conforme Etapa 1). Se faltar registro de alguma operação que o próprio log ou o chat demonstrem claramente que ocorreu, **acrescente entradas retroativas resumidas** antes do encerramento, com data e descrição mínima, em vez de omitir o fato.

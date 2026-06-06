@@ -1,19 +1,19 @@
 # /recall (Busca e Validação de Contexto)
 
 ## Objetivo
-Minerar o diretório `zettelkasten/` para recuperar informações precisas sobre um tópico, sintetizar o conhecimento acumulado, identificar lacunas relevantes no cofre e, quando necessário, criar nota permanente nova para fechar a lacuna antes de iniciar materiais definitivos ou análises avançadas.
+Minerar o diretório `zettelbrain/` para recuperar informações precisas sobre um tópico, sintetizar o conhecimento acumulado, identificar lacunas relevantes no cofre e, quando necessário, criar nota permanente nova para fechar a lacuna antes de iniciar materiais definitivos ou análises avançadas.
 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /recall sobre [tópico]"` ou `/recall [tópico]`
 
-**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/recall`**. No corpo da entrada liste **todos** os caminhos relativos dos arquivos lidos em profundidade para compor a síntese (e `zettelkasten/index.md` e `zettelkasten/overview.md` quando lidos), além dos caminhos criados ou alterados quando houver fechamento de lacuna com nova nota permanente.
+**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/recall`**. No corpo da entrada liste **todos** os caminhos relativos dos arquivos lidos em profundidade para compor a síntese (e `zettelbrain/index.md` e `zettelbrain/overview.md` quando lidos), além dos caminhos criados ou alterados quando houver fechamento de lacuna com nova nota permanente.
 
 ## Fluxo de Execução (Workflow)
 
 ### Etapa 1: Varredura e Leitura Profunda
-1. Priorize a ferramenta MCP `ZettelBrain.search_zettelkasten` para recuperar candidatos por busca híbrida ou fallback lexical local. Se a ferramenta estiver indisponível, registre a indisponibilidade mentalmente e siga para a leitura manual por `zettelkasten/index.md`.
-2. Use `ZettelBrain.list_zettelkasten_markdown` e `ZettelBrain.read_zettelkasten_markdown` para abrir os arquivos candidatos retornados. Se a ferramenta não estiver disponível, acesse e leia o arquivo `zettelkasten/index.md` para mapear todas as Notas Permanentes e Notas de Literatura que possuam relação semântica com o tópico solicitado.
-3. Leia `zettelkasten/overview.md` para alinhar o dossiê com a síntese viva do cofre quando existir conteúdo útil.
+1. Priorize a ferramenta MCP `ZettelBrain.search_zettelbrain` para recuperar candidatos por busca híbrida ou fallback lexical local. Se a ferramenta estiver indisponível, registre a indisponibilidade mentalmente e siga para a leitura manual por `zettelbrain/index.md`.
+2. Use `ZettelBrain.list_zettelbrain_markdown` e `ZettelBrain.read_zettelbrain_markdown` para abrir os arquivos candidatos retornados. Se a ferramenta não estiver disponível, acesse e leia o arquivo `zettelbrain/index.md` para mapear todas as Notas Permanentes e Notas de Literatura que possuam relação semântica com o tópico solicitado.
+3. Leia `zettelbrain/overview.md` para alinhar o dossiê com a síntese viva do cofre quando existir conteúdo útil.
 4. Acesse e leia integralmente os arquivos identificados para absorver o contexto exato e as conexões armazenadas na base.
 5. Quando notas de literatura relevantes referenciarem `raw/papers/` e existir cache PageIndex, use primeiro `ZettelBrain.resolve_pdf`, `ZettelBrain.inspect_pdf_manifest`, `ZettelBrain.list_pdf_manifests` ou `ZettelBrain.read_pdf_cache` para localizar `.pageindex/<document_id>/manifest.json` e buscar trechos por termo no `tree.json`. Se uma página específica for necessária, use `ZettelBrain.read_pdf_page(document_id, page)`. Se a ferramenta estiver indisponível, localize manualmente `.pageindex/<document_id>/manifest.json` cujo `source_path` coincida com o PDF. O `document_id` é o SHA-256 do binário conforme a secção **Instrumentação obrigatória: `document_id` (SHA-256)** no `ZETTELBRAIN.md`.
 6. Use `.pageindex/<document_id>/tree.json` ou `ZettelBrain.read_pdf_page` apenas para localizar seções relevantes, confirmar a cobertura temática do paper e orientar um retorno seletivo à fonte primária. O cache PageIndex não deve ser tratado como base primária de afirmações conceituais, teóricas ou metodológicas no dossiê do `/recall`.
@@ -37,10 +37,10 @@ Apresente ao usuário um dossiê preliminar com os achados. A geração deste te
 2. Aguarde o direcionamento do usuário antes de dar a busca por concluída.
 
 ### Etapa 4: Fechamento de Lacuna no Cofre
-1. Se a avaliação da Etapa 1 indicar lacuna total ou parcial em tema relevante para o cofre, crie uma **Nota Permanente** em `zettelkasten/permanent/` mesmo sem ingestão de nova fonte externa.
+1. Se a avaliação da Etapa 1 indicar lacuna total ou parcial em tema relevante para o cofre, crie uma **Nota Permanente** em `zettelbrain/permanent/` mesmo sem ingestão de nova fonte externa.
 2. A nota criada deve seguir integralmente o padrão do `ZETTELBRAIN.md`: frontmatter de permanente, `# Título da nota` após o YAML, texto em prosa contínua com progressão em no mínimo três parágrafos (apresentação, desenvolvimento e conclusão) sem imprimir rótulos literais, sem bullet points e com negrito apenas para conceitos-chave.
 3. Ao criar a nova permanente, conecte o tema ao grafo com `[[wikilinks]]` para notas relacionadas já existentes. Quando houver duas ou mais candidatas claras, inclua pelo menos dois wikilinks no corpo da nota.
-4. Atualize `zettelkasten/index.md` para incluir a nova nota na seção apropriada.
+4. Atualize `zettelbrain/index.md` para incluir a nova nota na seção apropriada.
 5. Se não houver notas relacionadas suficientes para cumprir ligação mínima, registre a limitação no `.state/log.md` nesta execução.
 
 ### Etapa 5: Log de Atividade

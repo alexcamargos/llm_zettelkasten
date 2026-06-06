@@ -1,7 +1,7 @@
 # /bridge (Atrito Criativo e Fricção Semântica)
 
 ## Objetivo
-Forçar conexões interdisciplinares e associações não óbvias entre conceitos semanticamente distantes do Zettelkasten, combatendo a criação de silos de conhecimento e estimulando novas frentes de modelagem ou pesquisa teórica.
+Forçar conexões interdisciplinares e associações não óbvias entre conceitos semanticamente distantes do ZettelBrain, combatendo a criação de silos de conhecimento e estimulando novas frentes de modelagem ou pesquisa teórica.
 
 ## Gatilho
 Acionado quando o usuário digitar `/bridge` ou disser `gemini "Execute a skill /bridge"` ou `gemini "Faça uma conexão de atrito criativo"`.
@@ -38,6 +38,6 @@ Redija uma proposta de unificação conceitual ou modelagem híbrida para as dua
    ---
    ```
    Adicione em seguida um H1 com o título da ponte semântica e os dois parágrafos de prosa dissertativa gerados.
-2. Salve o arquivo na pasta `zettelkasten/drafts/` com o nome formatado em minúsculas e separado por hifens: `bridge-[slug-da-nota-a]-e-[slug-da-nota-b].md` (substituindo acentos e caracteres especiais).
-3. Adicione o link para o rascunho criado na seção correspondente do `zettelkasten/index.md` (sob a seção de Rascunhos).
+2. Salve o arquivo na pasta `zettelbrain/drafts/` com o nome formatado em minúsculas e separado por hifens: `bridge-[slug-da-nota-a]-e-[slug-da-nota-b].md` (substituindo acentos e caracteres especiais).
+3. Adicione o link para o rascunho criado na seção correspondente do `zettelbrain/index.md` (sob a seção de Rascunhos).
 4. Atualize o arquivo `.state/log.md` com a entrada de log sob a tag **`/bridge`**, detalhando o caminho do rascunho gerado, os arquivos lidos como insumos e o valor de similaridade cosseno retornado pelo servidor.

@@ -1,7 +1,7 @@
 # /trace (Rastreio Teórico e Evolução Cronológica)
 
 ## Objetivo
-Vasculhar todo o diretório `zettelkasten/` em busca de todas as menções a um conceito específico, reconstruindo cronologicamente como a compreensão acadêmica ou de mercado sobre este tema evoluiu ao longo das datas de publicação dos artigos ingestados. O resultado final é um dossiê analítico que mapeia consensos, divergências e saltos metodológicos.
+Vasculhar todo o diretório `zettelbrain/` em busca de todas as menções a um conceito específico, reconstruindo cronologicamente como a compreensão acadêmica ou de mercado sobre este tema evoluiu ao longo das datas de publicação dos artigos ingestados. O resultado final é um dossiê analítico que mapeia consensos, divergências e saltos metodológicos.
 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /trace sobre [conceito_ou_variavel]"` ou `/trace [conceito_ou_variavel]`
@@ -11,7 +11,7 @@ Acionado quando o usuário disser `gemini "Execute a skill /trace sobre [conceit
 ## Fluxo de Execução (Workflow)
 
 ### Etapa 1: Mineração e Ordenação Cronológica
-1. Percorra os diretórios `zettelkasten/literature/` e `zettelkasten/permanent/` identificando todas as notas que mencionam o conceito solicitado.
+1. Percorra os diretórios `zettelbrain/literature/` e `zettelbrain/permanent/` identificando todas as notas que mencionam o conceito solicitado.
 2. Extraia o ano de publicação das fontes (campo `year` no frontmatter das Notas de Literatura). Para Notas Permanentes, use o campo `year` se existir; caso contrário use o prefixo numérico do campo `id` (YYYYMMDDHHMM) como **proxy cronológico** quando fizer sentido, ou declare no dossiê que a ordenação dessas entradas é aproximada.
 3. Ordene as informações extraídas do dado mais antigo para o mais recente, estabelecendo a linha do tempo da evolução teórica.
 
@@ -29,6 +29,6 @@ Gere um dossiê analítico consolidando os achados. A redação deste documento 
 - Todo artigo ou nota mencionada na evolução histórica deve ser devidamente linkada no corpo do texto utilizando a sintaxe `[[nome-do-arquivo]]`.
 
 ### Etapa 3: Salvamento e Indexação
-1. Salve o dossiê evolutivo completo em um novo arquivo no diretório `zettelkasten/syntheses/trace-[conceito].md`.
-2. Adicione o link semântico do novo documento ao arquivo `zettelkasten/index.md` na seção correspondente a sínteses e comparações.
+1. Salve o dossiê evolutivo completo em um novo arquivo no diretório `zettelbrain/syntheses/trace-[conceito].md`.
+2. Adicione o link semântico do novo documento ao arquivo `zettelbrain/index.md` na seção correspondente a sínteses e comparações.
 3. Atualize o arquivo `.state/log.md` com cabeçalho **`/trace`**, conceito analisado, caminho do dossiê em `syntheses/`, e **lista explícita** de cada nota cujo conteúdo foi lido integralmente ou em parte substantiva para a cronologia.
