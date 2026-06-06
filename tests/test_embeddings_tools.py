@@ -15,6 +15,13 @@ from tools_embeddings import (
 )
 
 
+def _write_note(root: Path, relative_path: str, content: str) -> None:
+    """Write a Markdown note under a temporary ZettelBrain root."""
+    path = root / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
 def test_hashing_embedding_is_deterministic_and_normalized() -> None:
     """Test that hashing embeddings are stable and normalized for non-empty text.
 
@@ -40,13 +47,15 @@ def test_build_embedding_index_and_semantic_search_rank_relevant_doc(tmp_path: P
     """
     zettelbrain = tmp_path / "zettelbrain"
     zettelbrain.mkdir()
-    (zettelbrain / "credito.md").write_text(
+    _write_note(
+        zettelbrain,
+        "permanent/credito.md",
         "credito cooperativo risco insolvencia capital",
-        encoding="utf-8",
     )
-    (zettelbrain / "gan.md").write_text(
+    _write_note(
+        zettelbrain,
+        "literature/gan.md",
         "redes generativas adversariais imagem sintetica",
-        encoding="utf-8",
     )
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
@@ -72,8 +81,42 @@ def test_build_embedding_index_and_semantic_search_rank_relevant_doc(tmp_path: P
     assert index_path.exists()
     assert len(index["documents"]) == 2
     assert index["provider"] == "hashing"
-    assert results[0].path == "credito.md"
+    assert results[0].path == "permanent/credito.md"
     assert results[0].engine == "hash-embedding"
+
+
+def test_build_embedding_index_only_includes_conceptual_note_folders(tmp_path: Path) -> None:
+    """Test semantic indexing excludes drafts and root navigation Markdown files.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
+    zettelbrain = tmp_path / "zettelbrain"
+    zettelbrain.mkdir()
+    _write_note(zettelbrain, "literature/source.md", "fonte fichamento conceito")
+    _write_note(zettelbrain, "permanent/atomic.md", "nota atomica permanente")
+    _write_note(zettelbrain, "drafts/temp.md", "rascunho incompleto temporario")
+    _write_note(zettelbrain, "overview.md", "sumario vivo circular")
+    _write_note(zettelbrain, "index.md", "pagina raiz navegacao")
+    index_path = tmp_path / ".state" / "embeddings_index.json"
+
+    index = build_embedding_index(
+        zettelbrain,
+        index_path,
+        provider="hashing",
+        dimensions=16,
+        model_name="nomic-embed-text",
+        endpoint=None,
+    )
+
+    indexed_paths = {document["path"] for document in index["documents"]}
+    assert indexed_paths == {
+        "literature/source.md",
+        "permanent/atomic.md",
+    }
 
 
 def test_embedding_status_reports_existing_index(tmp_path: Path) -> None:
@@ -87,7 +130,7 @@ def test_embedding_status_reports_existing_index(tmp_path: Path) -> None:
     """
     zettelbrain = tmp_path / "zettelbrain"
     zettelbrain.mkdir()
-    (zettelbrain / "note.md").write_text("indicador pearls", encoding="utf-8")
+    _write_note(zettelbrain, "permanent/note.md", "indicador pearls")
     index_path = tmp_path / ".state" / "embeddings_index.json"
     build_embedding_index(
         zettelbrain,
@@ -123,7 +166,7 @@ def test_ollama_provider_falls_back_to_hashing_when_endpoint_fails(tmp_path: Pat
     """
     zettelbrain = tmp_path / "zettelbrain"
     zettelbrain.mkdir()
-    (zettelbrain / "note.md").write_text("credito cooperativo", encoding="utf-8")
+    _write_note(zettelbrain, "permanent/note.md", "credito cooperativo")
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
     index = build_embedding_index(
@@ -214,7 +257,7 @@ def test_semantic_search_labels_ollama_index_engine(
     """
     zettelbrain = tmp_path / "zettelbrain"
     zettelbrain.mkdir()
-    (zettelbrain / "note.md").write_text("credito cooperativo", encoding="utf-8")
+    _write_note(zettelbrain, "permanent/note.md", "credito cooperativo")
     index_path = tmp_path / ".state" / "embeddings_index.json"
 
     monkeypatch.setattr(
