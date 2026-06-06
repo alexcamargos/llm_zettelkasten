@@ -185,7 +185,7 @@ def semantic_search(
     """Search the local embedding index using cosine similarity.
 
     Args:
-        root: Root folder Path containing the Zettelkasten files.
+        root: Root folder Path containing the ZettelBrain files.
         index_path: Absolute path to the index JSON.
         query: Semantic search query terms.
         limit: Maximum results to return.
