@@ -11,6 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 from tools_pdf import (
+    estimate_document_processing,
     index_pdf_with_command,
     list_pageindex_manifests,
     persist_pageindex_cache,
@@ -308,3 +309,85 @@ def test_read_pageindex_cache_rejects_invalid_document_id(
     """
     with pytest.raises(ValueError, match="document_id"):
         read_pageindex_cache(tmp_path, "../invalid")
+
+
+def test_estimate_document_processing(tmp_path: Path) -> None:
+    """Test estimating cost, tokens, and pages of a PDF document.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        None
+    """
+    vault = tmp_path / "vault"
+    raw_papers = vault / "raw" / "papers"
+    pageindex_root = vault / ".pageindex"
+    raw_papers.mkdir(parents=True)
+    pageindex_root.mkdir()
+    pdf_path = raw_papers / "teste.pdf"
+    pdf_path.write_bytes(b"abc")
+    
+    estimate = estimate_document_processing(vault, raw_papers, pageindex_root, "raw/papers/teste.pdf")
+    
+    assert estimate["source_filename"] == "teste.pdf"
+    assert estimate["cache_found"] is False
+    assert estimate["page_count"] >= 1
+    assert "cost_projections" in estimate
+    assert "gemini_1_5_flash" in estimate["cost_projections"]
+    assert "total_usd" in estimate["cost_projections"]["gemini_1_5_flash"]
+
+
+def test_index_pdf_with_command_using_docling(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test indexing PDF using Docling parser mode.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
+    vault = tmp_path / "vault"
+    raw_papers = vault / "raw" / "papers"
+    pageindex_root = vault / ".pageindex"
+    raw_papers.mkdir(parents=True)
+    pageindex_root.mkdir()
+    pdf_path = raw_papers / "teste.pdf"
+    pdf_path.write_bytes(b"abc")
+
+    # Mock docling converter
+    class DummyElement:
+        def __init__(self, text: str):
+            self.text = text
+            class DummyProv:
+                page_no = 2
+            self.prov = [DummyProv()]
+
+    class DummyDocument:
+        def __init__(self):
+            self.elements = [DummyElement("secao contabilidade"), DummyElement("tabela pearls")]
+
+    class DummyConverter:
+        def convert(self, path: str) -> SimpleNamespace:
+            return SimpleNamespace(document=DummyDocument())
+
+    monkeypatch.setattr("tools_pdf.HAS_DOCLING", True)
+    monkeypatch.setattr("tools_pdf.DocumentConverter", DummyConverter, raising=False)
+
+    result = index_pdf_with_command(
+        vault,
+        raw_papers,
+        pageindex_root,
+        "raw/papers/teste.pdf",
+        pageindex_command="docling",
+        engine="docling",
+    )
+
+    assert result["indexed"] is True
+    assert (vault / result["tree_path"]).exists()
+    assert result["manifest"]["index_source"] == "docling_parser"
+    assert result["manifest"]["page_count_estimate"] == 2
