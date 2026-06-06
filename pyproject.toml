@@ -9,15 +9,18 @@ dependencies = [
     "loguru>=0.7.3",
     "mcp>=1.9.0",
     "python-dotenv>=1.1.0",
+    "trafilatura>=1.12.0",
     "youtube-transcript-api>=1.0.3",
 ]
 
 [project.scripts]
 zettelbrain-mcp = "zettelbrain_mcp:main"
 zettelbrain-youtube-etl = "ingestion.youtube_etl:main"
+zettelbrain-article-etl = "ingestion.article_etl:main"
 zettelbrain-lint = "zettelbrain_lint:main"
 zb-mcp = "zettelbrain_mcp:main"
 zb-youtube-etl = "ingestion.youtube_etl:main"
+zb-article-etl = "ingestion.article_etl:main"
 zb-lint = "zettelbrain_lint:main"
 zb-install = "setup:main"
 install = "setup:main"
