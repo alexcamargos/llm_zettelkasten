@@ -45,4 +45,4 @@ Apresente ao usuário um dossiê preliminar com os achados. A geração deste te
 
 ### Etapa 5: Log de Atividade
 1. Atualize o arquivo `.state/log.md` com cabeçalho **`/recall`**, resumo do tópico pesquisado e **lista explícita** de todos os caminhos relativos lidos.
-2. Quando houver criação de nota permanente por fechamento de lacuna, registre explicitamente os caminhos criados e alterados, incluindo a nota nova e `zettelkasten/index.md`.
+2. Quando houver criação de nota permanente por fechamento de lacuna, registre explicitamente os caminhos criados e alterados, incluindo a nota nova e `zettelbrain/index.md`.
