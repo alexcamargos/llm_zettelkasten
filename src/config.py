@@ -28,6 +28,7 @@ class Settings:
         vault_path: Path to the Obsidian vault.
         ingestion_history_path: Path to the file containing ingested video IDs.
         raw_articles_path: Path to raw Markdown articles.
+        raw_youtube_path: Path to raw YouTube transcripts.
         raw_papers_path: Path to raw academic papers (PDFs).
         zettelkasten_path: Path to the Zettelkasten folder.
         logs_path: Path where log files are written.
@@ -45,6 +46,7 @@ class Settings:
     vault_path: Path
     ingestion_history_path: Path
     raw_articles_path: Path
+    raw_youtube_path: Path
     raw_papers_path: Path
     zettelkasten_path: Path
     logs_path: Path
@@ -85,6 +87,7 @@ def load_settings(env_path: Path | str | None = None, *, require_youtube: bool =
             vault_path,
         ),
         raw_articles_path=_resolve_path(os.getenv("RAW_ARTICLES_PATH", "raw/articles"), vault_path),
+        raw_youtube_path=_resolve_path(os.getenv("RAW_YOUTUBE_PATH", "raw/youtube"), vault_path),
         raw_papers_path=_resolve_path(os.getenv("RAW_PAPERS_PATH", "raw/papers"), vault_path),
         zettelkasten_path=_resolve_path(os.getenv("ZETTELKASTEN_PATH", "zettelkasten"), vault_path),
         logs_path=_resolve_path(os.getenv("LOGS_PATH", "logs"), vault_path),
@@ -217,6 +220,7 @@ def _validate_settings(settings: Settings, *, require_youtube: bool) -> None:
     required_dirs = {
         "OBSIDIAN_VAULT_PATH": settings.vault_path,
         "RAW_ARTICLES_PATH": settings.raw_articles_path,
+        "RAW_YOUTUBE_PATH": settings.raw_youtube_path,
         "RAW_PAPERS_PATH": settings.raw_papers_path,
         "ZETTELKASTEN_PATH": settings.zettelkasten_path,
     }
