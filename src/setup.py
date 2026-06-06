@@ -23,14 +23,15 @@ def get_repo_root() -> Path:
 def configure_gemini(repo_root: Path) -> int:
     """Configure settings for the Gemini CLI client.
 
-    Creates the .gemini directory and settings.json if missing, and deactivates
-    Cursor rules (.cursorrules) to avoid configuration conflicts.
+    Creates the .gemini directory and settings.json if missing, syncs all skills
+    from the root skills/ folder into .gemini/skills/, and deactivates Cursor rules
+    (.cursorrules) to avoid configuration conflicts.
 
     Args:
         repo_root: The root path of the repository.
 
     Returns:
-        int: The exit code (0 for success).
+        int: The exit code (0 for success, 1 for failure).
     """
     print("[-] Configurando o ambiente para o Gemini CLI...")
 
@@ -70,6 +71,38 @@ def configure_gemini(repo_root: Path) -> int:
                 f"{settings_file.relative_to(repo_root)}"
             )
 
+        # Sync skills from root to .gemini/skills
+        source_skills_dir = repo_root / "skills"
+        gemini_skills_dir = gemini_dir / "skills"
+        gemini_skills_dir.mkdir(parents=True, exist_ok=True)
+
+        if source_skills_dir.exists():
+            source_files = list(source_skills_dir.glob("*.md"))
+            copied_count = 0
+            for src_file in source_files:
+                dest_file = gemini_skills_dir / src_file.name
+                dest_file.write_text(src_file.read_text(encoding="utf-8"), encoding="utf-8")
+                copied_count += 1
+            print(
+                "[+] Sincronizadas "
+                f"{copied_count} skills para {gemini_skills_dir.relative_to(repo_root)}"
+            )
+
+            # Clean up orphan skills
+            dest_names = {f.name for f in source_files}
+            removed_count = 0
+            for existing_file in gemini_skills_dir.glob("*.md"):
+                if existing_file.name not in dest_names:
+                    existing_file.unlink()
+                    removed_count += 1
+            if removed_count > 0:
+                print(
+                    "[+] Removidas "
+                    f"{removed_count} skills orfas de {gemini_skills_dir.relative_to(repo_root)}"
+                )
+        else:
+            print("[!] Aviso: Pasta de skills mestre nao encontrada na raiz do projeto.")
+
         # Deactivate .cursorrules to prevent agent confusion in Gemini CLI
         cursorrules = repo_root / ".cursorrules"
         if cursorrules.exists():
@@ -94,14 +127,15 @@ def configure_gemini(repo_root: Path) -> int:
 def configure_cursor(repo_root: Path) -> int:
     """Configure settings for the Cursor IDE client.
 
-    Creates the .cursor directory and mcp.json if missing, and copies GEMINI.md
-    to .cursorrules to make rules visible to Cursor's AI models.
+    Creates the .cursor directory and mcp.json if missing, and compiles the
+    master rules (GEMINI.md) along with all workflows from the skills/ folder
+    into a single .cursorrules file.
 
     Args:
         repo_root: The root path of the repository.
 
     Returns:
-        int: The exit code (0 for success).
+        int: The exit code (0 for success, 1 for failure).
     """
     print("[-] Configurando o ambiente para o Cursor IDE...")
 
@@ -139,7 +173,7 @@ def configure_cursor(repo_root: Path) -> int:
                 f"{mcp_file.relative_to(repo_root)}"
             )
 
-        # Copy GEMINI.md to .cursorrules
+        # Compile GEMINI.md + all files in skills/ into .cursorrules
         master_rules = repo_root / "GEMINI.md"
         cursorrules = repo_root / ".cursorrules"
         cursorrules_bak = repo_root / ".cursorrules.bak"
@@ -150,10 +184,24 @@ def configure_cursor(repo_root: Path) -> int:
 
         if master_rules.exists():
             rules_content = master_rules.read_text(encoding="utf-8")
-            cursorrules.write_text(rules_content, encoding="utf-8")
+
+            # Collect and append skills
+            source_skills_dir = repo_root / "skills"
+            skills_content = []
+            if source_skills_dir.exists():
+                for src_file in sorted(source_skills_dir.glob("*.md")):
+                    content = src_file.read_text(encoding="utf-8")
+                    skills_content.append(content)
+
+            full_content = rules_content
+            if skills_content:
+                full_content += "\n\n---\n\n# Workflow de Skills Integradas\n\n"
+                full_content += "\n\n---\n\n".join(skills_content)
+
+            cursorrules.write_text(full_content, encoding="utf-8")
             print(
-                "[+] Regras sincronizadas: "
-                f"{master_rules.name} -> {cursorrules.name}"
+                "[+] Regras compiladas com sucesso: "
+                f"{master_rules.name} + skills/ -> {cursorrules.name}"
             )
         else:
             print(
@@ -169,6 +217,7 @@ def configure_cursor(repo_root: Path) -> int:
     except OSError as exc:
         print(f"[ERRO] Erro ao configurar o ambiente Cursor: {exc}", file=sys.stderr)
         return 1
+
 
 
 
