@@ -6,7 +6,7 @@ Auditar a integridade estrutural e teórica do diretório `zettelkasten/`, ident
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /lint no diretório zettelkasten/"` ou `/lint zettelkasten/`
 
-**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional). No cabeçalho use **`/lint`**.
+**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/lint`**.
 
 ## Fluxo de Execução (Workflow)
 

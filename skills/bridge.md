@@ -6,7 +6,7 @@ Forçar conexões interdisciplinares e associações não óbvias entre conceito
 ## Gatilho
 Acionado quando o usuário digitar `/bridge` ou disser `gemini "Execute a skill /bridge"` ou `gemini "Faça uma conexão de atrito criativo"`.
 
-**Log:** Cada execução bem-sucedida que criar arquivos ou rascunhos deve ser registrada em `.state/log.md` usando o formato definido no `GEMINI.md` (seção Convenção do log operacional). No cabeçalho use **`/bridge`**.
+**Log:** Cada execução bem-sucedida que criar arquivos ou rascunhos deve ser registrada em `.state/log.md` usando o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/bridge`**.
 
 ## Fluxo de Execução (Workflow)
 

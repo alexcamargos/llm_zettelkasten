@@ -6,7 +6,7 @@ Processar exclusivamente a seção introdutória (incluindo o resumo ou abstract
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ingest-paper-intro no arquivo raw/papers/[nome_do_arquivo]"` ou `/ingest-paper-intro raw/papers/[nome_do_arquivo]`.
 
-**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional). No cabeçalho da entrada use o nome da skill **`/ingest-paper-intro`**. Liste todos os arquivos tocados ou criados.
+**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho da entrada use o nome da skill **`/ingest-paper-intro`**. Liste todos os arquivos tocados ou criados.
 
 ## Fluxo de Execução (Workflow)
 
@@ -37,8 +37,8 @@ Se o usuário aprovar a criação das notas preliminares, gere os arquivos aplic
 - Não utilize travessões. Empregue vírgulas ou construa períodos curtos e diretos para explicações.
 - Não utilize emojis.
 
-1. **Nota de Literatura:** Crie o arquivo em `zettelkasten/literature/` com frontmatter do `GEMINI.md`, `confidence` adequado, `source_file` sob `raw/papers/`, referência ABNT e resumo da introdução.
-2. **Notas Permanentes:** Crie notas atômicas em `zettelkasten/permanent/` apenas para os conceitos validados. Para cada permanente **nova**, pesquise notas relacionadas por tema e conecte o corpo com wikilinks relevantes. Aplique a **ligação mínima ao grafo** do `GEMINI.md` (dois wikilinks no corpo quando existirem candidatos); caso impossível, registre no log.
+1. **Nota de Literatura:** Crie o arquivo em `zettelkasten/literature/` com frontmatter do `ZETTELBRAIN.md`, `confidence` adequado, `source_file` sob `raw/papers/`, referência ABNT e resumo da introdução.
+2. **Notas Permanentes:** Crie notas atômicas em `zettelkasten/permanent/` apenas para os conceitos validados. Para cada permanente **nova**, pesquise notas relacionadas por tema e conecte o corpo com wikilinks relevantes. Aplique a **ligação mínima ao grafo** do `ZETTELBRAIN.md` (dois wikilinks no corpo quando existirem candidatos); caso impossível, registre no log.
 
 ### Etapa 4: Catalogação
 1. Acesse `zettelkasten/index.md` e adicione os links semânticos (textuais) das novas notas em suas respectivas seções.

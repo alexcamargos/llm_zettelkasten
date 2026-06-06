@@ -6,7 +6,7 @@ Transformar o conhecimento previamente validado em representações visuais estr
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /visual para criar [tipo_de_ativo] sobre [tópico]"` ou `/visual [tipo_de_ativo] [tópico]`
 
-**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional). No cabeçalho use **`/visual`**. No corpo liste **todos** os caminhos relativos de arquivos **criados ou alterados** e das notas lidas como insumo.
+**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/visual`**. No corpo liste **todos** os caminhos relativos de arquivos **criados ou alterados** e das notas lidas como insumo.
 
 ## Fluxo de Execução (Workflow)
 

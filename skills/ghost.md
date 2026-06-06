@@ -6,7 +6,7 @@ Atuar como um assistente de redação acadêmica avançada. O foco é minerar o 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ghost para escrever sobre [tópico]"` ou `/ghost [tópico]`
 
-**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional). No cabeçalho use **`/ghost`**. No corpo liste **todos** os caminhos relativos de arquivos criados ou alterados e das notas lidas como base (enumerando cada caminho).
+**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/ghost`**. No corpo liste **todos** os caminhos relativos de arquivos criados ou alterados e das notas lidas como base (enumerando cada caminho).
 
 ## Fluxo de Execução (Workflow)
 

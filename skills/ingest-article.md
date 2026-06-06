@@ -8,7 +8,7 @@ Processar **apenas** arquivos Markdown em **`raw/articles/`** que representem co
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ingest-article no arquivo raw/articles/[nome].md"` ou `/ingest-article raw/articles/[nome].md`.
 
-**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional). No cabeçalho use **`/ingest-article`** e liste todos os arquivos tocados ou criados.
+**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/ingest-article`** e liste todos os arquivos tocados ou criados.
 
 ## Fluxo de Execução (Workflow)
 
@@ -32,10 +32,10 @@ Na conversa com o usuário pode usar listas para clareza; isso **não** se aplic
 3. Aguarde a resposta antes de gravar notas no `zettelkasten/`.
 
 ### Etapa 4: Gravação no cofre
-Aplicando as **Regras Globais de Estilo** do `GEMINI.md` (título obrigatório no corpo, progressão Introdução, Contexto e Fechamento em prosa sem rótulos literais, sem bullet points no corpo das notas, negrito só para conceitos-chave).
+Aplicando as **Regras Globais de Estilo** do `ZETTELBRAIN.md` (título obrigatório no corpo, progressão Introdução, Contexto e Fechamento em prosa sem rótulos literais, sem bullet points no corpo das notas, negrito só para conceitos-chave).
 
-1. **Nota de literatura:** Crie em `zettelkasten/literature/` com `type: literature`, `source_kind: web_article` (ou valor mais específico permitido pelo `GEMINI.md`), `source_file` apontando para `raw/articles/...`, campos opcionais `url`, `retrieved_at`, `publisher_kind` quando úteis, `abnt_reference` ou equivalente textual da Etapa 2, e **`confidence` obrigatório** (`high`, `medium` ou `low`) alinhado à avaliação de procedência. O corpo deve começar com `# Título da nota`, deixar claro que a fonte é **informal da web** e manter a estrutura em parágrafos.
-2. **Notas permanentes:** Somente para os tópicos aprovados, com `sources` apontando para a nota de literatura criada e `# Título da nota` no início do corpo. Antes de concluir cada permanente **nova**, busque notas relacionadas por conceito e adicione wikilinks úteis no texto. Aplique **ligação mínima ao grafo** do `GEMINI.md`; se não houver duas notas relacionadas no cofre, registre no log.
+1. **Nota de literatura:** Crie em `zettelkasten/literature/` com `type: literature`, `source_kind: web_article` (ou valor mais específico permitido pelo `ZETTELBRAIN.md`), `source_file` apontando para `raw/articles/...`, campos opcionais `url`, `retrieved_at`, `publisher_kind` quando úteis, `abnt_reference` ou equivalente textual da Etapa 2, e **`confidence` obrigatório** (`high`, `medium` ou `low`) alinhado à avaliação de procedência. O corpo deve começar com `# Título da nota`, deixar claro que a fonte é **informal da web** e manter a estrutura em parágrafos.
+2. **Notas permanentes:** Somente para os tópicos aprovados, com `sources` apontando para a nota de literatura criada e `# Título da nota` no início do corpo. Antes de concluir cada permanente **nova**, busque notas relacionadas por conceito e adicione wikilinks úteis no texto. Aplique **ligação mínima ao grafo** do `ZETTELBRAIN.md`; se não houver duas notas relacionadas no cofre, registre no log.
 3. **Revisão cruzada:** Se alguma nota permanente existente depender de afirmações fortes sustentadas só por esta fonte informal, atualize com cautela ou sinalize tensão epistêmica em prosa.
 
 ### Etapa 5: Catalogação e estado

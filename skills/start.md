@@ -6,7 +6,7 @@ Preparar o ambiente de trabalho e situar o usuário no início de uma nova sess�
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /start"` ou `gemini "Inicie a sessão"` ou `/start`
 
-**Log:** Esta skill não grava em `.state/log.md`. Skills que registrarem operações devem seguir o formato do `GEMINI.md` (seção Convenção do log operacional).
+**Log:** Esta skill não grava em `.state/log.md`. Skills que registrarem operações devem seguir o formato do `ZETTELBRAIN.md` (seção Convenção do log operacional).
 
 ## Fluxo de Execução (Workflow)
 

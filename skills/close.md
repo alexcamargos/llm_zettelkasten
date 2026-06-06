@@ -6,22 +6,7 @@ Sintetizar as descobertas da janela de estudos, atualizar o cache de contexto co
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /close"` ou `gemini "Encerre a sessão"` ou `/close`
 
-**Log:** Ao acrescentar a entrada final de encerramento (e eventuais retificações) em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional).
-
-## Fluxo de Execução (Workflow)
-
-### Etapa 1: Consolidação ancorada em arquivos (obrigatório)
-O histórico do chat pode estar incompleto ou ter sido reiniciado. **Não confie na memória da conversa como fonte primária.**
-
-# /close (Encerramento e Empacotamento de Sessão)
-
-## Objetivo
-Sintetizar as descobertas da janela de estudos, atualizar o cache de contexto contínuo e preparar o ambiente estrutural para a próxima sessão, garantindo que o conhecimento acumulado e as decisões metodológicas não se percam.
-
-## Gatilho
-Acionado quando o usuário disser `gemini "Execute a skill /close"` ou `gemini "Encerre a sessão"` ou `/close`
-
-**Log:** Ao acrescentar a entrada final de encerramento (e eventuais retificações) em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional).
+**Log:** Ao acrescentar a entrada final de encerramento (e eventuais retificações) em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional).
 
 ## Fluxo de Execução (Workflow)
 

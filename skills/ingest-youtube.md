@@ -6,7 +6,7 @@ Processar **apenas** arquivos Markdown em `raw/articles/` gerados pelo ETL de Yo
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ingest-youtube no arquivo raw/articles/[nome].md"` ou `/ingest-youtube raw/articles/[nome].md`.
 
-**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional). No cabeçalho use **`/ingest-youtube`** e liste todos os arquivos tocados ou criados.
+**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/ingest-youtube`** e liste todos os arquivos tocados ou criados.
 
 ## Fluxo de Execução (Workflow)
 
@@ -27,7 +27,7 @@ Na conversa com o usuário pode usar listas para clareza; isso **não** se aplic
 4. Aguarde a resposta antes de gravar notas no `zettelkasten/`.
 
 ### Etapa 3: Gravação no cofre
-Aplicando as **Regras Globais de Estilo** do `GEMINI.md`, sem bullet points no corpo das notas e com título obrigatório após o YAML.
+Aplicando as **Regras Globais de Estilo** do `ZETTELBRAIN.md`, sem bullet points no corpo das notas e com título obrigatório após o YAML.
 
 1. **Nota de literatura:** Crie em `zettelkasten/literature/` com `type: literature`, `source_kind: youtube_transcript`, `source_file` apontando para `raw/articles/...`, `video_id`, `url`, `retrieved_at`, `published_at` quando disponível, `publisher_kind: youtube_channel`, `abnt_reference` em melhor forma recuperável para vídeo online e `confidence` obrigatório (`high`, `medium` ou `low`). O corpo deve começar com `# Título da nota`, explicar que a fonte é uma transcrição de vídeo e registrar limitações de evidência.
 2. **Notas permanentes:** Somente para tópicos aprovados pelo usuário. Use `sources` apontando para a nota de literatura criada e conecte com `[[wikilinks]]` para notas relacionadas quando existirem candidatas claras.

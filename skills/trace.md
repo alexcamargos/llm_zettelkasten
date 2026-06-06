@@ -6,7 +6,7 @@ Vasculhar todo o diretório `zettelkasten/` em busca de todas as menções a um 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /trace sobre [conceito_ou_variavel]"` ou `/trace [conceito_ou_variavel]`
 
-**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `GEMINI.md` (seção Convenção do log operacional). No cabeçalho use **`/trace`**. No corpo liste o conceito rastreado, o arquivo de síntese criado ou atualizado, alterações em `index.md` se houver, e **todos** os caminhos relativos das notas lidas na varredura.
+**Log:** Ao acrescentar entradas em `.state/log.md`, use estritamente o formato definido no `ZETTELBRAIN.md` (seção Convenção do log operacional). No cabeçalho use **`/trace`**. No corpo liste o conceito rastreado, o arquivo de síntese criado ou atualizado, alterações em `index.md` se houver, e **todos** os caminhos relativos das notas lidas na varredura.
 
 ## Fluxo de Execução (Workflow)
 
