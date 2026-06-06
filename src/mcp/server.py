@@ -241,7 +241,7 @@ def lint_zettelkasten() -> dict[str, Any]:
     Returns:
         dict[str, Any]: Estrutura com os resultados do linting.
     """
-    from zettel_lint import run_lint_logic
+    from zettelbrain_lint import run_lint_logic
     return run_lint_logic()
 
 
@@ -420,7 +420,7 @@ def build_server() -> Any:
     except ImportError as exc:  # pragma: no cover - depends on runtime dependency
         raise RuntimeError("Instale as dependencias com `uv sync` antes de iniciar o MCP.") from exc
 
-    server = FastMCP("ZettelkastenBrain")
+    server = FastMCP("ZettelBrain")
     server.tool()(health)
     server.tool()(search_zettelkasten)
     server.tool()(retrieval_health)

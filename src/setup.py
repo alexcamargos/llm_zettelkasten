@@ -44,16 +44,11 @@ def configure_gemini(repo_root: Path) -> int:
 
         default_settings = {
             "mcpServers": {
-                "ZettelkastenBrain": {
+                "ZettelBrain": {
                     "command": "uv",
-                    "args": ["run", "zettel-mcp"],
+                    "args": ["run", "src/mcp/server.py"],
                     "timeout": 600000,
-                },
-                "pageindex": {
-                    "command": "npx",
-                    "args": ["-y", "@pageindex/mcp"],
-                    "timeout": 600000,
-                },
+                }
             }
         }
 
@@ -62,10 +57,7 @@ def configure_gemini(repo_root: Path) -> int:
                 json.dumps(default_settings, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            print(
-                "[+] Arquivo de configuracao criado em: "
-                f"{settings_file.relative_to(repo_root)}"
-            )
+            print(f"[+] Arquivo de configuracao criado em: {settings_file.relative_to(repo_root)}")
         else:
             print(
                 "[~] Arquivo de configuracao ja existente em: "
@@ -111,10 +103,7 @@ def configure_gemini(repo_root: Path) -> int:
             if cursorrules_bak.exists():
                 cursorrules_bak.unlink()
             cursorrules.rename(cursorrules_bak)
-            print(
-                "[+] Regras do Cursor desativadas: "
-                f"{cursorrules.name} -> {cursorrules_bak.name}"
-            )
+            print(f"[+] Regras do Cursor desativadas: {cursorrules.name} -> {cursorrules_bak.name}")
 
         print("\n[OK] Ambiente do Gemini CLI configurado com sucesso!")
         print("    -> Execute o seu agente Gemini CLI normalmente.")
@@ -148,14 +137,10 @@ def configure_cursor(repo_root: Path) -> int:
 
         default_mcp = {
             "mcpServers": {
-                "ZettelkastenBrain": {
+                "ZettelBrain": {
                     "command": "uv",
-                    "args": ["run", "zettel-mcp"],
-                },
-                "pageindex": {
-                    "command": "npx",
-                    "args": ["-y", "@pageindex/mcp"],
-                },
+                    "args": ["run", "src/mcp/server.py"],
+                }
             }
         }
 
@@ -164,15 +149,9 @@ def configure_cursor(repo_root: Path) -> int:
                 json.dumps(default_mcp, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            print(
-                "[+] Arquivo MCP do Cursor criado em: "
-                f"{mcp_file.relative_to(repo_root)}"
-            )
+            print(f"[+] Arquivo MCP do Cursor criado em: {mcp_file.relative_to(repo_root)}")
         else:
-            print(
-                "[~] Arquivo MCP do Cursor ja existente em: "
-                f"{mcp_file.relative_to(repo_root)}"
-            )
+            print(f"[~] Arquivo MCP do Cursor ja existente em: {mcp_file.relative_to(repo_root)}")
 
         # Compile GEMINI.md + all files in skills/ into .cursorrules
         master_rules = repo_root / "GEMINI.md"
@@ -218,10 +197,6 @@ def configure_cursor(repo_root: Path) -> int:
     except OSError as exc:
         print(f"[ERRO] Erro ao configurar o ambiente Cursor: {exc}", file=sys.stderr)
         return 1
-
-
-
-
 
 
 def clean_environment(repo_root: Path) -> int:
@@ -310,4 +285,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

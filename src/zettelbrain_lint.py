@@ -1,4 +1,4 @@
-"""Linter de integridade estrutural e de conexões para o LLM Zettelkasten.
+"""Linter de integridade estrutural e de conexões para o ZettelBrain.
 
 Realiza análises estáticas determinísticas na base de conhecimento, incluindo:
 - Links mortos (wikilinks apontando para arquivos inexistentes)
@@ -467,7 +467,7 @@ def main() -> None:
     retorno do sistema operacional apropriado (não-zero em caso de erros críticos).
     """
     parser = argparse.ArgumentParser(
-        description="Linter de integridade estática do LLM Zettelkasten."
+        description="Linter de integridade estática do ZettelBrain."
     )
     parser.add_argument(
         "--json",

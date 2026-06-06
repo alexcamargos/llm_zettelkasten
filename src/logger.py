@@ -60,7 +60,7 @@ def configure_logging(logs_path: Path) -> Any:
             logging.StreamHandler(),
         ],
     )
-    return logging.getLogger("llm_zettelkasten")
+    return logging.getLogger("zettelbrain")
 
 
 def get_logger() -> Any:
@@ -71,7 +71,7 @@ def get_logger() -> Any:
     """
     if _logger is not None:
         return _logger
-    return logging.getLogger("llm_zettelkasten")
+    return logging.getLogger("zettelbrain")
 
 
 def log_skill_execution(func: F) -> F:

@@ -1,4 +1,4 @@
-"""Testes unitários para o linter de integridade do Zettelkasten (src/zettel_lint.py).
+"""Testes unitários para o linter de integridade do ZettelBrain (src/zettelbrain_lint.py).
 
 Garante a precisão e robustez das regras de validação estrutural do cofre.
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from zettel_lint import (
+from zettelbrain_lint import (
     ZettelLinter,
     parse_frontmatter_and_body,
     slugify,
