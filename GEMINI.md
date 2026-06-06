@@ -1,4 +1,4 @@
-# Gemini Zettelkasten: Master Schema
+# ZettelBrain: Master Schema
 
 ## Instrumentação obrigatória: `document_id` (SHA-256)
 
