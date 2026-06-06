@@ -320,11 +320,21 @@ class YouTubeETLPipeline:
             logger.info("youtube_etl_video_detected id={} title={}", video.video_id, video.title)
             if dry_run:
                 continue
-            transcript = self.transcript_fetcher.fetch(video.video_id)
-            created_path = self.writer.write(video, transcript)
-            self.writer.append_processed_id(video.video_id)
-            created.append(created_path)
-            logger.info("youtube_etl_artifact_created path={}", created_path)
+            try:
+                transcript = self.transcript_fetcher.fetch(video.video_id)
+                created_path = self.writer.write(video, transcript)
+                self.writer.append_processed_id(video.video_id)
+                created.append(created_path)
+                logger.info("youtube_etl_artifact_created path={}", created_path)
+            except Exception as exc:
+                logger.exception(
+                    "youtube_etl_video_failed id={} title={} error_type={} error={}",
+                    video.video_id,
+                    video.title,
+                    type(exc).__name__,
+                    exc,
+                )
+                continue
         return created
 
 
