@@ -1,7 +1,7 @@
 # /ingest-paper (Ingestão de documentos formais em papers)
 
 ## Objetivo
-Processar **documentos formais** em **`raw/papers/`** (PDF ou equivalente típico de artigos, capítulos ou relatórios acadêmicos densos), extrair referência no padrão **ABNT**, mapear argumentos centrais e aguardar a validação humana antes de popular o Zettelkasten. Conteúdo informal da internet em Markdown fica em **`raw/articles/`** e usa o skill **`/ingest-article`**; transcrições do YouTube geradas pelo ETL usam **`/ingest-youtube`**.
+Processar **documentos formais** em **`raw/papers/`** (PDF ou equivalente típico de artigos, capítulos ou relatórios acadêmicos densos), extrair referência no padrão **ABNT**, mapear argumentos centrais e aguardar a validação humana antes de popular o Zettelkasten. Conteúdo informal da internet em Markdown fica em **`raw/articles/`** e usa o skill **`/ingest-article`**; transcrições do YouTube geradas pelo ETL ficam em **`raw/youtube/`** e usam **`/ingest-youtube`**.
 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ingest-paper no arquivo raw/papers/[nome_do_arquivo]"` ou `/ingest-paper raw/papers/[nome_do_arquivo]`.
