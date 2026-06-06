@@ -1,4 +1,4 @@
-# Zettelkasten Modular via Gemini CLI
+# ZettelBrain: Zettelkasten Modular via Gemini CLI
 
 ## Visão Geral do Sistema
 Este repositório estabelece a arquitetura oficial para o ecossistema de gestão de conhecimento pessoal e pesquisa acadêmica operado via interface de linha de comando. Adotando o paradigma de **Notas Atômicas em Arquitetura Dissertativa**, o projeto foi desenhado especificamente para suportar o rigor metodológico exigido em modelagem preditiva de risco e análise de indicadores financeiros.
@@ -12,7 +12,7 @@ Esta organização metodológica garante o versionamento seguro de todo o escopo
 Para garantir o funcionamento perfeito do agente local acionado pelo terminal, o repositório reflete a exata árvore de arquivos demonstrada abaixo.
 
 ```text
-llm_zettelkasten/
+zettelbrain/
 ├── README.md
 ├── GEMINI.md
 ├── Manual_Funcionalidades_Agente.md  # Manual de uso e exemplos
@@ -71,9 +71,9 @@ O usuário deve clonar o repositório para o disco local utilizando um cliente d
 Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `GEMINI.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
 
 ### Motor Python Local
-O repositório agora inclui a camada do motor Python previsto na arquitetura: `pyproject.toml`, configuração centralizada em `src/config.py`, logs em `src/logger.py`, ETL de YouTube em `src/ingestion/youtube_etl.py`, linter de integridade estática em `src/zettel_lint.py` e o servidor MCP em `src/mcp/server.py`. As dependências são gerenciadas por `uv`; para preparar o ambiente, execute `uv sync` na raiz do projeto.
+O repositório agora inclui a camada do motor Python previsto na arquitetura: `pyproject.toml`, configuração centralizada em `src/config.py`, logs em `src/logger.py`, ETL de YouTube em `src/ingestion/youtube_etl.py`, linter de integridade estática em `src/zettelbrain_lint.py` e o servidor MCP em `src/mcp/server.py`. As dependências são gerenciadas por `uv`; para preparar o ambiente, execute `uv sync` na raiz do projeto.
 
-O linter de integridade do cofre pode ser executado diretamente pelo terminal via `uv run zettel-lint` (ou `uv run zettel-lint --json` para saídas estruturadas) para validar a saúde de links mortos, órfãos, ligação mínima ao grafo, referências a deprecados e padrões de conhecimento emergentes no Zettelkasten. Para validar o servidor sem iniciar o transporte MCP, rode `uv run python src/mcp/server.py --health-json`.
+O linter de integridade do cofre pode ser executado diretamente pelo terminal via `uv run zettelbrain-lint` ou pelo alias curto `uv run zb-lint` (ou `uv run zettelbrain-lint --json` para saídas estruturadas) para validar a saúde de links mortos, órfãos, ligação mínima ao grafo, referências a deprecados e padrões de conhecimento emergentes no Zettelkasten. Para validar o servidor sem iniciar o transporte MCP, rode `uv run python src/mcp/server.py --health-json`.
 
 ### Embeddings Locais
 O servidor MCP expõe `embedding_health`, `index_zettelkasten_embeddings` e `semantic_search_zettelkasten`. A implementação aceita `EMBEDDING_PROVIDER=hashing` para fallback offline determinístico ou `EMBEDDING_PROVIDER=ollama` para consultar um endpoint local compatível com Ollama, usando `EMBEDDING_MODEL_NAME=nomic-embed-text`.
