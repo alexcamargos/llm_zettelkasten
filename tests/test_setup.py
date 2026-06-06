@@ -299,3 +299,104 @@ def test_configure_cursor_os_error(mocker: MockerFixture) -> None:
 
     exit_code = setup.configure_cursor(mock_repo_root)
     assert exit_code == 1
+
+
+def test_clean_environment_success(mocker: MockerFixture) -> None:
+    """Test clean_environment successfully deletes files and folders.
+
+    Args:
+        mocker: Pytest mocker fixture.
+
+    Returns:
+        None
+    """
+    mock_repo_root = Path("/fake/root")
+    mocker.patch.object(Path, "exists", return_value=True)
+    mock_rmtree = mocker.patch("shutil.rmtree")
+    mock_unlink = mocker.patch.object(Path, "unlink")
+
+    exit_code = setup.clean_environment(mock_repo_root)
+
+    assert exit_code == 0
+    # Should call rmtree twice (.gemini/ and .cursor/)
+    assert mock_rmtree.call_count == 2
+    # Should call unlink twice (.cursorrules and .cursorrules.bak)
+    assert mock_unlink.call_count == 2
+
+
+def test_clean_environment_empty(mocker: MockerFixture) -> None:
+    """Test clean_environment when no tool-specific files exist.
+
+    Args:
+        mocker: Pytest mocker fixture.
+
+    Returns:
+        None
+    """
+    mock_repo_root = Path("/fake/root")
+    mocker.patch.object(Path, "exists", return_value=False)
+    mock_rmtree = mocker.patch("shutil.rmtree")
+    mock_unlink = mocker.patch.object(Path, "unlink")
+
+    exit_code = setup.clean_environment(mock_repo_root)
+
+    assert exit_code == 0
+    mock_rmtree.assert_not_called()
+    mock_unlink.assert_not_called()
+
+
+def test_clean_environment_os_error(mocker: MockerFixture) -> None:
+    """Test clean_environment handles OSError gracefully.
+
+    Args:
+        mocker: Pytest mocker fixture.
+
+    Returns:
+        None
+    """
+    mock_repo_root = Path("/fake/root")
+    mocker.patch.object(Path, "exists", return_value=True)
+    mocker.patch("shutil.rmtree", side_effect=OSError("Permission denied"))
+
+    exit_code = setup.clean_environment(mock_repo_root)
+
+    assert exit_code == 1
+
+
+def test_main_clean_argument(mocker: MockerFixture) -> None:
+    """Test main function executes clean configuration correctly.
+
+    Args:
+        mocker: Pytest mocker fixture.
+
+    Returns:
+        None
+    """
+    mocker.patch.object(sys, "argv", ["setup.py", "clean"])
+    mock_clean = mocker.patch("setup.clean_environment", return_value=0)
+
+    with pytest.raises(SystemExit) as excinfo:
+        setup.main()
+
+    mock_clean.assert_called_once()
+    assert excinfo.value.code == 0
+
+
+def test_main_uninstall_argument(mocker: MockerFixture) -> None:
+    """Test main function executes uninstall configuration correctly.
+
+    Args:
+        mocker: Pytest mocker fixture.
+
+    Returns:
+        None
+    """
+    mocker.patch.object(sys, "argv", ["setup.py", "uninstall"])
+    mock_clean = mocker.patch("setup.clean_environment", return_value=0)
+
+    with pytest.raises(SystemExit) as excinfo:
+        setup.main()
+
+    mock_clean.assert_called_once()
+    assert excinfo.value.code == 0
+
