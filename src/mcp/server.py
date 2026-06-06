@@ -1,6 +1,6 @@
-"""Model Context Protocol (MCP) server for the LLM Zettelkasten project.
+"""Model Context Protocol (MCP) server for the LLM ZettelBrain project.
 
-Exposes tools for searching the Zettelkasten vault, listing/reading markdown
+Exposes tools for searching the ZettelBrain vault, listing/reading markdown
 files, and reading/writing the PageIndex cache for PDF files.
 """
 
@@ -66,8 +66,8 @@ def health() -> dict[str, Any]:
 
 
 @log_skill_execution
-def search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
-    """Perform a hybrid (lexical + semantic qmd fallback) search on the Zettelkasten.
+def search_zettelbrain(query: str, limit: int = 8) -> list[dict[str, Any]]:
+    """Perform a hybrid (lexical + semantic qmd fallback) search on the ZettelBrain.
 
     Args:
         query: The search query text term(s).
@@ -138,8 +138,8 @@ def embedding_health() -> dict[str, Any]:
 
 
 @log_skill_execution
-def index_zettelkasten_embeddings() -> dict[str, Any]:
-    """Rebuild the local embedding index for Markdown files in the Zettelkasten.
+def index_zettelbrain_embeddings() -> dict[str, Any]:
+    """Rebuild the local embedding index for Markdown files in the ZettelBrain.
 
     Returns:
         dict[str, Any]: Summary details of the generated embedding index.
@@ -163,8 +163,8 @@ def index_zettelkasten_embeddings() -> dict[str, Any]:
 
 
 @log_skill_execution
-def semantic_search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, Any]]:
-    """Search the Zettelkasten through the local semantic embedding index.
+def semantic_search_zettelbrain(query: str, limit: int = 8) -> list[dict[str, Any]]:
+    """Search the ZettelBrain through the local semantic embedding index.
 
     Args:
         query: The semantic search query terms.
@@ -189,8 +189,8 @@ def semantic_search_zettelkasten(query: str, limit: int = 8) -> list[dict[str, A
 
 
 @log_skill_execution
-def list_zettelkasten_markdown() -> list[str]:
-    """List all markdown files inside the Zettelkasten folder.
+def list_zettelbrain_markdown() -> list[str]:
+    """List all markdown files inside the ZettelBrain folder.
 
     Returns:
         list[str]: Relative path strings of markdown files.
@@ -203,7 +203,7 @@ def get_semantic_bridge(
     min_similarity: float = 0.05,
     max_similarity: float = 0.4,
 ) -> dict[str, Any]:
-    """Find a pair of semantically distant notes in the Zettelkasten to act as a cognitive bridge.
+    """Find a pair of semantically distant notes in the ZettelBrain to act as a cognitive bridge.
 
     Args:
         min_similarity: Minimum cosine similarity threshold. Defaults to 0.05.
@@ -220,8 +220,8 @@ def get_semantic_bridge(
 
 
 @log_skill_execution
-def read_zettelkasten_markdown(relative_path: str) -> str:
-    """Read the full content of a markdown file in the Zettelkasten.
+def read_zettelbrain_markdown(relative_path: str) -> str:
+    """Read the full content of a markdown file in the ZettelBrain.
 
     Args:
         relative_path: Relative path of the markdown file to read.
@@ -233,8 +233,8 @@ def read_zettelkasten_markdown(relative_path: str) -> str:
 
 
 @log_skill_execution
-def lint_zettelkasten() -> dict[str, Any]:
-    """Executa a auditoria e validacao estatica (linter) do Zettelkasten.
+def lint_zettelbrain() -> dict[str, Any]:
+    """Executa a auditoria e validacao estatica (linter) do ZettelBrain.
 
     Identifica links mortos, notas orfas, ligacao minima ao grafo e padroes
     emergentes de termos destacados em negrito.
@@ -423,15 +423,15 @@ def build_server() -> Any:
 
     server = FastMCP("ZettelBrain")
     server.tool()(health)
-    server.tool()(search_zettelkasten)
+    server.tool()(search_zettelbrain)
     server.tool()(retrieval_health)
     server.tool()(embedding_health)
-    server.tool()(index_zettelkasten_embeddings)
-    server.tool()(semantic_search_zettelkasten)
-    server.tool()(list_zettelkasten_markdown)
+    server.tool()(index_zettelbrain_embeddings)
+    server.tool()(semantic_search_zettelbrain)
+    server.tool()(list_zettelbrain_markdown)
     server.tool()(get_semantic_bridge)
-    server.tool()(read_zettelkasten_markdown)
-    server.tool()(lint_zettelkasten)
+    server.tool()(read_zettelbrain_markdown)
+    server.tool()(lint_zettelbrain)
     server.tool()(inspect_pdf_manifest)
     server.tool()(list_pdf_manifests)
     server.tool()(read_pdf_cache)
