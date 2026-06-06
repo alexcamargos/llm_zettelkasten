@@ -1,7 +1,7 @@
 # /ingest-paper-intro (Triagem da introdução de papers)
 
 ## Objetivo
-Processar exclusivamente a seção introdutória (incluindo o resumo ou abstract) de documentos formais em **`raw/papers/`**. O foco é mapear a viabilidade teórica do documento e extrair os **conceitos iniciais apresentados pelo autor**, permitindo uma triagem antes da leitura integral. Recortes informais da web em **`raw/articles/`** usam **`/ingest-article`** e transcrições do YouTube geradas pelo ETL usam **`/ingest-youtube`** (fluxos distintos).
+Processar exclusivamente a seção introdutória (incluindo o resumo ou abstract) de documentos formais em **`raw/papers/`**. O foco é mapear a viabilidade teórica do documento e extrair os **conceitos iniciais apresentados pelo autor**, permitindo uma triagem antes da leitura integral. Recortes informais da web em **`raw/articles/`** usam **`/ingest-article`** e transcrições do YouTube geradas pelo ETL ficam em **`raw/youtube/`** e usam **`/ingest-youtube`** (fluxos distintos).
 
 ## Gatilho
 Acionado quando o usuário disser `gemini "Execute a skill /ingest-paper-intro no arquivo raw/papers/[nome_do_arquivo]"` ou `/ingest-paper-intro raw/papers/[nome_do_arquivo]`.
