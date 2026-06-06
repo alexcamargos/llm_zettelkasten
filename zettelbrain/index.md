@@ -1,6 +1,6 @@
 # Índice do cofre
 
-Catálogo mestre do Zettelkasten. Mantenha cada linha no formato definido no `ZETTELBRAIN.md` (wikilink sem ID no link, ID entre parênteses quando aplicável). Atualize este arquivo a cada ingestão, síntese ou rascunho relevante.
+Catálogo mestre do ZettelBrain. Mantenha cada linha no formato definido no `ZETTELBRAIN.md` (wikilink sem ID no link, ID entre parênteses quando aplicável). Atualize este arquivo a cada ingestão, síntese ou rascunho relevante.
 
 Para uma leitura panorâmica em prosa do estado do cofre, abra a síntese viva em **[[overview]]** (atualizada pelo `/lint`).
 
