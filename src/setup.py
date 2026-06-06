@@ -7,6 +7,7 @@ for Model Context Protocol (MCP) servers.
 from __future__ import annotations
 
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -223,6 +224,61 @@ def configure_cursor(repo_root: Path) -> int:
 
 
 
+def clean_environment(repo_root: Path) -> int:
+    """Remove all client-specific configurations and rules files.
+
+    Recursively deletes the .gemini and .cursor folders, and deletes the
+    .cursorrules and .cursorrules.bak files from the repository root.
+
+    Args:
+        repo_root: The root path of the repository.
+
+    Returns:
+        int: The exit code (0 for success, 1 for failure).
+    """
+    print("[-] Removendo vinculos e arquivos de configuracao de ferramentas...")
+
+    gemini_dir = repo_root / ".gemini"
+    cursor_dir = repo_root / ".cursor"
+    cursorrules = repo_root / ".cursorrules"
+    cursorrules_bak = repo_root / ".cursorrules.bak"
+
+    try:
+        cleaned = []
+
+        # Delete .gemini directory
+        if gemini_dir.exists():
+            shutil.rmtree(gemini_dir)
+            cleaned.append(f"{gemini_dir.name}/")
+
+        # Delete .cursor directory
+        if cursor_dir.exists():
+            shutil.rmtree(cursor_dir)
+            cleaned.append(f"{cursor_dir.name}/")
+
+        # Delete .cursorrules
+        if cursorrules.exists():
+            cursorrules.unlink()
+            cleaned.append(cursorrules.name)
+
+        # Delete .cursorrules.bak
+        if cursorrules_bak.exists():
+            cursorrules_bak.unlink()
+            cleaned.append(cursorrules_bak.name)
+
+        if cleaned:
+            print(f"[+] Removidos com sucesso: {', '.join(cleaned)}")
+        else:
+            print("[~] Nenhum arquivo ou pasta de configuracao foi encontrado para remover.")
+
+        print("\n[OK] Diretorio limpo e livre de vinculos com ferramentas com sucesso!")
+        return 0
+
+    except OSError as exc:
+        print(f"[ERRO] Erro ao limpar o ambiente: {exc}", file=sys.stderr)
+        return 1
+
+
 def main() -> None:
     """Entry point for the setup utility.
 
@@ -236,7 +292,7 @@ def main() -> None:
 
     if not args:
         print("Erro: Nenhum provedor especificado.", file=sys.stderr)
-        print("Uso: uv run install [gemini|cursor]", file=sys.stderr)
+        print("Uso: uv run install [gemini|cursor|clean]", file=sys.stderr)
         sys.exit(1)
 
     provider = args[0].lower().strip()
@@ -244,11 +300,14 @@ def main() -> None:
         sys.exit(configure_gemini(repo_root))
     elif provider == "cursor":
         sys.exit(configure_cursor(repo_root))
+    elif provider in ("clean", "uninstall"):
+        sys.exit(clean_environment(repo_root))
     else:
         print(f"Erro: Provedor '{provider}' desconhecido.", file=sys.stderr)
-        print("Uso: uv run install [gemini|cursor]", file=sys.stderr)
+        print("Uso: uv run install [gemini|cursor|clean]", file=sys.stderr)
         sys.exit(1)
 
 
 if __name__ == "__main__":
     main()
+
