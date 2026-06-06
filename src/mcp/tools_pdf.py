@@ -425,6 +425,8 @@ def _find_tree_matches(value: Any, *, query: str | None, limit: int) -> list[dic
 
     matches: list[dict[str, Any]] = []
     for node in _walk_json(value):
+        if not isinstance(node, dict):
+            continue
         text = _node_text(node)
         lowered = text.lower()
         score = sum(lowered.count(term) for term in terms)
