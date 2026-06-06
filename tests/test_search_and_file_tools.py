@@ -10,6 +10,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from tools_command import split_command
 from tools_file import list_markdown_files, read_markdown_file
 from tools_search import (
     SearchResult,
@@ -19,6 +20,45 @@ from tools_search import (
     qmd_search,
     retrieval_status,
 )
+
+
+def test_split_command_preserves_windows_absolute_paths(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test Windows command parsing keeps backslash path separators intact.
+
+    Args:
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
+    monkeypatch.setattr("tools_command.os.name", "nt")
+
+    assert split_command(r"C:\Users\Nome\.gemini\qmd --json") == [
+        r"C:\Users\Nome\.gemini\qmd",
+        "--json",
+    ]
+    assert split_command(r'"C:\Program Files\qmd.exe" --json') == [
+        r"C:\Program Files\qmd.exe",
+        "--json",
+    ]
+
+
+def test_split_command_keeps_posix_shell_quoting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test POSIX command parsing remains compatible with quoted arguments.
+
+    Args:
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
+    monkeypatch.setattr("tools_command.os.name", "posix")
+
+    assert split_command("qmd --label 'two words'") == ["qmd", "--label", "two words"]
 
 
 def test_lexical_search_returns_ranked_results(tmp_path: Path) -> None:
@@ -105,6 +145,36 @@ def test_qmd_search_parses_stdout(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     assert len(results) == 1
     assert results[0].path == "a.md"
     assert results[0].engine == "qmd"
+
+
+def test_qmd_search_preserves_windows_command_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test qmd_search preserves Windows absolute executable paths.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+        monkeypatch: Pytest monkeypatch utility fixture.
+
+    Returns:
+        None
+    """
+    captured: dict[str, list[str]] = {}
+    windows_qmd = r"C:\Users\Nome\.gemini\qmd"
+
+    monkeypatch.setattr("tools_command.os.name", "nt")
+    monkeypatch.setattr("tools_search.shutil.which", lambda command: command)
+
+    def fake_run(command: list[str], *_args: object, **_kwargs: object) -> SimpleNamespace:
+        captured["command"] = command
+        return SimpleNamespace(returncode=0, stdout="a.md: trecho encontrado\n")
+
+    monkeypatch.setattr("tools_search.subprocess.run", fake_run)
+
+    qmd_search(tmp_path, "credito", qmd_command=f"{windows_qmd} --profile local")
+
+    assert captured["command"][:3] == [windows_qmd, "--profile", "local"]
 
 
 def test_file_tools_are_limited_to_markdown_inside_root(tmp_path: Path) -> None:
