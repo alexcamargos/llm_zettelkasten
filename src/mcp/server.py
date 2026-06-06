@@ -232,6 +232,20 @@ def read_zettelkasten_markdown(relative_path: str) -> str:
 
 
 @log_skill_execution
+def lint_zettelkasten() -> dict[str, Any]:
+    """Executa a auditoria e validacao estatica (linter) do Zettelkasten.
+
+    Identifica links mortos, notas orfas, ligacao minima ao grafo e padroes
+    emergentes de termos destacados em negrito.
+
+    Returns:
+        dict[str, Any]: Estrutura com os resultados do linting.
+    """
+    from zettel_lint import run_lint_logic
+    return run_lint_logic()
+
+
+@log_skill_execution
 def inspect_pdf_manifest(source_path: str) -> dict[str, Any]:
     """Search and inspect the PageIndex manifest for a given PDF path.
 
@@ -416,6 +430,7 @@ def build_server() -> Any:
     server.tool()(list_zettelkasten_markdown)
     server.tool()(get_semantic_bridge)
     server.tool()(read_zettelkasten_markdown)
+    server.tool()(lint_zettelkasten)
     server.tool()(inspect_pdf_manifest)
     server.tool()(list_pdf_manifests)
     server.tool()(read_pdf_cache)
