@@ -341,9 +341,7 @@ def _bm25_score(
         inverse_document_frequency = log(
             1 + (document_count - frequency_in_corpus + 0.5) / (frequency_in_corpus + 0.5)
         )
-        denominator = frequency + k1 * (
-            1 - b + b * (document_length / max(average_length, 1.0))
-        )
+        denominator = frequency + k1 * (1 - b + b * (document_length / max(average_length, 1.0)))
         score += inverse_document_frequency * ((frequency * (k1 + 1)) / denominator)
 
     return round(score, 6)
