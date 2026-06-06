@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import random
 import re
 import urllib.error
 import urllib.request
@@ -670,3 +671,99 @@ def _tokenize(text: str) -> list[str]:
         for token in re.findall(r"\w+", text)
         if len(token) >= MIN_TOKEN_LENGTH
     ]
+
+
+def _extract_title(path: Path) -> str:
+    """Extract title from a Markdown file by checking its H1 header or path name.
+
+    Args:
+        path: Path to the markdown file.
+
+    Returns:
+        str: Extracted title.
+    """
+    if not path.exists():
+        return path.name
+    try:
+        content = path.read_text(encoding="utf-8", errors="ignore")
+        match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
+        if match:
+            return match.group(1).strip()
+        yaml_match = re.search(r"title:\s*\"?([^\n\"]+)\"?", content)
+        if yaml_match:
+            return yaml_match.group(1).strip()
+    except Exception:
+        pass
+    return path.stem
+
+
+def find_semantic_bridge(
+    index_path: Path,
+    *,
+    min_similarity: float = 0.05,
+    max_similarity: float = 0.4,
+) -> dict[str, Any]:
+    """Find a pair of semantically distant documents in the index to act as a cognitive bridge.
+
+    Args:
+        index_path: The absolute path to the local embedding index JSON file.
+        min_similarity: Minimum cosine similarity threshold (to avoid completely unrelated docs).
+            Defaults to 0.05.
+        max_similarity: Maximum cosine similarity threshold (to ensure they are semantically distant).
+            Defaults to 0.4.
+
+    Returns:
+        dict[str, Any]: A dictionary containing details of the two bridge notes, their similarity score,
+            and excerpts, or an error/status message if no bridge could be found.
+
+    Raises:
+        FileNotFoundError: If the index file does not exist.
+    """
+    index = _load_index(index_path)
+    if index is None:
+        raise FileNotFoundError(f"Arquivo de índice não encontrado em: {index_path}")
+
+    documents = index.get("documents", [])
+    if len(documents) < 2:
+        return {
+            "status": "error",
+            "message": "Documentos insuficientes no índice para estabelecer uma ponte semântica.",
+        }
+
+    root = Path(index.get("root", ""))
+
+    pairs = []
+    for i in range(len(documents)):
+        for j in range(i + 1, len(documents)):
+            similarity = cosine_similarity(
+                documents[i]["embedding"], documents[j]["embedding"]
+            )
+            if min_similarity <= similarity <= max_similarity:
+                pairs.append((documents[i], documents[j], similarity))
+
+    if not pairs:
+        return {
+            "status": "no_bridge_found",
+            "message": (
+                f"Não foram encontradas notas no intervalo de similaridade "
+                f"[{min_similarity}, {max_similarity}]."
+            ),
+        }
+
+    doc_a, doc_b, similarity = random.choice(pairs)
+    path_a = root / doc_a["path"]
+    path_b = root / doc_b["path"]
+
+    return {
+        "status": "success",
+        "similarity": round(similarity, 6),
+        "note_a": {
+            "path": doc_a["path"],
+            "title": _extract_title(path_a),
+        },
+        "note_b": {
+            "path": doc_b["path"],
+            "title": _extract_title(path_b),
+        },
+    }
+
