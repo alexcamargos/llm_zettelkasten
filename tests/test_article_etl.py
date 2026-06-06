@@ -44,7 +44,7 @@ def test_slugify() -> None:
     """
     assert slugify("Meu Artigo Especial! 123") == "meu-artigo-especial-123"
     assert slugify("Python -- Ingestion ETL") == "python-ingestion-etl"
-    assert slugify("") == "artigo"
+    assert slugify("") == "article"
 
 
 def test_fetch_and_clean_article_success(mocker: Any) -> None:
@@ -115,7 +115,7 @@ def test_fetch_and_clean_article_empty_url_raises_error() -> None:
     Raises:
         ValueError: When the URL is empty.
     """
-    with pytest.raises(ValueError, match="A URL do artigo não pode ser vazia."):
+    with pytest.raises(ValueError, match="Article URL cannot be empty."):
         fetch_and_clean_article("   ")
 
 
