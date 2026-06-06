@@ -160,7 +160,7 @@ def test_configure_cursor_success(mocker: MockerFixture) -> None:
     # Verify concatenated content in .cursorrules write call
     compiled_rules_call = mock_write.call_args_list[1][0][0]
     assert "Master rules content" in compiled_rules_call
-    assert "# Workflow de Skills Integradas" in compiled_rules_call
+    assert "# Integrated Skills Workflow" in compiled_rules_call
     assert "Start workflow" in compiled_rules_call
     assert "Recall workflow" in compiled_rules_call
 
