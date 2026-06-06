@@ -1,1 +1,1 @@
-"""LLM Zettelkasten local automation package."""
+"""LLM ZettelBrain local automation package."""
