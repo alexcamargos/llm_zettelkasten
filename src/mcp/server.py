@@ -41,6 +41,7 @@ from tools_pdf import (
 from tools_search import SearchResult, hybrid_search, merge_search_results, retrieval_status
 
 from config import load_settings
+from ingestion.article_etl import save_raw_article
 from logger import configure_logging, log_skill_execution
 
 settings = load_settings()
@@ -413,6 +414,40 @@ def estimate_pdf_processing(relative_path: str) -> dict[str, Any]:
     )
 
 
+@log_skill_execution
+def ingest_web_article(url: str, filename: str | None = None) -> dict[str, Any]:
+    """Ingest a web article from a URL and save it to raw/articles/ as Markdown.
+
+    Args:
+        url: The absolute HTTP/HTTPS URL of the web article.
+        filename: Optional custom filename to save the article under.
+
+    Returns:
+        dict[str, Any]: A dictionary representing the outcome of the ingestion,
+            containing keys such as 'status', 'output_path', and 'error' if any.
+    """
+    try:
+        saved_path = save_raw_article(
+            url=url,
+            raw_articles_path=settings.raw_articles_path,
+            filename=filename,
+        )
+        if saved_path:
+            return {
+                "status": "success",
+                "output_path": str(saved_path.relative_to(settings.vault_path)).replace("\\", "/"),
+            }
+        return {
+            "status": "error",
+            "error": "Falha na extração de conteúdo do artigo.",
+        }
+    except Exception as exc:
+        return {
+            "status": "error",
+            "error": str(exc),
+        }
+
+
 def build_server() -> Any:
     """Build and configure the FastMCP server instance.
 
@@ -447,6 +482,7 @@ def build_server() -> Any:
     server.tool()(index_pdf_cache)
     server.tool()(compute_pdf_sha256)
     server.tool()(estimate_pdf_processing)
+    server.tool()(ingest_web_article)
     return server
 
 
