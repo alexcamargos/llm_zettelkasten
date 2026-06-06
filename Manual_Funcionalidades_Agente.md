@@ -1,6 +1,6 @@
-# Manual Oficial de Referência: Skills e Funcionalidades do Agente Zettelkasten
+# Manual Oficial de Referência: Skills e Funcionalidades do ZettelBrain
 
-Este manual serve como o guia definitivo para operação, comandos, casos de uso e exemplos práticos de todas as 13 habilidades (*skills*) e motores locais implementados no ecossistema **llm_zettelkasten**.
+Este manual serve como o guia definitivo para operação, comandos, casos de uso e exemplos práticos de todas as 13 habilidades (*skills*) e motores locais implementados no ecossistema **zettelbrain**.
 
 ---
 
@@ -206,9 +206,9 @@ flowchart TD
 *   **Arquivo de Regras:** [lint.md](.gemini/skills/lint.md)
 *   **Objetivo:** Auditar a integridade estrutural das notas, encontrar links mortos, notas órfãs, e **regenerar a síntese viva** em [overview.md](zettelkasten/overview.md).
 *   **Caso de Uso:** Executar periodicamente para auditar a qualidade técnica da base e documentar anomalias.
-*   **Gatilho:** `/lint zettelkasten/` ou via terminal direta `uv run zettel-lint`.
+*   **Gatilho:** `/lint zettelkasten/` ou via terminal direta `uv run zettelbrain-lint` (ou alias `uv run zb-lint`).
 *   **Funcionamento Híbrido Determinístico:**
-    - A varredura de integridade estrutural e busca por links mortos, órfãos conceituais, ligação mínima e padrões emergentes é realizada localmente pelo script Python nativo `zettel_lint.py` (via ferramenta MCP `lint_zettelkasten()`), evitando ler todos os arquivos da base na chamada de LLM.
+    - A varredura de integridade estrutural e busca por links mortos, órfãos conceituais, ligação mínima e padrões emergentes é realizada localmente pelo script Python nativo `zettelbrain_lint.py` (via ferramenta MCP `lint_zettelkasten()`), evitando ler todos os arquivos da base na chamada de LLM.
     - A IA atua de forma focada apenas para a auditoria conceitual qualitativa (Etapa 2) e para a redação formal do relatório acadêmico final e do `overview.md`.
 *   **Saídas:**
     *   Regenera o arquivo [overview.md](zettelkasten/overview.md).
