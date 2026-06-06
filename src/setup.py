@@ -34,7 +34,7 @@ def configure_gemini(repo_root: Path) -> int:
     Returns:
         int: The exit code (0 for success, 1 for failure).
     """
-    print("[-] Configurando o ambiente para o Gemini CLI...")
+    print("[-] Configuring the Gemini CLI environment...")
 
     try:
         # Ensure .gemini/settings.json exists
@@ -57,10 +57,10 @@ def configure_gemini(repo_root: Path) -> int:
                 json.dumps(default_settings, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            print(f"[+] Arquivo de configuracao criado em: {settings_file.relative_to(repo_root)}")
+            print(f"[+] Configuration file created at: {settings_file.relative_to(repo_root)}")
         else:
             print(
-                "[~] Arquivo de configuracao ja existente em: "
+                "[~] Configuration file already exists at: "
                 f"{settings_file.relative_to(repo_root)}"
             )
 
@@ -77,8 +77,8 @@ def configure_gemini(repo_root: Path) -> int:
                 dest_file.write_text(src_file.read_text(encoding="utf-8"), encoding="utf-8")
                 copied_count += 1
             print(
-                "[+] Sincronizadas "
-                f"{copied_count} skills para {gemini_skills_dir.relative_to(repo_root)}"
+                "[+] Synchronized "
+                f"{copied_count} skills to {gemini_skills_dir.relative_to(repo_root)}"
             )
 
             # Clean up orphan skills
@@ -90,11 +90,11 @@ def configure_gemini(repo_root: Path) -> int:
                     removed_count += 1
             if removed_count > 0:
                 print(
-                    "[+] Removidas "
-                    f"{removed_count} skills orfas de {gemini_skills_dir.relative_to(repo_root)}"
+                    "[+] Removed "
+                    f"{removed_count} orphan skills from {gemini_skills_dir.relative_to(repo_root)}"
                 )
         else:
-            print("[!] Aviso: Pasta de skills mestre nao encontrada na raiz do projeto.")
+            print("[!] Warning: master skills folder not found at the project root.")
 
         # Deactivate .cursorrules to prevent agent confusion in Gemini CLI
         cursorrules = repo_root / ".cursorrules"
@@ -103,14 +103,14 @@ def configure_gemini(repo_root: Path) -> int:
             if cursorrules_bak.exists():
                 cursorrules_bak.unlink()
             cursorrules.rename(cursorrules_bak)
-            print(f"[+] Regras do Cursor desativadas: {cursorrules.name} -> {cursorrules_bak.name}")
+            print(f"[+] Cursor rules disabled: {cursorrules.name} -> {cursorrules_bak.name}")
 
-        print("\n[OK] Ambiente do Gemini CLI configurado com sucesso!")
-        print("    -> Execute o seu agente Gemini CLI normalmente.")
+        print("\n[OK] Gemini CLI environment configured successfully!")
+        print("    -> Run your Gemini CLI agent normally.")
         return 0
 
     except OSError as exc:
-        print(f"[ERRO] Erro ao configurar o ambiente Gemini CLI: {exc}", file=sys.stderr)
+        print(f"[ERROR] Failed to configure the Gemini CLI environment: {exc}", file=sys.stderr)
         return 1
 
 
@@ -127,7 +127,7 @@ def configure_cursor(repo_root: Path) -> int:
     Returns:
         int: The exit code (0 for success, 1 for failure).
     """
-    print("[-] Configurando o ambiente para o Cursor IDE...")
+    print("[-] Configuring the Cursor IDE environment...")
 
     try:
         # Ensure .cursor/mcp.json exists
@@ -149,9 +149,9 @@ def configure_cursor(repo_root: Path) -> int:
                 json.dumps(default_mcp, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            print(f"[+] Arquivo MCP do Cursor criado em: {mcp_file.relative_to(repo_root)}")
+            print(f"[+] Cursor MCP file created at: {mcp_file.relative_to(repo_root)}")
         else:
-            print(f"[~] Arquivo MCP do Cursor ja existente em: {mcp_file.relative_to(repo_root)}")
+            print(f"[~] Cursor MCP file already exists at: {mcp_file.relative_to(repo_root)}")
 
         # Compile ZETTELBRAIN.md + all files in skills/ into .cursorrules
         master_rules = repo_root / "ZETTELBRAIN.md"
@@ -175,27 +175,27 @@ def configure_cursor(repo_root: Path) -> int:
 
             full_content = rules_content
             if skills_content:
-                full_content += "\n\n---\n\n# Workflow de Skills Integradas\n\n"
+                full_content += "\n\n---\n\n# Integrated Skills Workflow\n\n"
                 full_content += "\n\n---\n\n".join(skills_content)
 
             cursorrules.write_text(full_content, encoding="utf-8")
             print(
-                "[+] Regras compiladas com sucesso: "
+                "[+] Rules compiled successfully: "
                 f"{master_rules.name} + skills/ -> {cursorrules.name}"
             )
         else:
             print(
-                "[!] Aviso: ZETTELBRAIN.md nao encontrado na raiz do projeto. "
-                "Nao foi possivel gerar as regras do Cursor."
+                "[!] Warning: ZETTELBRAIN.md was not found at the project root. "
+                "Could not generate Cursor rules."
             )
 
-        print("\n[OK] Ambiente do Cursor IDE configurado com sucesso!")
-        print("    -> Abra o Cursor e configure o MCP em Cursor Settings > Features > MCP.")
-        print(f"       Use o arquivo {mcp_file.relative_to(repo_root)} como referencia.")
+        print("\n[OK] Cursor IDE environment configured successfully!")
+        print("    -> Open Cursor and configure MCP in Cursor Settings > Features > MCP.")
+        print(f"       Use {mcp_file.relative_to(repo_root)} as a reference.")
         return 0
 
     except OSError as exc:
-        print(f"[ERRO] Erro ao configurar o ambiente Cursor: {exc}", file=sys.stderr)
+        print(f"[ERROR] Failed to configure the Cursor environment: {exc}", file=sys.stderr)
         return 1
 
 
@@ -211,7 +211,7 @@ def clean_environment(repo_root: Path) -> int:
     Returns:
         int: The exit code (0 for success, 1 for failure).
     """
-    print("[-] Removendo vinculos e arquivos de configuracao de ferramentas...")
+    print("[-] Removing tool links and configuration files...")
 
     gemini_dir = repo_root / ".gemini"
     cursor_dir = repo_root / ".cursor"
@@ -242,15 +242,15 @@ def clean_environment(repo_root: Path) -> int:
             cleaned.append(cursorrules_bak.name)
 
         if cleaned:
-            print(f"[+] Removidos com sucesso: {', '.join(cleaned)}")
+            print(f"[+] Successfully removed: {', '.join(cleaned)}")
         else:
-            print("[~] Nenhum arquivo ou pasta de configuracao foi encontrado para remover.")
+            print("[~] No configuration files or folders were found to remove.")
 
-        print("\n[OK] Diretorio limpo e livre de vinculos com ferramentas com sucesso!")
+        print("\n[OK] Directory cleaned successfully and detached from tool links!")
         return 0
 
     except OSError as exc:
-        print(f"[ERRO] Erro ao limpar o ambiente: {exc}", file=sys.stderr)
+        print(f"[ERROR] Failed to clean the environment: {exc}", file=sys.stderr)
         return 1
 
 
