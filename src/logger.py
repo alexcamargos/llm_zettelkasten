@@ -1,4 +1,4 @@
-"""Logging configuration module for the LLM Zettelkasten project.
+"""Logging configuration module for the LLM ZettelBrain project.
 
 Sets up structured logging using either `loguru` (if installed) or fallback
 to the standard library's `logging` module. Provides decorators to instrument
@@ -33,7 +33,7 @@ def configure_logging(logs_path: Path) -> Any:
         Any: A loguru logger instance or a standard logging Logger instance.
     """
     logs_path.mkdir(parents=True, exist_ok=True)
-    log_file = logs_path / "zettelkasten.log"
+    log_file = logs_path / "zettelbrain.log"
 
     if _logger is not None:
         _logger.remove()
