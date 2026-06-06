@@ -15,6 +15,7 @@ dependencies = [
 [project.scripts]
 zettel-mcp = "zettel_mcp:main"
 zettel-youtube-etl = "ingestion.youtube_etl:main"
+zettel-lint = "zettel_lint:main"
 install = "setup:main"
 
 
