@@ -14,7 +14,7 @@ Para garantir o funcionamento perfeito do agente local acionado pelo terminal, o
 ```text
 zettelbrain/
 ├── README.md
-├── GEMINI.md
+├── ZETTELBRAIN.md
 ├── Manual_Funcionalidades_Agente.md  # Manual de uso e exemplos
 ├── .gitignore
 ├── .pageindex/
@@ -68,7 +68,7 @@ A inicialização em um novo ambiente resume-se a clonar o repositório, instala
 O usuário deve clonar o repositório para o disco local utilizando um cliente de controle de versão. A árvore de pastas versionada (`raw/`, `zettelkasten/`, `.state/`) já vem preparada para uso imediato; adicione PDFs formais em `raw/papers/` (skills `/ingest-paper` e `/ingest-paper-intro`), recortes informais da web em Markdown em `raw/articles/` (skill `/ingest-article`) e transcrições geradas pelo ETL de YouTube em `raw/articles/` (skill `/ingest-youtube`).
 
 ### Gemini CLI
-Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `GEMINI.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
+Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `ZETTELBRAIN.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
 
 ### Motor Python Local
 O repositório agora inclui a camada do motor Python previsto na arquitetura: `pyproject.toml`, configuração centralizada em `src/config.py`, logs em `src/logger.py`, ETL de YouTube em `src/ingestion/youtube_etl.py`, linter de integridade estática em `src/zettelbrain_lint.py` e o servidor MCP em `src/mcp/server.py`. As dependências são gerenciadas por `uv`; para preparar o ambiente, execute `uv sync` na raiz do projeto.
@@ -83,7 +83,7 @@ O projeto agora suporta recursos avançados de atrito semântico, reconciliaçã
 - **Ponte Semântica (`/bridge`):** Localiza notas com baixa similaridade no cofre e estimula conexões interdisciplinares.
 - **Pesquisa Científica Profunda (`/research-deep`):** Conecta a bases de preprints e publicações (arXiv, OpenAlex) para suprir lacunas teóricas.
 - **Colheita de Sessão (Harvesting):** Executado automaticamente no `/close` para transformar insights de chat em rascunhos de notas.
-- **Auto-Reconciliação:** Mecanismo obrigatório de checagem contra redundâncias conceituais no cofre (registrado em `GEMINI.md`).
+- **Auto-Reconciliação:** Mecanismo obrigatório de checagem contra redundâncias conceituais no cofre (registrado em `ZETTELBRAIN.md`).
 
 Para uma explicação detalhada e exemplos práticos de uso dessas funcionalidades, consulte o documento:
 *   [Manual_Funcionalidades_Agente.md](Manual_Funcionalidades_Agente.md)
