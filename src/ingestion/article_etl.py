@@ -1,0 +1,191 @@
+"""Web article ETL pipeline.
+
+This module automates the fetching and cleaning of web articles from HTTP/HTTPS URLs
+using the trafilatura library. It extracts main text as Markdown, pulls structural
+metadata, and writes the output with YAML front matter into the raw articles directory.
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import unicodedata
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+import trafilatura
+
+from config import load_settings
+from logger import configure_logging, get_logger
+
+
+def fetch_and_clean_article(url: str) -> dict[str, Any] | None:
+    """Downloads a webpage and extracts its main body content and metadata.
+
+    Args:
+        url: The absolute HTTP/HTTPS URL of the web article.
+
+    Returns:
+        A dictionary containing extracted metadata and Markdown content, or
+        None if the download or extraction fails. The returned dictionary has
+        the following keys: 'title', 'author', 'date', 'url', 'content'.
+
+    Raises:
+        ValueError: If the provided URL is empty or invalid.
+    """
+    if not url.strip():
+        raise ValueError("A URL do artigo não pode ser vazia.")
+
+    get_logger().info("Baixando artigo a partir da URL: {}", url)
+    downloaded = trafilatura.fetch_url(url)
+    if not downloaded:
+        get_logger().error("Falha ao baixar o conteúdo da URL: {}", url)
+        return None
+
+    # Extrai metadados do documento
+    metadata = trafilatura.extract_metadata(downloaded)
+
+    # Extrai o conteúdo do artigo principal formatado como Markdown
+    markdown_content = trafilatura.extract(
+        downloaded,
+        output_format="markdown",
+        include_comments=False,
+        include_tables=True,
+    )
+
+    if not markdown_content:
+        get_logger().error("Falha ao extrair o conteúdo textual útil da URL: {}", url)
+        return None
+
+    title = metadata.title if metadata and metadata.title else "Sem título"
+    author = metadata.author if metadata and metadata.author else "Autor desconhecido"
+    date = metadata.date if metadata and metadata.date else "Data desconhecida"
+
+    return {
+        "title": title,
+        "author": author,
+        "date": date,
+        "url": url,
+        "content": markdown_content,
+    }
+
+
+def slugify(value: str) -> str:
+    """Converts a string to a filesystem-safe slug representation.
+
+    Args:
+        value: Input string to slugify.
+
+    Returns:
+        A slugified string containing only lowercase letters, numbers, and hyphens.
+    """
+    # Decompõe caracteres acentuados em caractere básico + sinal de acento e remove os acentos
+    normalized = unicodedata.normalize("NFKD", value)
+    ascii_encoded = normalized.encode("ascii", "ignore").decode("ascii")
+    
+    slug = ascii_encoded.lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    slug = re.sub(r"-{2,}", "-", slug).strip("-")
+    return slug[:80] or "artigo"
+
+
+def save_raw_article(
+    url: str,
+    raw_articles_path: Path,
+    filename: str | None = None,
+) -> Path | None:
+    """Fetches web article content and saves it as a Markdown file with YAML metadata.
+
+    Args:
+        url: The absolute HTTP/HTTPS URL of the web article.
+        raw_articles_path: Target directory path for storing raw articles.
+        filename: Optional output filename (e.g., 'artigo.md'). If omitted, a
+            filename is generated automatically based on the article's title.
+
+    Returns:
+        The Path to the saved Markdown file, or None if extraction fails.
+    """
+    data = fetch_and_clean_article(url)
+    if not data:
+        return None
+
+    raw_articles_path.mkdir(parents=True, exist_ok=True)
+
+    if not filename:
+        slug = slugify(data["title"])
+        filename = f"web-{slug}.md"
+    elif not filename.endswith(".md"):
+        filename = f"{filename}.md"
+
+    output_path = raw_articles_path / filename
+    retrieved_at = datetime.now(UTC).isoformat(timespec="seconds")
+
+    # Escapa aspas e barras invertidas para o YAML front matter
+    escaped_title = data["title"].replace("\\", "\\\\").replace('"', '\\"')
+    escaped_author = data["author"].replace("\\", "\\\\").replace('"', '\\"')
+
+    lines = [
+        "---",
+        f'title: "{escaped_title}"',
+        f'author: "{escaped_author}"',
+        f'published_at: "{data["date"]}"',
+        f'url: "{url}"',
+        f'retrieved_at: "{retrieved_at}"',
+        "source_kind: web_article",
+        "---",
+        "",
+        f"# {data['title']}",
+        "",
+        "Conteúdo extraído automaticamente da web. Este arquivo deve ser processado "
+        "pelo fluxo `/ingest-article` antes de entrar no cofre ZettelBrain.",
+        "",
+        data["content"],
+    ]
+
+    content_to_write = "\n".join(lines).rstrip() + "\n"
+    output_path.write_text(content_to_write, encoding="utf-8", newline="\n")
+
+    get_logger().info("Artigo salvo com sucesso em: {}", output_path)
+    return output_path
+
+
+def main() -> None:
+    """CLI entry point for the Web Article ETL pipeline.
+
+    Parses CLI arguments, loads settings, and runs the extraction and saving processes.
+    """
+    parser = argparse.ArgumentParser(
+        description="Ingere um artigo da web e salva em formato Markdown limpo."
+    )
+    parser.add_argument(
+        "--url",
+        type=str,
+        required=True,
+        help="A URL do artigo da web para processamento.",
+    )
+    parser.add_argument(
+        "--filename",
+        type=str,
+        default=None,
+        help="Nome personalizado do arquivo a ser salvo (ex: meu-artigo.md).",
+    )
+    args = parser.parse_args()
+
+    settings = load_settings()
+    configure_logging(settings.logs_path)
+
+    saved_path = save_raw_article(
+        url=args.url,
+        raw_articles_path=settings.raw_articles_path,
+        filename=args.filename,
+    )
+
+    if saved_path:
+        get_logger().info("ETL do artigo concluído com sucesso.")
+    else:
+        get_logger().error("Falha no ETL do artigo.")
+
+
+if __name__ == "__main__":
+    main()
