@@ -20,7 +20,7 @@ if str(SRC_ROOT) not in sys.path:
 if str(MCP_TOOLS_ROOT) not in sys.path:
     sys.path.insert(0, str(MCP_TOOLS_ROOT))
 
-from tools_embeddings import build_embedding_index, embedding_status, semantic_search
+from tools_embeddings import build_embedding_index, embedding_status, find_semantic_bridge, semantic_search
 from tools_file import list_markdown_files, read_markdown_file
 from tools_pdf import (
     find_pageindex_manifest,
@@ -194,6 +194,27 @@ def list_zettelkasten_markdown() -> list[str]:
         list[str]: Relative path strings of markdown files.
     """
     return list_markdown_files(settings.zettelkasten_path)
+
+
+@log_skill_execution
+def get_semantic_bridge(
+    min_similarity: float = 0.05,
+    max_similarity: float = 0.4,
+) -> dict[str, Any]:
+    """Find a pair of semantically distant notes in the Zettelkasten to act as a cognitive bridge.
+
+    Args:
+        min_similarity: Minimum cosine similarity threshold. Defaults to 0.05.
+        max_similarity: Maximum cosine similarity threshold. Defaults to 0.4.
+
+    Returns:
+        dict[str, Any]: Details of the two bridge notes, similarity score, titles, or status.
+    """
+    return find_semantic_bridge(
+        settings.embedding_index_path,
+        min_similarity=min_similarity,
+        max_similarity=max_similarity,
+    )
 
 
 @log_skill_execution
@@ -374,6 +395,7 @@ def build_server() -> Any:
     server.tool()(index_zettelkasten_embeddings)
     server.tool()(semantic_search_zettelkasten)
     server.tool()(list_zettelkasten_markdown)
+    server.tool()(get_semantic_bridge)
     server.tool()(read_zettelkasten_markdown)
     server.tool()(inspect_pdf_manifest)
     server.tool()(list_pdf_manifests)
