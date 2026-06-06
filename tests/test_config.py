@@ -23,6 +23,7 @@ def test_load_settings_from_env_file(tmp_path: Path, monkeypatch: pytest.MonkeyP
         None
     """
     (tmp_path / "raw" / "articles").mkdir(parents=True)
+    (tmp_path / "raw" / "youtube").mkdir(parents=True)
     (tmp_path / "raw" / "papers").mkdir(parents=True)
     (tmp_path / "zettelkasten").mkdir()
     env_file = tmp_path / ".env"
@@ -43,6 +44,7 @@ def test_load_settings_from_env_file(tmp_path: Path, monkeypatch: pytest.MonkeyP
     assert settings.vault_path == tmp_path.resolve()
     assert settings.youtube_playlist_id == "PL_TESTE"
     assert settings.raw_articles_path == (tmp_path / "raw" / "articles").resolve()
+    assert settings.raw_youtube_path == (tmp_path / "raw" / "youtube").resolve()
     assert settings.pageindex_command is None
     assert settings.embedding_provider == "hashing"
     assert settings.embedding_endpoint == "http://localhost:11434/api/embeddings"
@@ -63,6 +65,7 @@ def test_load_settings_requires_youtube_when_requested(
         None
     """
     (tmp_path / "raw" / "articles").mkdir(parents=True)
+    (tmp_path / "raw" / "youtube").mkdir(parents=True)
     (tmp_path / "raw" / "papers").mkdir(parents=True)
     (tmp_path / "zettelkasten").mkdir()
     env_file = tmp_path / ".env"
