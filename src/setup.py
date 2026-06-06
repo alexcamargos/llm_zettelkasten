@@ -118,7 +118,7 @@ def configure_cursor(repo_root: Path) -> int:
     """Configure settings for the Cursor IDE client.
 
     Creates the .cursor directory and mcp.json if missing, and compiles the
-    master rules (GEMINI.md) along with all workflows from the skills/ folder
+    master rules (ZETTELBRAIN.md) along with all workflows from the skills/ folder
     into a single .cursorrules file.
 
     Args:
@@ -153,8 +153,8 @@ def configure_cursor(repo_root: Path) -> int:
         else:
             print(f"[~] Arquivo MCP do Cursor ja existente em: {mcp_file.relative_to(repo_root)}")
 
-        # Compile GEMINI.md + all files in skills/ into .cursorrules
-        master_rules = repo_root / "GEMINI.md"
+        # Compile ZETTELBRAIN.md + all files in skills/ into .cursorrules
+        master_rules = repo_root / "ZETTELBRAIN.md"
         cursorrules = repo_root / ".cursorrules"
         cursorrules_bak = repo_root / ".cursorrules.bak"
 
@@ -185,7 +185,7 @@ def configure_cursor(repo_root: Path) -> int:
             )
         else:
             print(
-                "[!] Aviso: GEMINI.md nao encontrado na raiz do projeto. "
+                "[!] Aviso: ZETTELBRAIN.md nao encontrado na raiz do projeto. "
                 "Nao foi possivel gerar as regras do Cursor."
             )
 
