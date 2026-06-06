@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shlex
 import shutil
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+from tools_command import split_command
 
 try:
     from docling.document_converter import DocumentConverter  # type: ignore
@@ -174,7 +175,8 @@ def index_pdf_with_command(
             "document_id": sha256_file(pdf_path),
         }
 
-    executable = shlex.split(pageindex_command)[0]
+    command_args = split_command(pageindex_command)
+    executable = command_args[0]
     if shutil.which(executable) is None:
         return {
             "indexed": False,
@@ -183,7 +185,7 @@ def index_pdf_with_command(
             "document_id": sha256_file(pdf_path),
         }
 
-    command = [*shlex.split(pageindex_command), str(pdf_path)]
+    command = [*command_args, str(pdf_path)]
     try:
         completed = subprocess.run(
             command,
