@@ -1,104 +1,59 @@
+# Caches e artefatos Python.
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.pytest-tmp/
+.tmp/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.ipynb_checkpoints/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Empacotamento, builds e distribuicao.
+*.egg-info/
+.eggs/
+build/
+dist/
+wheels/
+*.egg
+
+# Arquivos especificos de Sistema Operacional (Windows, Linux, macOS)
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ==========================================
+# Objetos especificos do projeto
+# ==========================================
+
 # Cache PageIndex: artefatos gerados localmente (arvore e manifest) nao entram no Git.
 .pageindex/*
 !.pageindex/.gitkeep
 
-### Python ###
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-
-# Environments
+# Ambiente e segredos locais.
 .env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+.venv/
+.venv-codex/
+.uv-cache/
 
 # Logs e estado gerado pelo motor Python.
 logs/
 .state/historico_ingestao.txt
-
-# Caches e artefatos Python.
-__pycache__/
-.pytest_cache/
-.pytest-tmp/
-.ruff_cache/
-*.egg-info/
-
-
-### Windows ###
-# Windows thumbnail cache files
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-
-# Dump file
-*.stackdump
-
-# Folder config file
-[Dd]esktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk
+.state/embeddings_index.json
