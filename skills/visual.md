@@ -18,14 +18,14 @@ De acordo com a solicitação, execute estritamente uma das rotinas abaixo:
 
 **A. Para gráficos e fluxogramas (Mermaid):**
 1. Escreva o diagrama em **Mermaid** (linguagem de diagramas, não confundir com o pacote JavaScript `mermaid` usado por renderizadores). Inclua o código dentro de um fence Markdown com rótulo `mermaid` na primeira linha após as três crases de abertura, para que editores como o Obsidian renderizem corretamente fluxos, arquiteturas de dados, árvores de decisão ou métricas.
-2. Salve o conteúdo completo da nota (texto explicativo conforme Etapa 3 mais o fence Mermaid) em um novo arquivo Markdown em `zettelkasten/visual/fluxograma-[tópico].md`.
+2. Salve o conteúdo completo da nota (texto explicativo conforme Etapa 3 mais o fence Mermaid) em um novo arquivo Markdown em `zettelbrain/visual/fluxograma-[tópico].md`.
 
 **B. Para imagens descritivas:**
-1. Descreva um prompt de geração de imagem altamente técnico, ou gere o arquivo e proceda com o salvamento no diretório padrão de anexos `zettelkasten/assets/`.
+1. Descreva um prompt de geração de imagem altamente técnico, ou gere o arquivo e proceda com o salvamento no diretório padrão de anexos `zettelbrain/assets/`.
 
 **C. Para slides (Marp):**
 1. Gere o conteúdo no formato **Marp** (separadores de slide e metadados conforme a sintaxe Marp e a convenção do projeto; evite confundir com o frontmatter YAML das notas Zettelkasten em outros diretórios).
-2. Salve o arquivo em `zettelkasten/presentations/apresentacao-[tópico].md`. O texto explicativo de apoio segue a Etapa 3 na mesma nota ou em nota irmã em `zettelkasten/visual/`, conforme fizer sentido para o cofre.
+2. Salve o arquivo em `zettelbrain/presentations/apresentacao-[tópico].md`. O texto explicativo de apoio segue a Etapa 3 na mesma nota ou em nota irmã em `zettelbrain/visual/`, conforme fizer sentido para o cofre.
 
 ### Etapa 3: Síntese Explicativa (Aplicação Rigorosa de Estilo)
 Todo ativo gerado DEVE ser acompanhado de um texto explicativo na nota correspondente. A redação DEVE obedecer integralmente às **Regras Globais de Estilo**:
@@ -40,5 +40,5 @@ Todo ativo gerado DEVE ser acompanhado de um texto explicativo na nota correspon
 - O tom deve ser estritamente analítico e adequado para a absorção por uma audiência corporativa experiente.
 
 ### Etapa 4: Catalogação
-1. Adicione o link semântico do novo arquivo gerado ao `zettelkasten/index.md`.
+1. Adicione o link semântico do novo arquivo gerado ao `zettelbrain/index.md`.
 2. Atualize o `.state/log.md` com cabeçalho **`/visual`**, tipo de ativo gerado, e **lista explícita** de caminhos relativos (notas lidas, arquivo visual ou Marp, `index.md` se alterado, assets se criados).
