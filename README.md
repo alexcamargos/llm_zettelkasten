@@ -44,6 +44,7 @@ zettelbrain/
 ├── raw/
 │   ├── papers/
 │   ├── articles/
+│   ├── youtube/
 │   └── assets/
 └── zettelkasten/
     ├── index.md
@@ -65,7 +66,7 @@ Pastas sem notas ainda usam um arquivo **`.gitkeep`** (vazio) para o Git version
 A inicialização em um novo ambiente resume-se a clonar o repositório, instalar o Gemini CLI conforme a documentação oficial e passar a operar na raiz do projeto. As pastas necessárias já vêm no clone; o foco segue sendo a mineração de dados acadêmicos com o agente.
 
 ### Clonagem e Versionamento
-O usuário deve clonar o repositório para o disco local utilizando um cliente de controle de versão. A árvore de pastas versionada (`raw/`, `zettelkasten/`, `.state/`) já vem preparada para uso imediato; adicione PDFs formais em `raw/papers/` (skills `/ingest-paper` e `/ingest-paper-intro`), recortes informais da web em Markdown em `raw/articles/` (skill `/ingest-article`) e transcrições geradas pelo ETL de YouTube em `raw/articles/` (skill `/ingest-youtube`).
+O usuário deve clonar o repositório para o disco local utilizando um cliente de controle de versão. A árvore de pastas versionada (`raw/`, `zettelkasten/`, `.state/`) já vem preparada para uso imediato; adicione PDFs formais em `raw/papers/` (skills `/ingest-paper` e `/ingest-paper-intro`), recortes informais da web em Markdown em `raw/articles/` (skill `/ingest-article`) e transcrições geradas pelo ETL de YouTube em `raw/youtube/` (skill `/ingest-youtube`).
 
 ### Gemini CLI
 Abra o **[Gemini CLI](https://geminicli.com/)** na **raiz deste repositório** (o diretório que contém `ZETTELBRAIN.md`, `raw/`, `zettelkasten/` e `.state/`). O agente assim carrega o schema e as skills em `.gemini/skills/`. Para a versão instalada, siga o comando indicado na documentação da sua instalação (por exemplo `gemini --version`, se existir).
