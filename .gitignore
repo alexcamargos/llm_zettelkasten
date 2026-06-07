@@ -53,6 +53,12 @@ $RECYCLE.BIN/
 .venv-codex/
 .uv-cache/
 
+# Configuracoes locais geradas por `uv run install gemini|cursor`.
+.gemini/
+.cursor/
+.cursorrules
+.cursorrules.bak
+
 # Logs e estado gerado pelo motor Python.
 logs/
 .state/historico_ingestao.txt
