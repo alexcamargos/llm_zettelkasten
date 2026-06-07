@@ -228,3 +228,36 @@ def test_linter_validation_rules(mock_zettel_vault: Path) -> None:
     # (apenas 2 notas, portanto não atinge a frequência mínima de 3)
     assert "Regressão Linear" in result.emergent_patterns
     assert "Gradiente Descendente" not in result.emergent_patterns
+
+
+def test_linter_sources_with_alias_do_not_create_false_dead_links(tmp_path: Path) -> None:
+    """Garante que wikilinks com alias em `sources` sejam normalizados corretamente."""
+    zettel_dir = tmp_path / "zettelbrain"
+    literature_dir = zettel_dir / "literature"
+    permanent_dir = zettel_dir / "permanent"
+    literature_dir.mkdir(parents=True)
+    permanent_dir.mkdir(parents=True)
+
+    (literature_dir / "nota-base.md").write_text(
+        "---\n"
+        'title: "Nota Base"\n'
+        "---\n"
+        "Conteudo.",
+        encoding="utf-8",
+    )
+    (permanent_dir / "nota-principal.md").write_text(
+        "---\n"
+        "sources:\n"
+        '  - "[[nota-base|Resumo]]"\n'
+        "---\n"
+        "Corpo sem links extras.",
+        encoding="utf-8",
+    )
+
+    linter = ZettelLinter(zettel_dir)
+    linter.scan_vault()
+    result = linter.run()
+
+    dead_link_targets = [error.details.get("target") for error in result.errors if error.type == "dead_link"]
+    assert "nota-base|Resumo" not in dead_link_targets
+    assert "nota-base" not in dead_link_targets
