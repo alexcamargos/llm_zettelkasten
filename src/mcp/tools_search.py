@@ -257,7 +257,7 @@ def _parse_qmd_output(output: str, *, root: Path, limit: int) -> list[SearchResu
         line = raw_line.strip()
         if not line:
             continue
-        path_text, _, excerpt = line.partition(":")
+        path_text, excerpt = _split_qmd_result_line(line)
         path = Path(path_text.strip())
         if path.is_absolute():
             try:
@@ -277,6 +277,26 @@ def _parse_qmd_output(output: str, *, root: Path, limit: int) -> list[SearchResu
         if len(results) >= limit:
             break
     return results
+
+
+def _split_qmd_result_line(line: str) -> tuple[str, str]:
+    """Split a qmd result line into path and excerpt without breaking Windows drive letters.
+
+    Args:
+        line: A single stdout line emitted by qmd.
+
+    Returns:
+        tuple[str, str]: The extracted path text and excerpt text.
+    """
+    match = re.match(
+        r"^(?P<path>(?:[A-Za-z]:)?[^:]+?\.md)\s*:\s*(?P<excerpt>.*)$",
+        line,
+    )
+    if match:
+        return match.group("path"), match.group("excerpt")
+
+    path_text, _, excerpt = line.partition(":")
+    return path_text, excerpt
 
 
 def _tokenize(text: str) -> list[str]:
