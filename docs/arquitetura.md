@@ -97,6 +97,8 @@ O modulo `tools_pdf.py` aceita:
 
 `ZETTELBRAIN.md` e `skills/` sao fontes canonicas operacionais. Arquivos `.gemini/`, `.cursor/` e `.cursorrules` sao configuracoes locais geradas por `src/setup.py`.
 
+Como `raw/`, `zettelbrain/` e `logs/` sao ignorados pelo Git, clones novos devem executar `uv run install bootstrap` para criar a estrutura local de trabalho.
+
 ## Testes
 
 A suite cobre configuracao, ETLs, busca, leitura segura de arquivos, embeddings, cache PageIndex, linter e setup de clientes. Execute:
