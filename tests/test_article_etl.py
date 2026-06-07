@@ -6,12 +6,19 @@ and saving to markdown format with correct metadata and YAML front matter.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
 import pytest
+from pytest_mock import MockerFixture
 
-from ingestion.article_etl import fetch_and_clean_article, save_raw_article, slugify
+from ingestion.article_etl import (
+    fetch_and_clean_article,
+    fetch_and_clean_article_with_retry,
+    save_raw_article,
+    slugify,
+)
 
 
 class MockMetaData:
@@ -198,3 +205,120 @@ def test_save_raw_article_failure(mocker: Any, tmp_path: Path) -> None:
     output = save_raw_article("https://example.com/artigo", tmp_path)
 
     assert output is None
+
+
+def test_fetch_and_clean_article_with_retry_retries_then_succeeds(mocker: MockerFixture) -> None:
+    """Tests access retry waits and succeeds on a second attempt."""
+    attempts = {"count": 0}
+
+    def fake_fetch(url: str) -> dict[str, Any] | None:
+        attempts["count"] += 1
+        if attempts["count"] == 1:
+            return None
+        return {
+            "title": "Título",
+            "author": "Autor",
+            "date": "2026-06-07",
+            "url": url,
+            "content": "Conteúdo",
+        }
+
+    mocker.patch("ingestion.article_etl.fetch_and_clean_article", side_effect=fake_fetch)
+    sleeper = mocker.Mock()
+
+    result = fetch_and_clean_article_with_retry(
+        "https://example.com/artigo",
+        retry_delay_seconds=30,
+        sleep_func=sleeper,
+    )
+
+    assert result is not None
+    assert attempts["count"] == 2
+    sleeper.assert_called_once_with(30)
+
+
+def test_fetch_and_clean_article_with_retry_records_failure_after_second_attempt(
+    mocker: MockerFixture,
+    tmp_path: Path,
+) -> None:
+    """Tests persistent access failure is written to the deferred retry log."""
+    mocker.patch("ingestion.article_etl.fetch_and_clean_article", return_value=None)
+    sleeper = mocker.Mock()
+    error_log_path = tmp_path / "logs" / "article_access_errors.jsonl"
+
+    result = fetch_and_clean_article_with_retry(
+        "https://example.com/artigo",
+        retry_delay_seconds=30,
+        access_error_log_path=error_log_path,
+        sleep_func=sleeper,
+    )
+
+    assert result is None
+    sleeper.assert_called_once_with(30)
+    entries = error_log_path.read_text(encoding="utf-8").splitlines()
+    assert len(entries) == 1
+    payload = json.loads(entries[0])
+    assert payload["url"] == "https://example.com/artigo"
+    assert payload["attempts"] == 2
+    assert payload["error"] == "download_failed_or_remote_content_unavailable"
+
+
+def test_main_returns_success_exit_code(mocker: MockerFixture, tmp_path: Path) -> None:
+    """Tests CLI exits with code 0 when article ingestion succeeds."""
+    mocker.patch(
+        "sys.argv",
+        ["article_etl.py", "--url", "https://example.com/artigo"],
+    )
+    settings = mocker.Mock(raw_articles_path=tmp_path, logs_path=tmp_path / "logs")
+    mocker.patch("ingestion.article_etl.load_settings", return_value=settings)
+    mocker.patch("ingestion.article_etl.configure_logging")
+    save_raw_article_mock = mocker.patch(
+        "ingestion.article_etl.save_raw_article",
+        return_value=tmp_path / "web-artigo.md",
+    )
+    mock_logger = mocker.Mock()
+    mocker.patch("ingestion.article_etl.get_logger", return_value=mock_logger)
+
+    from ingestion.article_etl import main
+
+    with pytest.raises(SystemExit) as excinfo:
+        main()
+
+    assert excinfo.value.code == 0
+    mock_logger.info.assert_called_with("Article ETL completed successfully.")
+    save_raw_article_mock.assert_called_once_with(
+        url="https://example.com/artigo",
+        raw_articles_path=tmp_path,
+        filename=None,
+        retry_delay_seconds=30,
+        access_error_log_path=tmp_path / "logs" / "article_access_errors.jsonl",
+    )
+
+
+def test_main_returns_failure_exit_code(mocker: MockerFixture, tmp_path: Path) -> None:
+    """Tests CLI exits with code 1 when article ingestion fails semantically."""
+    mocker.patch(
+        "sys.argv",
+        ["article_etl.py", "--url", "https://example.com/artigo"],
+    )
+    settings = mocker.Mock(raw_articles_path=tmp_path, logs_path=tmp_path / "logs")
+    mocker.patch("ingestion.article_etl.load_settings", return_value=settings)
+    mocker.patch("ingestion.article_etl.configure_logging")
+    save_raw_article_mock = mocker.patch("ingestion.article_etl.save_raw_article", return_value=None)
+    mock_logger = mocker.Mock()
+    mocker.patch("ingestion.article_etl.get_logger", return_value=mock_logger)
+
+    from ingestion.article_etl import main
+
+    with pytest.raises(SystemExit) as excinfo:
+        main()
+
+    assert excinfo.value.code == 1
+    mock_logger.error.assert_called_with("Article ETL failed.")
+    save_raw_article_mock.assert_called_once_with(
+        url="https://example.com/artigo",
+        raw_articles_path=tmp_path,
+        filename=None,
+        retry_delay_seconds=30,
+        access_error_log_path=tmp_path / "logs" / "article_access_errors.jsonl",
+    )
