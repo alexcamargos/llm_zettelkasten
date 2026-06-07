@@ -36,6 +36,32 @@ def test_hashing_embedding_is_deterministic_and_normalized() -> None:
     assert round(sum(value * value for value in first), 6) == 1.0
 
 
+def test_hashing_embedding_ignores_common_stop_words() -> None:
+    """Test that common Portuguese and English stop words do not affect hashing vectors.
+
+    Returns:
+        None
+    """
+    with_stop_words = hashing_embedding(
+        "credito para com uma cooperativo and the with",
+        dimensions=32,
+    )
+    without_stop_words = hashing_embedding("credito cooperativo", dimensions=32)
+
+    assert with_stop_words == without_stop_words
+
+
+def test_hashing_embedding_returns_zero_vector_for_only_stop_words() -> None:
+    """Test that text containing only stop words produces an empty hashing vector.
+
+    Returns:
+        None
+    """
+    vector = hashing_embedding("para com uma este and the with for", dimensions=16)
+
+    assert vector == [0.0] * 16
+
+
 def test_build_embedding_index_and_semantic_search_rank_relevant_doc(tmp_path: Path) -> None:
     """Test persisted embedding index creation and semantic ranking.
 
