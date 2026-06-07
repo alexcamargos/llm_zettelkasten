@@ -4,11 +4,44 @@
 
 ```powershell
 uv sync
+uv run install bootstrap
 Copy-Item .env.example .env
 uv run python src/mcp/server.py --health-json
 ```
 
 `uv sync` instala dependencias declaradas em `pyproject.toml` e usa `uv.lock` para reprodutibilidade.
+`uv run install bootstrap` cria os diretorios locais ignorados pelo Git, como `raw/`, `zettelbrain/`, `logs/`, `.state/` e `.pageindex/`.
+
+## Bootstrap local
+
+Como `raw/`, `zettelbrain/` e `logs/` nao sao rastreados pelo Git, um clone novo nao cria esses diretorios automaticamente. Use:
+
+```powershell
+uv run install bootstrap
+```
+
+Alias equivalente:
+
+```powershell
+uv run install local
+```
+
+O comando cria, sem adicionar conteudo ao Git:
+
+- `raw/articles/`
+- `raw/assets/`
+- `raw/papers/`
+- `raw/youtube/`
+- `zettelbrain/assets/`
+- `zettelbrain/drafts/`
+- `zettelbrain/literature/`
+- `zettelbrain/permanent/`
+- `zettelbrain/presentations/`
+- `zettelbrain/syntheses/`
+- `zettelbrain/visual/`
+- `logs/`
+- `.state/`
+- `.pageindex/`
 
 ## Variaveis de ambiente
 
