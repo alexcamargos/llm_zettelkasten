@@ -135,6 +135,25 @@ def _normalize_frontmatter_list(values: list[Any]) -> list[Any]:
     return normalized
 
 
+def _normalize_wikilink_target(value: str) -> str | None:
+    """Normalize a wikilink-like value into its target slug.
+
+    Args:
+        value: Raw source/frontmatter string.
+
+    Returns:
+        str | None: The normalized target slug, without alias or brackets.
+    """
+    stripped = value.strip()
+    match = re.fullmatch(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]", stripped)
+    if match:
+        return match.group(1).strip() or None
+
+    cleaned = stripped.strip("[").strip("]")
+    target = cleaned.split("|", 1)[0].strip()
+    return target or None
+
+
 class ZettelLinter:
     """Static linting and validation engine for ZettelBrain."""
 
@@ -207,12 +226,11 @@ class ZettelLinter:
         if isinstance(sources, list):
             for source in sources:
                 if isinstance(source, str):
-                    # Remove any residual brackets.
-                    cleaned = source.strip().strip("[").strip("]")
+                    cleaned = _normalize_wikilink_target(source)
                     if cleaned:
                         wikilinks.add(cleaned)
         elif isinstance(sources, str):
-            cleaned = sources.strip().strip("[").strip("]")
+            cleaned = _normalize_wikilink_target(sources)
             if cleaned:
                 wikilinks.add(cleaned)
 
