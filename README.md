@@ -36,6 +36,7 @@ Prepare o ambiente:
 
 ```powershell
 uv sync
+uv run install bootstrap
 Copy-Item .env.example .env
 uv run python src/mcp/server.py --health-json
 ```
@@ -69,6 +70,7 @@ uv run install clean
 | Baixar artigo web para `raw/articles/` | `uv run zb-article-etl --url "<URL>"` |
 | Ingerir transcricoes novas de playlist YouTube | `uv run zb-youtube-etl --limit 5` |
 | Ver candidatos YouTube sem escrever arquivos | `uv run zb-youtube-etl --dry-run` |
+| Criar estrutura local ignorada pelo Git | `uv run install bootstrap` ou `uv run install local` |
 | Configurar Gemini CLI | `uv run install gemini` |
 | Configurar Cursor | `uv run install cursor` |
 | Remover configuracoes locais de cliente | `uv run install clean` |
@@ -112,7 +114,7 @@ uv run install clean
 
 ## Estado dos artefatos locais
 
-Arquivos gerados localmente, caches, logs, `.env`, ambientes virtuais e indices sao ignorados pelo Git. Fontes brutas em `raw/` e notas em `zettelbrain/` sao parte do fluxo de trabalho do projeto, mas devem ser versionadas com criterio conforme a politica do repositorio compartilhado.
+Arquivos gerados localmente, caches, logs, `.env`, ambientes virtuais, fontes brutas em `raw/` e notas de trabalho em `zettelbrain/` sao ignorados pelo Git. Em clones novos, rode `uv run install bootstrap` para criar essa estrutura local.
 
 ## Licenca
 
