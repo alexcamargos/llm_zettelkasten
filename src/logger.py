@@ -101,15 +101,24 @@ def log_skill_execution(func: F) -> F:
         logger = get_logger()
         started = time.perf_counter()
         tool_name = func.__name__
-        logger.info("skill_start name={} args={} kwargs={}", tool_name, args, kwargs)
+        if _logger is not None:
+            logger.info("skill_start name={} args={} kwargs={}", tool_name, args, kwargs)
+        else:
+            logger.info("skill_start name=%s args=%s kwargs=%s", tool_name, args, kwargs)
         try:
             result = func(*args, **kwargs)
         except Exception:
             elapsed_ms = (time.perf_counter() - started) * 1000
-            logger.exception("skill_error name={} elapsed_ms={:.2f}", tool_name, elapsed_ms)
+            if _logger is not None:
+                logger.exception("skill_error name={} elapsed_ms={:.2f}", tool_name, elapsed_ms)
+            else:
+                logger.exception("skill_error name=%s elapsed_ms=%.2f", tool_name, elapsed_ms)
             raise
         elapsed_ms = (time.perf_counter() - started) * 1000
-        logger.info("skill_end name={} elapsed_ms={:.2f}", tool_name, elapsed_ms)
+        if _logger is not None:
+            logger.info("skill_end name={} elapsed_ms={:.2f}", tool_name, elapsed_ms)
+        else:
+            logger.info("skill_end name=%s elapsed_ms=%.2f", tool_name, elapsed_ms)
         return result
 
     return wrapper  # type: ignore[return-value]
