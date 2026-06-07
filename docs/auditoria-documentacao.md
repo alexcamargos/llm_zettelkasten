@@ -40,6 +40,7 @@ Foram comparados os documentos existentes na raiz com:
 
 ## Residuos conhecidos
 
+- `raw/`, `zettelbrain/` e `logs/` sao ignorados pelo Git; clones novos devem executar `uv run install bootstrap` para recriar a estrutura local.
 - `raw/articles/web-quickstart.md` esta nao rastreado e parece artefato de ingestao, nao documentacao do projeto.
 - `.env` existe localmente e e ignorado pelo Git; terceiros devem usar `.env.example`.
 - `.pageindex/`, `.state/` e `logs/` podem conter estado local gerado, conforme `.gitignore`.
