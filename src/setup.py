@@ -11,6 +11,23 @@ import shutil
 import sys
 from pathlib import Path
 
+LOCAL_WORKSPACE_DIRS = (
+    "raw/articles",
+    "raw/assets",
+    "raw/papers",
+    "raw/youtube",
+    "zettelbrain/assets",
+    "zettelbrain/drafts",
+    "zettelbrain/literature",
+    "zettelbrain/permanent",
+    "zettelbrain/presentations",
+    "zettelbrain/syntheses",
+    "zettelbrain/visual",
+    "logs",
+    ".state",
+    ".pageindex",
+)
+
 
 def get_repo_root() -> Path:
     """Resolve the repository root directory.
@@ -19,6 +36,43 @@ def get_repo_root() -> Path:
         Path: The absolute path of the repository root.
     """
     return Path(__file__).resolve().parents[1]
+
+
+def bootstrap_local_workspace(repo_root: Path) -> int:
+    """Create ignored local workspace directories after a fresh clone.
+
+    These directories hold source material, vault notes, logs and local state. They
+    are intentionally ignored by Git, so clones need an explicit bootstrap step.
+    """
+    print("[-] Bootstrapping ignored local workspace directories...")
+
+    try:
+        created = []
+        existing = []
+        for relative_path in LOCAL_WORKSPACE_DIRS:
+            path = repo_root / relative_path
+            if path.exists():
+                existing.append(relative_path)
+                continue
+            path.mkdir(parents=True, exist_ok=True)
+            created.append(relative_path)
+
+        if created:
+            print("[+] Created directories:")
+            for relative_path in created:
+                print(f"    - {relative_path}/")
+        else:
+            print("[~] No directories needed creation.")
+
+        if existing:
+            print(f"[~] Already present: {len(existing)} directories.")
+
+        print("\n[OK] Local workspace bootstrap completed successfully!")
+        return 0
+
+    except OSError as exc:
+        print(f"[ERROR] Failed to bootstrap local workspace: {exc}", file=sys.stderr)
+        return 1
 
 
 def configure_gemini(repo_root: Path) -> int:
@@ -267,11 +321,13 @@ def main() -> None:
 
     if not args:
         print("Erro: Nenhum provedor especificado.", file=sys.stderr)
-        print("Uso: uv run install [gemini|cursor|clean]", file=sys.stderr)
+        print("Uso: uv run install [bootstrap|local|gemini|cursor|clean]", file=sys.stderr)
         sys.exit(1)
 
     provider = args[0].lower().strip()
-    if provider == "gemini":
+    if provider in ("bootstrap", "local"):
+        sys.exit(bootstrap_local_workspace(repo_root))
+    elif provider == "gemini":
         sys.exit(configure_gemini(repo_root))
     elif provider == "cursor":
         sys.exit(configure_cursor(repo_root))
@@ -279,7 +335,7 @@ def main() -> None:
         sys.exit(clean_environment(repo_root))
     else:
         print(f"Erro: Provedor '{provider}' desconhecido.", file=sys.stderr)
-        print("Uso: uv run install [gemini|cursor|clean]", file=sys.stderr)
+        print("Uso: uv run install [bootstrap|local|gemini|cursor|clean]", file=sys.stderr)
         sys.exit(1)
 
 
