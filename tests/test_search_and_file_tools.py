@@ -177,6 +177,32 @@ def test_qmd_search_preserves_windows_command_path(
     assert captured["command"][:3] == [windows_qmd, "--profile", "local"]
 
 
+def test_qmd_search_parses_windows_absolute_stdout_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test qmd_search parses absolute Windows output paths without breaking on drive letters."""
+    note_path = tmp_path / "nested" / "a.md"
+    note_path.parent.mkdir()
+    note_path.write_text("conteudo", encoding="utf-8")
+    stdout_line = f"{note_path}: trecho encontrado\n"
+
+    monkeypatch.setattr("tools_search.shutil.which", lambda _command: "qmd")
+    monkeypatch.setattr(
+        "tools_search.subprocess.run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            returncode=0,
+            stdout=stdout_line,
+        ),
+    )
+
+    results = qmd_search(tmp_path, "credito", qmd_command="qmd")
+
+    assert len(results) == 1
+    assert results[0].path == "nested/a.md"
+    assert results[0].excerpt == "trecho encontrado"
+
+
 def test_file_tools_are_limited_to_markdown_inside_root(tmp_path: Path) -> None:
     """Test that file listing and reading are constrained within root.
 
