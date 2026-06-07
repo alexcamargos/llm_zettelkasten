@@ -1,5 +1,13 @@
 # ZettelBrain
 
+[![Python](https://img.shields.io/badge/python-%3E%3D3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![uv](https://img.shields.io/badge/package%20manager-uv-261230)](https://github.com/astral-sh/uv)
+[![Obsidian](https://img.shields.io/badge/visual%20vault-Obsidian-7C3AED?logo=obsidian&logoColor=white)](https://obsidian.md/)
+[![Zettelkasten](https://img.shields.io/badge/knowledge%20base-Zettelkasten-2f855a)](zettelbrain/index.md)
+[![Markdown](https://img.shields.io/badge/notes-Markdown-000000?logo=markdown&logoColor=white)](zettelbrain/)
+[![MCP](https://img.shields.io/badge/agent%20tools-MCP-6f42c1)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/github/license/alexcamargos/llm_zettelkasten)](LICENSE)
+
 ZettelBrain e um cofre Zettelkasten em Markdown com um motor Python local para automacao, busca, ingestao e exposicao de ferramentas via Model Context Protocol (MCP).
 
 O projeto combina tres superficies:
