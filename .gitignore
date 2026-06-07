@@ -47,6 +47,10 @@ $RECYCLE.BIN/
 .pageindex/*
 !.pageindex/.gitkeep
 
+# Conteudo local do cofre e fontes brutas nao entra no controle de versao.
+raw/
+zettelbrain/
+
 # Ambiente e segredos locais.
 .env
 .venv/
