@@ -69,6 +69,45 @@ def test_configure_gemini_success(mocker: MockerFixture) -> None:
     Path.rename.assert_called_once()
 
 
+def test_bootstrap_local_workspace_creates_ignored_directories(mocker: MockerFixture) -> None:
+    """Test local workspace bootstrap creates every ignored runtime directory."""
+    mock_repo_root = Path("/fake/root")
+    mocker.patch.object(Path, "exists", return_value=False)
+    mock_mkdir = mocker.patch.object(Path, "mkdir")
+
+    exit_code = setup.bootstrap_local_workspace(mock_repo_root)
+
+    assert exit_code == 0
+    assert mock_mkdir.call_count == len(setup.LOCAL_WORKSPACE_DIRS)
+    for call_args in mock_mkdir.call_args_list:
+        assert call_args.kwargs == {"parents": True, "exist_ok": True}
+
+
+def test_bootstrap_local_workspace_skips_existing_directories(
+    mocker: MockerFixture,
+) -> None:
+    """Test local workspace bootstrap is idempotent for existing directories."""
+    mock_repo_root = Path("/fake/root")
+    mocker.patch.object(Path, "exists", return_value=True)
+    mock_mkdir = mocker.patch.object(Path, "mkdir")
+
+    exit_code = setup.bootstrap_local_workspace(mock_repo_root)
+
+    assert exit_code == 0
+    mock_mkdir.assert_not_called()
+
+
+def test_bootstrap_local_workspace_os_error(mocker: MockerFixture) -> None:
+    """Test local workspace bootstrap handles filesystem errors."""
+    mock_repo_root = Path("/fake/root")
+    mocker.patch.object(Path, "exists", return_value=False)
+    mocker.patch.object(Path, "mkdir", side_effect=OSError("Permission denied"))
+
+    exit_code = setup.bootstrap_local_workspace(mock_repo_root)
+
+    assert exit_code == 1
+
+
 def test_configure_gemini_orphan_cleanup(mocker: MockerFixture) -> None:
     """Test Gemini configuration cleans up orphan skills.
 
@@ -244,6 +283,30 @@ def test_main_gemini_argument(mocker: MockerFixture) -> None:
         setup.main()
 
     mock_configure.assert_called_once()
+    assert excinfo.value.code == 0
+
+
+def test_main_bootstrap_argument(mocker: MockerFixture) -> None:
+    """Test main function executes local bootstrap correctly."""
+    mocker.patch.object(sys, "argv", ["setup.py", "bootstrap"])
+    mock_bootstrap = mocker.patch("setup.bootstrap_local_workspace", return_value=0)
+
+    with pytest.raises(SystemExit) as excinfo:
+        setup.main()
+
+    mock_bootstrap.assert_called_once()
+    assert excinfo.value.code == 0
+
+
+def test_main_local_argument(mocker: MockerFixture) -> None:
+    """Test main function supports local as a bootstrap alias."""
+    mocker.patch.object(sys, "argv", ["setup.py", "local"])
+    mock_bootstrap = mocker.patch("setup.bootstrap_local_workspace", return_value=0)
+
+    with pytest.raises(SystemExit) as excinfo:
+        setup.main()
+
+    mock_bootstrap.assert_called_once()
     assert excinfo.value.code == 0
 
 
