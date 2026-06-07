@@ -114,7 +114,8 @@ flowchart TD
 ### Setup de clientes
 
 - Codigo: [../src/setup.py](../src/setup.py)
-- CLI: `uv run install gemini`, `uv run install cursor`, `uv run install clean`.
+- CLI: `uv run install bootstrap`, `uv run install gemini`, `uv run install cursor`, `uv run install clean`.
+- `bootstrap` ou `local`: cria a estrutura ignorada pelo Git para `raw/`, `zettelbrain/`, `logs/`, `.state/` e `.pageindex/`.
 - `gemini`: cria `.gemini/settings.json` e sincroniza `skills/`.
 - `cursor`: cria `.cursor/mcp.json` e compila [ZETTELBRAIN.md](../ZETTELBRAIN.md) com `skills/`.
 - `clean`: remove configuracoes locais geradas.
